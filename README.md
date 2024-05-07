@@ -50,3 +50,16 @@ I have two compose extensions that I use pretty frequently:
 - `x-tailscale` sets up a [`tsnsrv`](https://github.com/boinkor-net/tsnsrv) proxy sidecar to put individual containers on my tailnet with automatic https
 
 By convention, my stacks put data in `/data/<stackname>` and I try to have them run as user `1000:1000` as much as possible.
+
+## Secrets
+
+I have a vault dedicated to lab secrets.
+In that vault are two kinds of items, Servers and Secure Notes. 
+Each host has a Server item named with it's hostname and tagged, generally, with `server` and it's hostname.
+
+Each Secure Note is a set of secrets and is tagged with the same taxonomy. 
+Secrets consist of a Text entry where the name is the environment variable to set and the value is the secret itself.
+
+Much time was spent making secret loading as fast as possible because the `op` command can be pretty slow.
+It uses a trick that passes the results of one `op` invocation (effectively, "give me all the ids for secrets of categories X,Y") and pipes it to another `op` invocation that then fetches the contents of those items.
+
