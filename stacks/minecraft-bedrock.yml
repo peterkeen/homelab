@@ -1,0 +1,14 @@
+services:
+  minecraft-bedrock:
+    image: kfcr.fly.dev/itzg/minecraft-bedrock-server
+    container_name: minecraft-bedrock
+    environment:
+      EULA: "TRUE"
+      GAMEMODE: creative
+      DIFFICULTY: peaceful
+    ports:
+      - 19132:19132/udp
+    volumes:
+      - /data/minecraft/bedrock:/data
+    stdin_open: true
+    tty: true

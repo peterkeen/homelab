@@ -1,0 +1,18 @@
+services:
+  docker-socket-proxy:
+    container_name: docker-socket-proxy
+    image: tecnativa/docker-socket-proxy
+    ports:
+      - ${TAILNET_IP}:2375:2375
+    environment:
+      CONTAINERS: 1
+      POST: 1 # Portainer needs this for creating and deleting
+      INFO: 1
+      IMAGES: 1
+      NETWORKS: 1 # Portainer
+      SERVICES: 1 # Portainer
+      TASKS: 1 # Portainer
+      VOLUMES: 1 # Portainer      
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock      
+    privileged: true

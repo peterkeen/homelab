@@ -1,0 +1,12 @@
+services:
+  waterfurnace:
+    container_name: waterfurnace
+    image: ghcr.io/peterkeen/waterfurnace_aurora:main
+    network_mode: host
+    environment:
+      - "TTY=${WATERFURNACE_DEVICE}"
+      - "MQTT=${MQTT_URL}"
+    restart: unless-stopped
+    volumes:
+      - /dev:/dev
+    privileged: true

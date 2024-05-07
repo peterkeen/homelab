@@ -1,0 +1,87 @@
+# -- Configuration file starts here --
+# (Optional section)
+general:
+  # Sleep for this amount of seconds after one successful reading of every meter
+  # This parameter is helpful to keep CPU usage low and the temperature low as well
+  # Set this to 0 (default) to disable it
+  sleep_for: 300
+  # Set the verbosity level. It can be debug or info
+  verbosity: debug
+  # Enable/disable the tickle_rtl_tcp. This is used to "shake" rtl_tcp to wake it up.
+  # For me, this started to cause the rtl_tcp to refuse connections and miss the readings.
+  # This may help with a remote rtl_tcp server.
+  tickle_rtl_tcp: false
+  # (Optional) USB Device ID. Use lsusb to get the device ID
+  # Use "single" (default) if you have only one device
+  # device_id: 'single'
+  # device_id: '0bda:2838'
+
+# MQTT configuration.
+mqtt:
+  # Whether to use Home Assistant auto-discovery feature or not
+  ha_autodiscovery: true
+  # Home Assistant auto-discovery topic
+  ha_autodiscovery_topic: homeassistant
+  # Base topic to send status and updates
+  base_topic: rtlamr
+  # By default, leaving host, port, user, and password unset will tell
+  # rtlamr2mqtt to use the default home assistant mqtt settings for those
+  # options. If needed, you can override these default settings:
+  # MQTT host name or IP address.
+  host: 192.168.1.1
+  # MQTT port.
+  port: 1883
+  # TLS Enabled? (False by default)
+  tls_enabled: false
+  # TLS CA certificate (mandatory if tls_enabled = true)
+  tls_ca: "/etc/ssl/certs/ca-certificates.crt"
+  # TLS server certificate (optional)
+  tls_cert: "/etc/ssl/my_server_cert.crt"
+  # TLS self-signed certificate/insecure certificate (optional, default true)
+  tls_insecure: true
+  # MQTT user name if you have, remove if you don't use authentication
+  user: mqtt
+  # MQTT user password if you use one, remove if you don't use authentication
+  password: my-very-strong-password
+
+# (Optional)
+# This entire section is optional.
+# If you don't need any custom parameter, don't use it.
+# ***DO NOT ADD -msgtype, -filterid nor -protocol parameters here***
+# -d parameter is not necessary anymore if you use device_id
+custom_parameters:
+  # Documentation for rtl_tcp: https://osmocom.org/projects/rtl-sdr/wiki/Rtl-sdr
+  rtltcp: "-s 2048000"
+  # Documentation for rtlamr: https://github.com/bemasher/rtlamr/wiki/Configuration
+  # If you want to disable the local rtl_tcp and use an external/remote one, you must add "-server=remote-ip-address:port" to the rtlamr section below.
+  rtlamr: "-server=wyse-3040-9835.tailnet-a578.ts.net:1234 -unique=true -symbollength=32"
+
+# (Required section)
+# Here is the place to define your meters
+meters: []
+    # The ID of your meter
+#   - id: 7823010
+#     # The protocol
+#     protocol: scm+
+#     # A nice name to show on your Home Assistant/Node Red
+#     name: meter_water
+#     # (optional) A number format to be used for your meter
+#     format: "#####.###"
+#     # (optional) A measurement unit to be used by Home Assistant
+#     # Typical values are ft³ and m³ (use the superscript) for water/gas meters
+#     # and kWh or Wh for electric meters
+#     unit_of_measurement: "\u33A5"
+#     # (optional) An icon to be used by Home Assistant
+#     icon: mdi:gauge
+#     # A device_class to define what the sensor is measuring for use in the Energy panel
+#     # Typical values are "gas" or "energy". Default is blank.
+#     device_class: water
+#     # "total_increasing" for most meters, "total" for meters that might go
+#     # backwards (net energy meters). Defaults to "total_increasing" if unset.
+#     state_class:
+#   - id: 6567984
+#     protocol: scm
+#     name: meter_hydro
+#     unit_of_measurement: kWh
+#     device_class: energy
+# # -- End of configuration file --

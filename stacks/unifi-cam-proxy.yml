@@ -1,0 +1,7 @@
+services:
+  unifi-cam-proxy-eufy:
+    restart: unless-stopped
+    image: keshavdv/unifi-cam-proxy:dev
+    volumes:
+      - "${CONFIGS_DIR}/unifi-cam-proxy/client.pem:/client.pem"
+    command: unifi-cam-proxy --host $#{UNIFI_NVR_IP_ADDRESS} --cert /client.pem --token ${UNIFI_NVR_ADOPTION_TOKEN} rtsp -s rtsp://${EUFY_CAM_USERNAME}:${EUFY_CAM_PASSWORD}@${EUFY_CAM_IP_ADDRESS}:554/live0

@@ -1,0 +1,26 @@
+services:
+  genmon:
+    container_name: genmon
+    hostname: genmon
+    image: "ghcr.io/peterkeen/genmon-docker:main"
+    network_mode: host
+    privileged: true
+    volumes:
+      - '${CONFIG}/genmon:/etc/genmon'
+      - '${CONFIG}/genmon/log:/var/log'
+      - /dev:/dev
+    restart: unless-stopped
+    x-web:
+      port: 8000
+
+  genmon-proxy:
+    container_name: genmon-proxy
+    hostname: genmon-proxy
+    image: "ghcr.io/peterkeen/genmon-proxy:main"
+    network_mode: host
+    environment:
+      - TS_AUTHKEY
+    restart: unless-stopped
+    command: ["/app/proxy", "--upstream", "http://wyse-3040-9637.tailnet-a578.ts.net:8000"]
+    volumes:
+      - "/data/genmon-proxy:/root/.config/tsnet-proxy"

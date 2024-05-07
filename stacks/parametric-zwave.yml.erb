@@ -1,0 +1,23 @@
+<%-
+hosts = Config.instance.hosts.select { |_,h| h.serials.keys.include?("zwave") }.sort_by { |h| h[0] }
+-%>
+
+services:
+  <%- hosts.each_with_index do |host, i| -%>
+  <%- _, host = host -%>
+  <%- name = "zwavejs2mqtt-" + host.hostname -%>
+  <%= name %>:
+    container_name: <%= name %>
+    hostname: <%= name %>
+    image: ghcr.io/zwave-js/zwave-js-ui:9.6.0
+    restart: always
+    stop_signal: SIGINT
+    ports:
+      - ${TAILNET_IP}:<%= host.serials["zwave"].remote_ui_port %>:8091
+      - ${TAILNET_IP}:<%= host.serials["zwave"].remote_ws_port %>:3000
+    environment:
+      - ZWAVEJS_EXTERNAL_CONFIG=/usr/src/app/store/.config-db
+      - CONFIGS_SHA
+    volumes:
+      - /data/media/zwave/<%= name %>:/usr/src/app/store
+  <%- end -%>

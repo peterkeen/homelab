@@ -1,0 +1,18 @@
+services:
+  homer:
+    container_name: homer-up
+    hostname: homer
+    image: b4bz/homer:latest
+    restart: unless-stopped
+    environment:
+      - CONFIGS_SHA
+      - INIT_ASSETS=0
+    volumes:
+      - ${CONFIGS_DIR}/homer:/www/assets
+    x-tailscale:
+      hostname: homer
+      upstream: http://homer-up:8080
+    x-web:
+      require_auth: false
+      upstream: https://homer.tailnet-a578.ts.net
+      fqdn: keen.land

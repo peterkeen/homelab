@@ -1,0 +1,11 @@
+services:
+  truemail:
+    image: truemail/truemail-rack:v0.9.0 # for latest version you can use just truemail/truemail-rack:latest
+    ports:
+      - ${TAILNET_IP}:9292:9292
+    environment:
+      VERIFIER_EMAIL: vmsave@petekeen.net
+      ACCESS_TOKENS: ${TRUEMAIL_ACCESS_TOKEN}
+      DEFAULT_VALIDATION_TYPE: "mx"
+      DNS: "8.8.8.8,8.8.4.4"
+    tty: true

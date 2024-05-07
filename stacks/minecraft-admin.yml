@@ -1,0 +1,12 @@
+services:
+  mc-web:
+    image: itzg/rcon
+    environment:
+      RWA_USERNAME: admin
+      RWA_PASSWORD: admin
+      RWA_ADMIN: "TRUE"
+      RWA_RCON_PASSWORD: ${RCON_PASSWORD}
+    ports:
+      - ${TAILNET_IP}:4326:4326
+      - ${TAILNET_IP}:4327:4327
+      

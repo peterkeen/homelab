@@ -1,0 +1,14 @@
+services:
+  rtlamr2mqtt:
+    container_name: rtlamr2mqtt
+    image: allangood/rtlamr2mqtt
+    restart: unless-stopped
+    environment:
+      - CONFIGS_SHA
+      - LISTEN_ONLY=yes
+      - RTL_MSGTYPE=all
+      - RTL_TCP_ARGS=nostart
+      - RTLAMR_ARGS=-server=100.123.246.124:1234      
+    volumes:
+      - ${CONFIGS_DIR}/rtlamr/rtlamr2mqtt.yaml:/etc/rtlamr2mqtt.yaml:ro
+      - /data/rtlamr:/var/lib/rtlamr

@@ -1,0 +1,31 @@
+services:
+  whisper:
+    container_name: whisper-up
+    image: rhasspy/wyoming-whisper
+    volumes:
+      - /data/whisper-piper:/data
+    command: ["--model", "tiny-int8", "--language", "en"]
+    restart: unless-stopped
+    x-tailscale:
+      hostname: whisper
+      upstream: http://whisper-up:10300
+
+  piper:
+    container_name: piper-up
+    image: rhasspy/wyoming-piper
+    volumes:
+      - /data/whisper-piper:/data
+    command: ["--voice", "en_US-lessac-medium"]
+    restart: unless-stopped
+    x-tailscale:
+      hostname: piper
+      upstream: http://piper-up:10200
+
+  openwakeword:
+    container_name: openwakeword-up
+    image: rhasspy/wyoming-openwakeword
+    command: ["--preload-model", "ok_nabu"]
+    restart: unless-stopped
+    x-tailscale:
+      hostname: openwakeword
+      upstream: http://openwakeword-up:10400

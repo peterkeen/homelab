@@ -1,0 +1,12 @@
+services:
+  certificates:
+    container_name: certificates
+    image: ghcr.io/keenfamily-us/keenland-certificates:main
+    network_mode: host    
+    volumes:
+      - source: keenland-certs
+        target: /certificates_volume
+        type: volume
+
+volumes:
+  keenland-certs:

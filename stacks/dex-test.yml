@@ -1,0 +1,20 @@
+services:
+  dex:
+    container_name: dex
+    image: ghcr.io/dexidp/dex:latest-alpine
+    environment:
+      - CONFIGS_SHA
+      - "DEX_ISSUER=https://dex.keen.land/dex"
+      - "DEX_LOG_LEVEL=debug"
+    ports:
+      - '5556:5556'
+    restart: unless-stopped
+    volumes:
+      - "${CONFIGS_DIR}/dex-test/config.yaml:/etc/dex/config.docker.yaml"
+
+  dex-example-app:
+    container_name: dex-example-app
+    image: ghcr.io/dexidp/example-app:latest
+    network_mode: host
+    restart: unless-stopped
+    command: ["example-app", "--issuer", "https://dex.keen.land/dex", "--listen", "http://0.0.0.0:5555", "--debug", "--redirect-uri", "https://dex-example.keen.land/callback", "--client-secret", "example-app-secret"]

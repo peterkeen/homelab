@@ -1,0 +1,7 @@
+services:
+  ezshare:
+    image: ghcr.io/keenfamily-us/ezshare-sync:main
+    container_name: ezshare
+    volumes:
+      - /tank/cpap/pete:/data
+    restart: unless-stopped

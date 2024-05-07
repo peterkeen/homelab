@@ -1,0 +1,146 @@
+services:
+  sonarr:
+    image: kfcr.fly.dev/linuxserver/sonarr:latest
+    container_name: sonarr-up
+    volumes:
+      - ${CONFIG}/sonarr:/config
+      - /tank/media:/media
+      - ${SCRATCH}:/scratch
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit      
+    restart: always
+    x-tailscale:
+      upstream: http://sonarr-up:8989
+      hostname: sonarr
+    x-web:
+      hostname: sonarr
+      upstream: https://sonarr.tailnet-a578.ts.net
+      alternate_hostnames:
+        - tv
+
+  radarr:
+    image: kfcr.fly.dev/linuxserver/radarr:latest
+    container_name: radarr-up
+
+    volumes:
+      - ${CONFIG}/radarr:/config
+      - /tank/media:/media
+      - ${SCRATCH}:/scratch
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit            
+    restart: always
+    x-tailscale:
+      upstream: http://radarr-up:7878
+      hostname: radarr
+    x-web:
+      require_auth: false
+      hostname: radarr
+      upstream: https://radarr.tailnet-a578.ts.net
+      alternate_hostnames:
+        - movies
+
+  lidarr:
+    image: kfcr.fly.dev/linuxserver/lidarr:latest
+    container_name: lidarr-up
+    volumes:
+      - ${CONFIG}/lidarr:/config
+      - /tank/media:/media
+      - ${SCRATCH}:/scratch
+    environment:
+      - "DOCKER_MODS=linuxserver/mods:lidarr-flac2mp3"
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit            
+    restart: always
+    x-tailscale:
+      upstream: http://lidarr-up:8686
+      hostname: lidarr
+    x-web:
+      hostname: lidarr
+      upstream: https://lidarr.tailnet-a578.ts.net
+
+  prowlarr:
+    image: ghcr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr-up
+    volumes:
+      - ${CONFIG}/prowlarr:/config
+      - /tank/media:/media
+      - ${SCRATCH}:/scratch
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit            
+    restart: always
+    x-tailscale:
+      upstream: http://prowlarr-up:9696
+      hostname: prowlarr
+    x-web:
+      require_auth: false
+      upstream: https://prowlarr.tailnet-a578.ts.net
+      hostname: prowlarr
+      alternate_hostnames:
+        - indexers
+
+  bazarr:
+    image: kfcr.fly.dev/linuxserver/bazarr
+    container_name: bazarr-up
+    volumes:
+      - ${CONFIG}/bazarr:/config
+      - /tank/media:/media
+      - ${SCRATCH}:/scratch
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit            
+    restart: always
+    x-tailscale:
+      upstream: http://bazarr-up:6767
+      hostname: bazarr
+    x-web:
+      upstream: https://bazarr.tailnet-a578.ts.net
+      hostname: bazarr
+      alternate_hostnames:
+        - subtitles
+
+  # readarr:
+  #   image: lscr.io/linuxserver/readarr:develop
+  #   container_name: readarr-up
+  #   volumes:
+  #     - ${CONFIG}/readarr:/config
+  #     - /tank/media:/media
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=America/Detroit            
+  #   restart: always      
+  #   x-tailscale:
+  #     upstream: http://readarr-up:8787
+  #     hostname: readarr
+  #   x-web:
+  #     upstream: https://readarr.tailnet-a578.ts.net
+  #     hostname: readarr
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr-up
+    user: 1000:1000
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=America/Detroit
+    volumes:
+      - ${CONFIG}/jellyseerr:/app/config
+    restart: always
+    x-tailscale:
+      upstream: http://jellyseerr-up:5055
+      hostname: jellyseerr
+    x-web:
+      upstream: https://jellyseerr.tailnet-a578.ts.net
+      hostname: jellyseerr
+      require_auth: false
+      alternate_hostnames:
+        - request
+        - requests

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+HOSTS=$(cat <<-EOM
+<%- Config.instance.hosts.each do |hostname, host| -%>
+<%- next if hostname == '__default' -%>
+<%= hostname %>.tailnet-a578.ts.net
+<%- end -%>
+EOM
+)
+
+for host in $HOSTS; do
+	echo $host
+	/tank/backups/hosts/backup_host.sh $host
+done

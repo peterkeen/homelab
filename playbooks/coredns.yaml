@@ -1,0 +1,24 @@
+- name: CoreDNS
+  hosts: stacked
+  tasks:
+    - name: Install CoreDNS
+      when: ansible_distribution == 'Alpine'
+      ansible.builtin.package:
+        name: coredns
+        state: present
+
+    - name: Copy Corefile
+      when: ansible_distribution == 'Alpine'      
+      ansible.builtin.copy:
+        src: ../configs/coredns/Corefile
+        dest: /etc/coredns/Corefile
+        backup: yes
+      notify:
+        - restart coredns
+
+  handlers:
+    - name: restart coredns
+      ansible.builtin.service:
+        name: coredns
+        state: restarted
+        enabled: yes

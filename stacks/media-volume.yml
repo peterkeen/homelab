@@ -1,0 +1,14 @@
+volumes:
+  media:
+    driver: local
+    driver_opts:
+      type: cifs
+      device: //10.73.95.92/media
+      o: "username=${CIFS_MEDIA_USERNAME},password=${CIFS_MEDIA_PASSWORD},vers=2.0,dir_mode=0777,file_mode=0666,rw"
+
+  media-nfs:
+    driver: local
+    driver_opts:
+      type: nfs
+      device: ":${NFS_SERVER_MEDIA_PATH:-/volume1/media}"
+      o: "addr=${NFS_SERVER_IP:-10.73.95.92},rw,nfsvers=4,async"

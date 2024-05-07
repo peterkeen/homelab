@@ -1,0 +1,18 @@
+version: "3"
+services:
+  dns-server:
+    container_name: dns-server
+    hostname: dns-server
+    image: technitium/dns-server:latest
+    network_mode: "host"
+    environment:
+      - HOSTNAME
+      - DNS_SERVER_DOMAIN=dns-server
+    volumes:
+      - config:/etc/dns/config    
+    restart: unless-stopped
+
+volumes:
+    config:
+      external: true
+      name: dns-server_config

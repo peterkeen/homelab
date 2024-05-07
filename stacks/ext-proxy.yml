@@ -1,0 +1,19 @@
+services:
+  ext-proxy:
+    container_name: ext-proxy
+    image: kfcr.fly.dev/nginx:1.23
+    network_mode: host
+    environment:
+      - CONFIGS_SHA
+    volumes:
+      - ${CONFIGS_DIR}/ext-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
+      - ${CONFIGS_DIR}/ext-proxy/common.conf:/etc/nginx/snippets/common.conf
+      - ${CONFIGS_DIR}/ext-proxy/00-remove-default.sh:/docker-entrypoint.d/00-remove-default.sh
+      - ${CONFIGS_DIR}/ext-proxy/dhparam:/etc/nginx/dhparam      
+      - keenland-certs:/etc/letsencrypt/certificates:ro
+    restart: unless-stopped
+    depends_on:
+      - certificates
+    labels:
+      com.centurylinklabs.watchtower.depends-on: "/certificates"
+      

@@ -1,0 +1,17 @@
+services:
+  grafana-agent:
+    container_name: grafana-agent
+    image: grafana/agent:v0.30.1
+    environment:
+      - CONFIGS_SHA
+      - HOSTNAME
+      - GRAFANA_AGENT_TOKEN
+      - GRAFANA_AGENT_LOGS_USERNAME
+      - GRAFANA_AGENT_METRICS_USERNAME
+    volumes:
+      - "/:/host/root:ro"
+      - "/sys:/host/sys:ro"
+      - "/proc:/host/proc:ro"
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data/grafana-agent:/etc/agent/data
+      - ${CONFIGS_DIR}/grafana-agent/${AGENT_CONFIG_FILE:-agent.yaml}:/etc/agent/agent.yaml

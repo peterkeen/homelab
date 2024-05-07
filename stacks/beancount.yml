@@ -1,0 +1,16 @@
+services:
+  beancount:
+    container_name: beancount-up
+    image: yegle/fava
+    environment:
+      - BEANCOUNT_FILE=/bean/family.beancount
+    volumes:
+      - /data/beancount:/bean
+    restart: unless-stopped
+    x-web:
+      hostname: beancount
+      upstream: https://beancount.tailnet-a578.ts.net
+    x-tailscale:
+      upstream: http://beancount-up:5000
+      hostname: beancount
+      

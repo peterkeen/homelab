@@ -1,0 +1,14 @@
+services:
+  cups-airprint:
+    image: znetwork/synology-airprint:latest
+    container_name: cups-airprint
+    hostname: cups-airprint
+    network_mode: host
+    restart: unless-stopped
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    volumes:
+      - ${CONFIG}/cups-airprint/config:/config
+      - ${CONFIG}/cups-airprint/services:/services
+    x-web:
+      port: 631

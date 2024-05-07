@@ -1,0 +1,7 @@
+volumes:
+  media:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/media/backups_1/media'

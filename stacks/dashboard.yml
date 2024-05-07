@@ -1,0 +1,24 @@
+services:
+  dashboard:
+    container_name: dashboard
+    hostname: dashboard
+    image: ghcr.io/lissy93/dashy:latest
+    ports:
+      - "${TAILNET_IP}:8089:80"
+    environment:
+      - NODE_ENV=production
+      - HOSTNAME
+      - CONFIGS_SHA
+    volumes:
+      - ${CONFIGS_DIR}/dashboard/conf.yml:/app/public/conf.yml
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'node', '/app/services/healthcheck']
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    x-web:
+      require_auth: false
+      port: 8089
+      fqdn: keen.land

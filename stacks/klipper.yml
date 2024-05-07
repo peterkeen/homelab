@@ -1,0 +1,66 @@
+services:
+  klipper:
+    container_name: klipper
+    image: kfcr.fly.dev/mkuf/klipper:latest
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - CONFIGS_SHA
+    command: -I printer_data/run/klipper.tty -a printer_data/run/klipper.sock printer_data/config/printer.cfg -l printer_data/logs/klippy.log
+    volumes:
+      - /dev:/dev
+      - /data/prind/config:/opt/printer_data/config
+      - run:/opt/printer_data/run
+      - /data/prind/gcodes:/opt/printer_data/gcodes
+      - /data/prind/logs:/opt/printer_data/logs
+
+  ## WebApi
+  ##
+  moonraker:
+    container_name: moonraker
+    image: kfcr.fly.dev/mkuf/moonraker:latest
+    restart: unless-stopped
+    pid: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - CONFIGS_SHA
+    depends_on:
+      klipper:
+        condition: service_started
+    volumes:
+      - /dev/null:/opt/klipper/config/null
+      - /dev/null:/opt/klipper/docs/null
+      - /run/dbus:/run/dbus
+      - /run/systemd:/run/systemd      
+      - run:/opt/printer_data/run
+      - /data/prind/gcodes:/opt/printer_data/gcodes
+      - /data/prind/logs:/opt/printer_data/logs
+      - /data/prind/db:/opt/printer_data/database
+      - /data/prind/config:/opt/printer_data/config      
+    ports:
+      - ${TAILNET_IP}:7125:7125
+
+  mainsail:
+    container_name: mainsail
+    image: ghcr.io/mainsail-crew/mainsail:edge
+    restart: unless-stopped
+    environment:
+      - CONFIGS_SHA
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - ${TAILNET_IP}:8888:80
+    volumes:
+      - /data/prind/config/mainsail_config.json:/usr/share/nginx/html/config.json
+
+  ## Accompanying Services/Infra
+  ##
+
+volumes:
+  run:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

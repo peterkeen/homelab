@@ -1,0 +1,13 @@
+.:53 {
+    forward . tls://45.90.28.38 tls://45.90.30.38 tls://2a07:a8c0::4c:4894 tls://2a07:a8c1::4c:4894 {
+        tls_servername CoreDNS-4c4894.dns.nextdns.io
+    }
+    cache
+    errors
+}
+
+tailnet-a578.ts.net:53 {
+    forward . 100.100.100.100
+    cache
+    errors
+}

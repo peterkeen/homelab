@@ -1,0 +1,17 @@
+services:
+  tubesync:
+    image: ghcr.io/meeb/tubesync:latest
+    container_name: tubesync
+    hostname: tubesync
+    restart: unless-stopped
+    ports:
+      - "${TAILNET_IP}:4848:4848"
+    volumes:
+      - ${CONFIG}/tubesync:/config
+      - ${CONFIGS_DIR}/tubesync/local_settings.py:/app/tubesync/local_settings.py
+      - media-nfs:/downloads
+    environment:
+      - TZ=America/Detroit
+      - DOWNLOADS_ROOT=/downloads/youtube
+    x-web:
+      port: 4848

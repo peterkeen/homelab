@@ -1,0 +1,97 @@
+title: "App dashboard"
+subtitle: "Homer"
+header: false
+
+columns: "auto"
+
+services:
+  - name: Home Stuff
+    icon: fa-solid fa-house
+    items:
+    - name: Status
+      url: https://status.keen.land
+      type: "UptimeKuma"
+      slug: "home"
+      logo: https://status.keen.land/icon.svg
+    - name: Home Assistant
+      url: https://hass.keen.land
+      logo: assets/home-assistant-icon.svg
+    - name: UniFi Protect
+      subtitle: Security cameras
+      url: https://protect.keen.land
+      logo: assets/unifi-protect-logo-small.svg
+    - name: House Manual
+      subtitle: System docs for house
+      url: https://github.com/keenfamily-us/house/blob/main/manual.md
+      icon: fa-solid fa-house
+    - name: WLED
+      subtitle: Outside LED Controller
+      logo: assets/wled-logo.png
+      url: http://10.73.95.59
+    - name: Ollama
+      subtitle: AI ChatGPT
+      url: https://ollama.keen.land
+      logo: assets/ollama.svg
+  - name: Media and Games
+    icon: far fa-tv
+    items:
+    - name: Jellyfin
+      subtitle: Watch the media we have
+      url: https://jellyfin.keen.land
+      logo: assets/jellyfin-icon.svg
+    - name: Jellyseerr
+      subtitle: Request new media
+      logo: assets/jellyseerr.svg
+      url: https://jellyseerr.keen.land
+    - name: Sonarr
+      subtitle: Download TV Shows
+      url: https://sonarr.keen.land
+      logo: assets/sonarr.svg
+    - name: Radarr
+      subtitle: Download Movies
+      url: https://radarr.keen.land
+      logo: assets/radarr.svg
+    - name: Lidarr
+      subtitle: Download Music
+      url: https://lidarr.keen.land
+      logo: assets/lidarr.svg
+    - name: Sabnzbd
+      subtitle: Manage Downloads
+      url: https://sabnzbd.keen.land
+      logo: assets/sabnzbd.svg
+    - name: Prowlarr
+      subtitle: Manage Usenet Indexers
+      url: https://prowlarr.keen.land
+      logo: assets/prowlarr.svg
+    - name: Bazarr
+      subtitle: Manage Automatic Subtitles
+      url: https://bazarr.keen.land
+      logo: assets/bazarr.png
+    - name: Books
+      subtitle: Calibre book library
+      url: https://books.keen.land
+      icon: fa-solid fa-book-open-reader
+  - name: Network Services
+    icon: fa-solid fa-wifi
+    items:
+    - name: TP Link Omada Network
+      subtitle: Wi-Fi and network switches
+      url: https://omada.keen.land
+      logo: https://omada.keen.land/theme/img/svg/Omada.svg
+    - name: UniFi Network
+      subtitle: Some network switches
+      url: https://unifi.keen.land
+      logo: assets/unifi.svg
+  
+  - name: 3D Printing
+    icon: fa-solid fa-cubes
+    items:
+    - name: Roberto
+      subtitle: Primary 3D printer interface (requires Tailscale)
+      url: http://roberto.tailnet-a578.ts.net
+      logo: assets/fluidd.svg
+    - name: Spoolman
+      subtitle: Filament spool management
+      logo: assets/spoolman.svg
+      url: https://spoolman.keen.land
+

@@ -1,0 +1,21 @@
+services:
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:latest
+    container_name: calibre-web-up
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ
+      - DOCKER_MODS=linuxserver/mods:universal-calibre #optional
+      - OAUTHLIB_RELAX_TOKEN_SCOPE=1 #optional
+    volumes:
+      - /data/calibre:/config
+      - /tank/media:/media
+    restart: unless-stopped
+    x-tailscale:
+      hostname: books
+      upstream: http://calibre-web-up:8083
+    x-web:
+      hostname: books
+      upstream: https://books.tailnet-a578.ts.net
+      require_auth: false

@@ -1,0 +1,14 @@
+config.json
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+configs/ser2net/ser2net.conf.out.*
+build
+<%- Config.instance.config_files.each do |file| -%>
+<%= file.gsub(Config.instance.root_path + "/", '').gsub(".erb", "") %>
+<%- end %>

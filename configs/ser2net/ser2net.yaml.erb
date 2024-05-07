@@ -1,0 +1,13 @@
+%YAML 1.1
+---
+
+default:
+  name: mdns
+  value: false
+
+<%- Config.instance.this_host.serials.each do |name, conf| -%>
+connection: &<%= name %>
+  accepter: tcp,<%= conf.port %>
+  connector: serialdev,<%= conf.path %>,<%= conf.baud %>,local,nobreak
+
+<%- end -%>

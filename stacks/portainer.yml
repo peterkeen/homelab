@@ -1,0 +1,31 @@
+services:
+  portainer:
+    image: portainer/portainer-ce:alpine
+    container_name: portainer
+    environment:
+      - CONFIGS_SHA
+    network_mode: service:portainer-ts
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data/portainer:/data
+      - keenland-certs:/certificates:ro
+    restart: always
+    command: ["--sslcert", "/certificates/keen.land.crt", "--sslkey", "/certificates/keen.land.key"]
+    depends_on:
+      - certificates
+      - portainer-ts
+    labels:
+      com.centurylinklabs.watchtower.depends-on: "/certificates"
+
+  portainer-ts:
+    image: tailscale/tailscale
+    container_name: portainer-ts
+    hostname: portainer
+    environment:
+      - TS_AUTHKEY
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_ACCEPT_DNS=1
+    volumes:
+      - "/data/ts/portainer:/var/lib/tailscale"
+    
+      

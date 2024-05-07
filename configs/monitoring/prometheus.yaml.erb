@@ -1,0 +1,53 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: [ 'localhost:9090' ]
+
+  - job_name: "hass"
+    scrape_interval: 60s
+    metrics_path: /api/prometheus
+
+    # Long-Lived Access Token
+    authorization:
+      credentials: "<%= ENV['PROMETHEUS_HASS_API_TOKEN'] %>"
+
+    scheme: http
+    static_configs:
+      - targets: ['home.tailnet-a578.ts.net:8123']
+
+
+  - job_name: 'uptime'
+    scrape_interval: 30s
+    scheme: http
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['home.tailnet-a578.ts.net:3001']
+    basic_auth:
+      password: "<%= ENV['PROMETHEUS_UPTIME_KUMA_API_TOKEN'] %>"
+
+  - job_name: 'vyos'
+    scrape_interval: 10s
+    scheme: http
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['10.10.10.10:9273']
+
+  - job_name: 'omada'
+    scrape_interval: 10s
+    scheme: http
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['home.tailnet-a578.ts.net:9202']
+
+  - job_name: 'node_exporter'
+    scrape_interval: 1s
+    scheme: http
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [<%= Config.instance.hostnames.map { |h| "'#{h}.tailnet-a578.ts.net:9100'" }.join(',') %>]
+      - targets: ['backups.tailnet-a578.ts.net:9100']
+

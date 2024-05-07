@@ -1,0 +1,16 @@
+services:
+  searxng:
+    container_name: searxng
+    hostname: search
+    image: searxng/searxng:latest
+    ports:
+      - $TAILNET_IP:8888:8080
+    volumes:
+      - /data/searxng:/etc/searxng
+    environment:
+      - BASE_URL=https://search.keen.land
+      - INSTANCE_NAME=search
+    x-web:
+      port: 8888
+      require_auth: false
+    

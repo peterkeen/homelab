@@ -1,0 +1,86 @@
+integrations:
+  agent:
+    enabled: true
+    relabel_configs:
+      - action: replace
+        source_labels:
+          - agent_hostname
+        target_label: instance
+  cadvisor:
+    docker_only: true
+    enabled: true
+    instance: localhost:9090
+    relabel_configs:
+      - action: replace
+        replacement: integrations/docker
+        target_label: job
+  node_exporter:
+    enabled: true
+    rootfs_path: /host/root
+    sysfs_path: /host/sys
+    procfs_path: /host/proc        
+  prometheus_remote_write:
+    - basic_auth:
+        password: glc_eyJvIjoiNzcwOTk2IiwibiI6ImtlZW5sYW5kLW1ldHJpY3MtYW5kLWxvZ3Mtd3JpdGVyLXRva2VuIiwiayI6Ij01XCIvNzc5YCs9I303UjRsNkFRNzU2OiQiLCJtIjp7InIiOiJ1cyJ9fQ==
+        username: 716283
+      url: https://prometheus-us-central1.grafana.net/api/prom/push
+logs:
+  configs:
+    - clients:
+        - basic_auth:
+            password: glc_eyJvIjoiNzcwOTk2IiwibiI6ImtlZW5sYW5kLW1ldHJpY3MtYW5kLWxvZ3Mtd3JpdGVyLXRva2VuIiwiayI6Ij01XCIvNzc5YCs9I303UjRsNkFRNzU2OiQiLCJtIjp7InIiOiJ1cyJ9fQ==
+            username: 357111
+          url: https://logs-prod-017.grafana.net/loki/api/v1/push
+      name: integrations
+      positions:
+        filename: /tmp/positions.yaml
+      scrape_configs:
+        - docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+              refresh_interval: 5s
+          job_name: integrations/docker
+          relabel_configs:
+            - action: replace
+              replacement: integrations/docker
+              source_labels:
+                - __meta_docker_container_id
+              target_label: job
+            - action: replace
+              replacement: localhost:9090
+              source_labels:
+                - __meta_docker_container_id
+              target_label: instance
+            - regex: /(.*)
+              source_labels:
+                - __meta_docker_container_name
+              target_label: container
+            - source_labels:
+                - __meta_docker_container_log_stream
+              target_label: stream
+      target_config:
+        sync_period: 10s
+metrics:
+  configs:
+    - name: integrations
+      remote_write:
+        - basic_auth:
+            password: glc_eyJvIjoiNzcwOTk2IiwibiI6ImtlZW5sYW5kLW1ldHJpY3MtYW5kLWxvZ3Mtd3JpdGVyLXRva2VuIiwiayI6Ij01XCIvNzc5YCs9I303UjRsNkFRNzU2OiQiLCJtIjp7InIiOiJ1cyJ9fQ==
+            username: 716283
+          url: https://prometheus-us-central1.grafana.net/api/prom/push
+      scrape_configs:
+        - bearer_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIxOTM5OTY2YWZhZjA0OWMyYWI2ZWU0ZjI1ODA4NjMzNCIsImlhdCI6MTY3Mjg2MDk1MiwiZXhwIjoxOTg4MjIwOTUyfQ.525CCOvr_reJNoPMASERfq9dOEejKyL_U0S0mRh1BG4
+          job_name: integrations/hass
+          metrics_path: /api/prometheus
+          scheme: http
+          static_configs:
+            - targets:
+                - localhost:8123
+        - job_name: vyos
+          metrics_path: /metrics
+          scheme: http
+          static_configs:
+            - targets:
+                - 10.10.10.10:9273
+  global:
+    scrape_interval: 60s
+  wal_directory: /tmp/grafana-agent-wal

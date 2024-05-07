@@ -1,0 +1,58 @@
+services:
+  op-connect-api:
+    image: 1password/connect-api:latest
+    hostname: op-connect-api
+    networks:
+      - op-connect
+    volumes:
+      - "${CONFIGS_DIR}/1password-credentials.json:/home/opuser/.op/1password-credentials.json"
+      - "data:/home/opuser/.op/data"
+
+  op-connect-sync:
+    image: 1password/connect-sync:latest
+    hostname: op-connect-sync
+    networks:
+      - op-connect
+    volumes:
+      - "${CONFIGS_DIR}/1password-credentials.json:/home/opuser/.op/1password-credentials.json"
+      - "data:/home/opuser/.op/data"
+
+  tailscale-op-proxy:
+    image: ghcr.io/peterkeen/tailscale-op-proxy:main
+    environment:
+      - CONFIGS_SHA
+      - OP_CONNECT_API_TOKEN
+      - OP_CONNECT_VAULT_ID
+      - PORT=9292
+      - "RACK_ENV=production"
+    ports:
+      - "9292:9292"
+    networks:
+      - tailnet
+      - op-connect
+    volumes:
+      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+
+  op-certificates:
+    container_name: op-certificates
+    image: ghcr.io/keenfamily-us/op-certificates:main
+    networks:
+      - op-connect
+    environment:
+      - CONFIGS_SHA
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_HOSTED_ZONE_ID
+      - OP_CONNECT_API_TOKEN
+      - OP_CONNECT_VAULT_ID
+      - "LEGO_PATH=/etc/letsencrypt"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+    command: ["keen.land", "--domains", "keen.land", "--domains", "*.corp.keen.land", "--domains", "*.ts.keen.land", "--domains", "*.keen.land", ]
+    profiles: ["cron"]
+
+networks:
+  op-connect:
+
+volumes:
+  data:

@@ -1,0 +1,50 @@
+services:
+  coder:
+    # This MUST be stable for our documentation and
+    # other automations.
+    image: ghcr.io/coder/coder:${CODER_VERSION:-latest}
+    hostname: coder
+    container_name: coder
+    ports:
+      - "${TAILNET_IP}:7080:7080"
+    environment:
+      CODER_PG_CONNECTION_URL: "postgresql://${POSTGRES_USER:-username}:${POSTGRES_PASSWORD:-password}@coder-postgres/${POSTGRES_DB:-coder}?sslmode=disable"
+      CODER_ADDRESS: "0.0.0.0:7080"
+      # You'll need to set CODER_ACCESS_URL to an IP or domain
+      # that workspaces can reach. This cannot be localhost
+      # or 127.0.0.1 for non-Docker templates!
+      CODER_ACCESS_URL: "${CODER_ACCESS_URL}"
+    # If the coder user does not have write permissions on
+    # the docker socket, you can uncomment the following
+    # lines and set the group ID to one that has write
+    # permissions on the docker socket.
+    group_add:
+     - "103" # docker group on host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      database:
+        condition: service_healthy
+    x-web:
+      require_auth: false
+      port: 7080
+
+  database:
+    hostname: coder-postgres
+    container_name: coder-postgres
+    image: "postgres:14.2"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-username} # The PostgreSQL user (useful to connect to the database)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password} # The PostgreSQL password (useful to connect to the database)
+      POSTGRES_DB: ${POSTGRES_DB:-coder} # The PostgreSQL default database (automatically created at first launch)
+    volumes:
+      - /data/coder:/var/lib/postgresql/data # Use "docker volume rm coder_coder_data" to reset Coder
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-username} -d ${POSTGRES_DB:-coder}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5

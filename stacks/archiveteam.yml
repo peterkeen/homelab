@@ -1,0 +1,13 @@
+services:
+  archiveteam-warrior:
+    image: atdr.meo.ws/archiveteam/warrior-dockerfile
+    container_name: archiveteam-warrior
+    hostname: archiveteam
+    environment:
+      - "DOWNLOADER=zrail"
+      - "SELECTED_PROJECT=auto"
+    ports:
+      - "${TAILNET_IP}:8001:8001"
+    restart: unless-stopped
+    x-web:
+      port: 8001

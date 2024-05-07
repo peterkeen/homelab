@@ -1,0 +1,18 @@
+[api]
+enabled = true
+address = "0.0.0.0:8686"
+
+[sources.local_docker_logs]
+type = "docker_logs"
+
+[sinks.home_loki]
+type = "loki"
+inputs = [ "local_docker_logs" ]
+endpoint = "http://home.tailnet-a578.ts.net:3100"
+encoding.codec = "json"
+
+  [sinks.home_loki.labels]
+  forwarder = "vector"
+  host = "${HOSTNAME}"
+  container_name = "{{ container_name }}"
+  stream = "{{ stream }}"

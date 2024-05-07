@@ -1,0 +1,13 @@
+services:
+  vouch-proxy:
+    container_name: vouch-proxy
+    hostname: vouch-proxy
+    image: quay.io/vouch/vouch-proxy
+    environment:
+      - CONFIGS_SHA
+    ports:
+      - "${TAILNET_IP}:9090:9090"
+    volumes:
+      - ${CONFIGS_DIR}/vouch-proxy/config.yml:/config/config.yml
+      - /data/vouch/secret:/config/secret
+    restart: unless-stopped

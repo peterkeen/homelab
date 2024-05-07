@@ -1,0 +1,74 @@
+appConfig:
+  statusCheck: true
+  webSearch:
+    searchEngine: custom
+    customSearchEngine: "https://search.keen.land/search?q="
+pageInfo:
+  title: keen.land
+sections:
+- name: Home Stuff
+  items:
+  - title: Status
+    url: https://status.keen.land/status/home
+  - title: Home Assistant
+    url: https://hass.keen.land
+  - title: UniFi Protect
+    description: UniFi Protect camera video recorder
+    url: https://protect.keen.land
+  - title: House Manual
+    description: Documentation about systems in the house (requires github login)
+    url: https://github.com/keenfamily-us/house/blob/main/manual.md
+  - title: WLED
+    description: Controller for LED lights on front of the house
+    url: http://10.73.95.59
+- name: Media and Games
+  icon: far fa-tv
+  items:
+  - title: Jellyfin
+    description: Watch the media we have
+    url: https://jellyfin.keen.land
+  - title: Jellyseerr
+    description: Request new media
+    url: https://jellyseerr.keen.land
+  - title: Sonarr
+    description: Download TV Shows
+    url: https://sonarr.keen.land
+  - title: Radarr
+    description: Download Movies
+    url: https://radarr.keen.land
+  - title: Lidarr
+    description: Download Music
+    url: https://lidarr.keen.land
+  - title: Sabnzbd
+    description: Manage Downloads
+    url: https://sabnzbd.keen.land
+  - title: Prowlarr
+    description: Manage Usenet Indexers
+    url: https://prowlarr.keen.land
+  - title: Bazarr
+    description: Manage Automatic Subtitles
+    url: https://bazarr.keen.land
+  - title: Books
+    description: Calibre book library
+    url: https://books.keen.land
+- name: Network Services
+  items:
+  - title: TP Link Omada Network
+    description: Wi-Fi and network switches
+    url: https://omada.keen.land
+    statusCheckAllowInsecure: true
+  - title: UniFi Network
+    description: Some network switches
+    url: https://unifi.keen.land
+    statusCheckAllowInsecure: true
+
+- name: 3D Printing
+  items:
+  - title: Roberto
+    description: Primary 3D printer interface (requires Tailscale)
+    statusCheckAllowInsecure: true
+    url: http://roberto.tailnet-a578.ts.net
+  - title: Spoolman
+    description: Filament spool management (requires Tailscale)
+    url: https://spoolman.keen.land
+

@@ -1,0 +1,31 @@
+services:
+  octoprint:
+    container_name: octoprint
+    image: octoprint/octoprint
+    ports:
+      - ${TAILNET_IP}:8889:80
+    restart: unless-stopped
+    privileged: true    
+    devices:
+      - /dev:/dev
+    volumes:
+      - /data/octoprint:/octoprint
+    environment:
+      - "MJPG_STREAMER_INPUT=-n -r 1920x1080 -f 30"
+      - "ENABLE_MJPG_STREAMER=true"
+
+
+  octoprint-config-editor:
+    container_name: octoprint-config-editor
+    image: linuxserver/code-server
+    ports:
+      - ${TAILNET_IP}:8443:8443
+    depends_on:
+      - octoprint
+    restart: unless-stopped
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ
+    volumes:
+      - /data/octoprint:/octoprint      

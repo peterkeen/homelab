@@ -1,0 +1,20 @@
+services:
+  zwavejs2mqtt:
+    container_name: zwavejs2mqtt
+    hostname: zwavejs2mqtt
+    image: zwavejs/zwave-js-ui:latest
+    restart: always
+    stop_signal: SIGINT
+    privileged: true
+    network_mode: host
+    environment:
+      - ZWAVEJS_EXTERNAL_CONFIG=/usr/src/app/store/.config-db
+      - CONFIGS_SHA
+      - KEY_S0_Legacy
+      - KEY_S2_Unauthenticated
+      - KEY_S2_Authenticated
+      - KEY_S2_AccessControl
+    volumes:
+      - ${CONFIG}/zwavejs2mqtt:/usr/src/app/store
+      - /dev:/dev
+

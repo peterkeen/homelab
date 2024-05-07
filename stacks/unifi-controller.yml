@@ -1,0 +1,18 @@
+services:
+  unifi-controller:
+    container_name: unifi-controller
+    hostname: unifi
+    image: kfcr.fly.dev/linuxserver/unifi-controller:6.5.55
+    environment:
+     - TZ=Etc/UTC
+    network_mode: host
+    volumes:
+      - /data/unifi:/config
+    restart: always
+    x-web:
+      require_auth: false
+      upstream: https://home.tailnet-a578.ts.net:8443
+    depends_on:
+      - certificates
+    labels:
+      com.centurylinklabs.watchtower.depends-on: "/certificates"

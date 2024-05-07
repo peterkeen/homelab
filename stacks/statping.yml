@@ -1,0 +1,16 @@
+services:
+  statping:
+    container_name: statping
+    hostname: statping
+    image: statping/statping:dev
+    restart: always
+    volumes:
+      - /data/statping:/app
+    environment:
+      DB_CONN: sqlite
+    ports:
+      - ${TAILNET_IP}:8899:8080
+    x-web:
+      port: 8899
+      require_auth: false
+

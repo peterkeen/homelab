@@ -1,0 +1,7 @@
+volumes:
+  documents:
+    driver: local
+    driver_opts:
+      type: nfs
+      device: ":/tank/documents"
+      o: "addr=10.73.95.10,rw,nfsvers=4,async"

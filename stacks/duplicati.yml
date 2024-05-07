@@ -1,0 +1,13 @@
+services:
+  duplicati:
+    image: lscr.io/linuxserver/duplicati:latest
+    container_name: duplicati
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit
+    volumes:
+      - /data/duplicati:/config
+    ports:
+      - 8200:8200
+    restart: unless-stopped

@@ -1,0 +1,20 @@
+services:
+  int-proxy:
+    container_name: int-proxy
+    image: kfcr.fly.dev/nginx:1.23
+    environment:
+      - CONFIGS_SHA
+    network_mode: host
+    volumes:
+      - ${CONFIGS_DIR}/int-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
+      - ${CONFIGS_DIR}/int-proxy/jellyfin.conf:/etc/nginx/conf.d/jellyfin.conf
+      - ${CONFIGS_DIR}/int-proxy/common.conf:/etc/nginx/snippets/common.conf
+      - ${CONFIGS_DIR}/int-proxy/40-clear-cache.sh:/docker-entrypoint.d/40-clear-cache.sh
+      - ${CONFIGS_DIR}/int-proxy/dhparam:/etc/nginx/dhparam
+      - /scratch/nginx_cache:/cache
+      - keenland-certs:/etc/letsencrypt/certificates:ro
+    restart: unless-stopped
+    depends_on:
+      - certificates
+    labels:
+      com.centurylinklabs.watchtower.depends-on: "/certificates"

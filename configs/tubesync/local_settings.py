@@ -1,0 +1,85 @@
+import os
+from pathlib import Path
+from urllib.parse import urljoin
+from common.logger import log
+from common.utils import parse_database_connection_string
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path('/')
+CONFIG_BASE_DIR = ROOT_DIR / 'config'
+DOWNLOADS_BASE_DIR = Path(os.getenv('DOWNLOADS_ROOT', ROOT_DIR / 'downloads'))
+DJANGO_URL_PREFIX = os.getenv('DJANGO_URL_PREFIX', None)
+STATIC_URL = str(os.getenv('DJANGO_STATIC_URL', '/static/'))
+if DJANGO_URL_PREFIX and STATIC_URL:
+    STATIC_URL = urljoin(DJANGO_URL_PREFIX, STATIC_URL[1:])
+
+
+# This is not ever meant to be a public web interface so this isn't too critical
+SECRET_KEY = str(os.getenv('DJANGO_SECRET_KEY', 'tubesync-django-secret'))
+
+
+ALLOWED_HOSTS_STR = str(os.getenv('TUBESYNC_HOSTS', '*'))
+ALLOWED_HOSTS = ALLOWED_HOSTS_STR.split(',')
+DEBUG = True if os.getenv('TUBESYNC_DEBUG', False) else False
+FORCE_SCRIPT_NAME = os.getenv('DJANGO_FORCE_SCRIPT_NAME', DJANGO_URL_PREFIX)
+
+
+TIME_ZONE = os.getenv('TZ', 'UTC')
+
+
+database_dict = {}
+database_connection_env = os.getenv('DATABASE_CONNECTION', '')
+if database_connection_env:
+    database_dict = parse_database_connection_string(database_connection_env)
+
+
+if database_dict:
+    log.info(f'Using database connection: {database_dict["ENGINE"]}://'
+             f'{database_dict["USER"]}:[hidden]@{database_dict["HOST"]}:'
+             f'{database_dict["PORT"]}/{database_dict["NAME"]}')
+    DATABASES = {
+        'default': database_dict,
+    }
+    DATABASE_CONNECTION_STR = (f'{database_dict["DRIVER"]} at "{database_dict["HOST"]}:'
+                               f'{database_dict["PORT"]}" database '
+                               f'"{database_dict["NAME"]}"')
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': CONFIG_BASE_DIR / 'db.sqlite3',
+        }
+    }
+    DATABASE_CONNECTION_STR = f'sqlite at "{DATABASES["default"]["NAME"]}"'
+
+
+DEFAULT_THREADS = 1
+MAX_BACKGROUND_TASK_ASYNC_THREADS = 8
+BACKGROUND_TASK_ASYNC_THREADS = int(os.getenv('TUBESYNC_WORKERS', DEFAULT_THREADS))
+if BACKGROUND_TASK_ASYNC_THREADS > MAX_BACKGROUND_TASK_ASYNC_THREADS:
+    BACKGROUND_TASK_ASYNC_THREADS = MAX_BACKGROUND_TASK_ASYNC_THREADS
+
+
+MEDIA_ROOT = CONFIG_BASE_DIR / 'media'
+DOWNLOAD_ROOT = DOWNLOADS_BASE_DIR
+YOUTUBE_DL_CACHEDIR = CONFIG_BASE_DIR / 'cache'
+COOKIES_FILE = CONFIG_BASE_DIR / 'cookies.txt'
+
+
+HEALTHCHECK_FIREWALL_STR = str(os.getenv('TUBESYNC_HEALTHCHECK_FIREWAL', 'True')).strip().lower()
+HEALTHCHECK_FIREWALL = True if HEALTHCHECK_FIREWALL_STR == 'true' else False
+HEALTHCHECK_ALLOWED_IPS_STR = str(os.getenv('TUBESYNC_HEALTHCHECK_ALLOWED_IPS', '127.0.0.1'))
+HEALTHCHECK_ALLOWED_IPS = HEALTHCHECK_ALLOWED_IPS_STR.split(',')
+
+
+BASICAUTH_USERNAME = os.getenv('HTTP_USER', '').strip()
+BASICAUTH_PASSWORD = os.getenv('HTTP_PASS', '').strip()
+if BASICAUTH_USERNAME and BASICAUTH_PASSWORD:
+    BASICAUTH_DISABLE = False
+    BASICAUTH_USERS = {
+        BASICAUTH_USERNAME: BASICAUTH_PASSWORD,
+    }
+else:
+    BASICAUTH_DISABLE = True
+    BASICAUTH_USERS = {}

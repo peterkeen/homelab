@@ -1,0 +1,66 @@
+services:
+  loki:
+    image: grafana/loki:2.8.3
+    command: "-config.file=/etc/loki/config.yaml"
+    container_name: loki
+    hostname: loki
+    ports:
+      - "${TAILNET_IP}:3100:3100"
+      - "${TAILNET_IP}:7946:7946"
+      - "${TAILNET_IP}:9095:9095"
+    environment:
+      - CONFIGS_SHA
+    volumes:
+      - /data/loki:/loki
+      - ${CONFIGS_DIR}/monitoring/loki.config.yaml:/etc/loki/config.yaml
+    x-web:
+      port: 3100
+
+  prometheus:
+    image: prom/prometheus:latest
+    hostname: prometheus
+    container_name: prometheus
+    environment:
+      - CONFIGS_SHA
+      - PROMETHEUS_HASS_API_TOKEN
+      - PROMETHEUS_UPTIME_KUMA_API_TOKEN
+    command:
+      - --config.file=/etc/prometheus.yaml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+      - --enable-feature=expand-external-labels
+      - --storage.tsdb.path=/prometheus
+    volumes:
+      - /data/prometheus:/prometheus
+      - "${CONFIGS_DIR}/monitoring/prometheus.yaml:/etc/prometheus.yaml"
+    ports:
+      - "${TAILNET_IP}:9099:9090"
+    x-web:
+      port: 9099
+
+  grafana:
+    image: grafana/grafana:latest
+    hostname: grafana
+    container_name: grafana
+    volumes:
+      - /data/grafana:/var/lib/grafana
+      - "${CONFIGS_DIR}/monitoring/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml"
+    environment:
+      - CONFIGS_SHA
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    ports:
+      - "${TAILNET_IP}:3000:3000"
+    x-web:
+      require_auth: false
+      port: 3000
+
+  snmp:
+    image: quay.io/prometheus/snmp-exporter
+    ports:
+      - "${TAILNET_IP}:9116:9116"
+      - "${TAILNET_IP}:116:116/udp"
+    restart: always
+    command: --config.file=/etc/snmp_exporter/snmp.yml      
+    

@@ -1,0 +1,21 @@
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    network_mode: host
+    environment:
+      - CONFIGS_SHA
+      - MINIO_ROOT_USER
+      - MINIO_ROOT_PASSWORD
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+
+volumes:
+  minio_data:
+    driver: local
+    driver_opts:
+      type: cifs
+      device: //10.73.95.92/minio
+      o: "username=${CIFS_MINIO_USERNAME},password=${CIFS_MINIO_PASSWORD},vers=2.0,dir_mode=0777,file_mode=0666,rw"    

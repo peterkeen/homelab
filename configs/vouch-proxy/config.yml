@@ -1,0 +1,17 @@
+vouch:
+  allowAllUsers: true
+
+  jwt:
+    maxAge: 20160
+
+  cookie:
+    domain: keen.land
+    maxAge: 20160
+
+oauth:
+  provider: homeassistant
+  client_id: https://vouch.keen.land
+  callback_url: https://vouch.keen.land/auth
+  auth_url: https://hass.keen.land/auth/authorize
+  token_url: https://hass.keen.land/auth/token
+  

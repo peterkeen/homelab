@@ -1,0 +1,21 @@
+services:
+  sabnzbd:
+    container_name: sabnzbd
+    hostname: sabnzbd    
+    image: lscr.io/linuxserver/sabnzbd:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit
+    volumes:
+      - ${CONFIG}/sabnzbd:/config
+      - media-nfs:/downloads #optional
+      - ${SCRATCH}:/incomplete-downloads #optional
+    ports:
+      - "${TAILNET_IP}:8080:8080"
+    restart: unless-stopped
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000

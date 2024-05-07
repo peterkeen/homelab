@@ -1,0 +1,106 @@
+# Commented Scrutiny Configuration File
+#
+# The default location for this file is /opt/scrutiny/config/collector.yaml.
+# In some cases to improve clarity default values are specified,
+# uncommented. Other example values are commented out.
+#
+# When this file is parsed by Scrutiny, all configuration file keys are
+# lowercased automatically. As such, Configuration keys are case-insensitive,
+# and should be lowercase in this file to be consistent with usage.
+
+
+######################################################################
+# Version
+#
+# version specifies the version of this configuration file schema, not
+# the scrutiny binary. There is only 1 version available at the moment
+version: 1
+
+# The host id is a label used for identifying groups of disks running on the same host
+# Primiarly used for hub/spoke deployments (can be left empty if using all-in-one image).
+host:
+  id: ""
+
+
+# This block allows you to override/customize the settings for devices detected by
+# Scrutiny via `smartctl --scan`
+# See the "--device=TYPE" section of https://linux.die.net/man/8/smartctl
+# type can be a 'string' or a 'list'
+devices:
+#  # example for forcing device type detection for a single disk
+#  - device: /dev/sda
+#    type: 'sat'
+#
+#  # example for using `-d sat,auto`, notice the square brackets (workaround for #418)
+#  - device: /dev/sda
+#    type: ['sat,auto']
+#
+#  # example to show how to ignore a specific disk/device.
+#  - device: /dev/sda
+#    ignore: true
+#
+#  # examples showing how to force smartctl to detect disks inside a raid array/virtual disk
+#  - device: /dev/bus/0
+#    type:
+#      - megaraid,14
+#      - megaraid,15
+#      - megaraid,18
+#      - megaraid,19
+#      - megaraid,20
+#      - megaraid,21
+#
+#  - device: /dev/twa0
+#    type:
+#      - 3ware,0
+#      - 3ware,1
+#      - 3ware,2
+#      - 3ware,3
+#      - 3ware,4
+#      - 3ware,5
+#
+#  # example to show how to override the smartctl command args (per device), see below for how to override these globally.
+#  - device: /dev/sda
+#    commands:
+#      metrics_info_args: '--info --json -T permissive' # used to determine device unique ID & register device with Scrutiny
+#      metrics_smart_args: '--xall --json -T permissive' # used to retrieve smart data for each device.
+
+- device: /dev/sda
+  type: 'sat'
+- device: /dev/sdb
+  type: 'sat'
+- device: /dev/sdc
+  type: 'sat'
+
+
+#log:
+#  file: '' #absolute or relative paths allowed, eg. web.log
+#  level: INFO
+#
+#api:
+#  endpoint: 'http://localhost:8080'
+#  endpoint: 'http://localhost:8080/custombasepath'
+# if you need to use a custom base path (for a reverse proxy), you can add a suffix to the endpoint.
+#  See docs/TROUBLESHOOTING_REVERSE_PROXY.md for more info,
+
+# example to show how to override the smartctl command args globally
+#commands:
+#  metrics_smartctl_bin: 'smartctl' # change to provide custom `smartctl` binary path, eg. `/usr/sbin/smartctl`
+#  metrics_scan_args: '--scan --json' # used to detect devices
+#  metrics_info_args: '--info --json' # used to determine device unique ID & register device with Scrutiny
+#  metrics_smart_args: '--xall --json' # used to retrieve smart data for each device.
+
+
+########################################################################################################################
+# FEATURES COMING SOON
+#
+# The following commented out sections are a preview of additional configuration options that will be available soon.
+#
+########################################################################################################################
+
+#collect:
+#  long:
+#    enable: false
+#    command: ''
+#  short:
+#    enable: false
+#    command: ''

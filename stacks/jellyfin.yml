@@ -1,0 +1,31 @@
+services:
+  jellyfin:
+    container_name: jellyfin
+    hostname: jellyfin
+    image: kfcr.fly.dev/jellyfin/jellyfin
+    network_mode: host
+    user: 1000:1000
+    group_add:
+      - "27"
+    volumes:
+      - /tank/media:/mnt/media
+      - /tank/media/jellyfin:/config
+      - ${SCRATCH}/jellyfin:/cache
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/${CARD_NAME:-card0}:/dev/dri/${CARD_NAME:-card0}
+    restart: always
+    x-web:
+      require_auth: false
+      port: 8096
+
+  jellyfin-clean-cache:
+    container_name: jellyfin-clean-cache
+    image: kfcr.fly.dev/alpine:3
+    user: 1000:000
+    volumes:
+      - ${SCRATCH}/jellyfin:/cache
+      - ${CONFIGS_DIR}/jellyfin/clean_cache.sh:/clean_cache.sh
+    command: ["/clean_cache.sh"]
+    profiles:
+      - cron

@@ -1,0 +1,30 @@
+<%-
+conf = {
+  "services" => {},
+}
+
+Config.instance.this_host.stacks.each do |stack|
+  stack.config["services"].each do |service_name, service_config|
+    if service_config.has_key?("x-tailscale")
+      ts_config = service_config["x-tailscale"]
+
+      ts_name = "#{service_name}-tsnsrv"
+      ts_service = {
+        "image" => "ghcr.io/boinkor-net/tsnsrv:latest",
+        "container_name" => ts_name,
+        "environment" => [
+          "TS_AUTHKEY",
+          "TS_STATE_DIR=/var/lib/tailscale",
+        ],
+        "volumes" => [
+          "/data/ts/#{ts_name}:/var/lib/tailscale"
+        ],
+        "restart" => "always",
+        "command" => ["-name", ts_config["hostname"], "-tsnetVerbose=true", ts_config["upstream"]]
+      }
+      conf["services"][ts_name] = ts_service
+    end
+  end
+end
+-%>
+<%= conf.to_yaml %>

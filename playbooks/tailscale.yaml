@@ -1,0 +1,16 @@
+- name: Tailscale
+  hosts: all
+  tasks:
+    - name: Install Tailscale
+      community.general.apk:
+        name: tailscale
+        state: latest
+        update_cache: true
+        repository:
+          - https://dl-cdn.alpinelinux.org/alpine/edge/community
+
+    - name: restart tailscale
+      ansible.builtin.service:
+        name: tailscale
+        state: restarted
+        enabled: yes      

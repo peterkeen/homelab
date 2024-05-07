@@ -1,0 +1,41 @@
+services:
+  ledger-app-web:
+    container_name: ledger-app-web
+    image: ghcr.io/peterkeen/ledger-app:master
+    environment:
+      - CONFIGS_SHA
+      - PORT=5000
+      - EMERGENCY_FUND_TARGET=4
+      - LEDGER_FILE=/data/ledger/ledger.txt
+      - LEDGER_PAYDAY_BENCHMARK=2013-01-18
+      - DATABASE_URL
+      - GIT_REPO_URL
+      - LEDGER_USERNAME
+      - LEDGER_PASSWORD
+    ports:
+      - 5000:5000
+    networks:
+      - tailnet
+    restart: unless-stopped
+    volumes:
+      - /data/ledger:/data
+    command: ["/start", "web"]
+
+  ledger-app-load:
+    container_name: ledger-app-load
+    image: ghcr.io/peterkeen/ledger-app:master
+    environment:
+      - CONFIGS_SHA
+      - PORT=5000
+      - EMERGENCY_FUND_TARGET=4
+      - LEDGER_FILE=/data/ledger/ledger.txt
+      - LEDGER_PAYDAY_BENCHMARK=2013-01-18
+      - DATABASE_URL
+      - GIT_REPO_URL
+      - LEDGER_USERNAME
+      - LEDGER_PASSWORD
+      - HEROKUISH_SETUIDGUID=false
+    restart: unless-stopped
+    volumes:
+      - /data/ledger:/data
+    command: ["/start", "load"]

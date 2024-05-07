@@ -1,0 +1,18 @@
+services:
+  file-browser:
+    container_name: file-browser-up
+    image: filebrowser/filebrowser
+    restart: unless-stopped
+    volumes:
+      - /data/filebrowser/database:/database
+      - /data/filebrowser/filebrowser.json:/.filebrowser.json
+      - /tank:/tank:ro
+    user: 1000:1000
+    x-web:
+      hostname: files
+      upstream: https://file-browser.tailnet-a578.ts.net
+    x-tailscale:
+      hostname: file-browser
+      upstream: http://file-browser-up:80
+    
+    

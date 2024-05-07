@@ -1,0 +1,12 @@
+services:
+  vector:
+    container_name: vector
+    image: timberio/vector:0.31.0-debian
+    environment:
+      - CONFIGS_SHA
+      - HOSTNAME
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIGS_DIR}/vector/vector.toml:/etc/vector/vector.toml:ro
+    ports:
+      - ${TAILNET_IP}:8687:8686

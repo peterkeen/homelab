@@ -1,0 +1,8 @@
+services:
+  pkdn:
+    image: ghcr.io/keenfamily-us/bugsplat.rb:master
+    container_name: pkdn-up
+    restart: unless-stopped
+    x-tailscale:
+      hostname: pkdn
+      upstream: http://pkdn-up:3000
