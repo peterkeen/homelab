@@ -63,3 +63,8 @@ Secrets consist of a Text entry where the name is the environment variable to se
 Much time was spent making secret loading as fast as possible because the `op` command can be pretty slow.
 It uses a trick that passes the results of one `op` invocation (effectively, "give me all the ids for secrets of categories X,Y") and pipes it to another `op` invocation that then fetches the contents of those items.
 
+## Can I use this?
+
+Probably don't. I don't have the bandwidth to help you so you're entirely on your own.
+
+That said, I'm proud of some of the ideas and if you want to steal them for your own setup be my guest.
