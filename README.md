@@ -53,7 +53,7 @@ By convention, my stacks put data in `/data/<stackname>` and I try to have them 
 
 ## Secrets
 
-I have a vault dedicated to lab secrets.
+I have a 1Password vault dedicated to lab secrets.
 In that vault are two kinds of items, Servers and Secure Notes. 
 Each host has a Server item named with it's hostname and tagged, generally, with `server` and it's hostname.
 
