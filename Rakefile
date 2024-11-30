@@ -1,19 +1,17 @@
+require './lib/config.rb'
+
+Dir.glob('*/**/*.rake') { |f| load(f) }
+
 task :ci do
   sh "scripts/run_ci.rb"
 end
 
-task :clean do
-  sh "rm -rf playbooks/files/build"
+task :clean => 'ansible:clean' do
+  files = Config.instance.config_files.map { |f| f.gsub('.erb', '') }
+  sh "rm #{files.join(' ')}"
 end
 
-task :build => :clean do
-  sh "scripts/generate_host_compose.rb"
-end
-
-task :ansible, [:playbook] => :build do |task, args|
-  playbooks = (args[:playbook].nil? ? ['main'] : [args[:playbook]] + args.extras).map { |pb| "./playbooks/#{pb}.yaml" }.join(' ')
-  sh "ansible-playbook -i ./scripts/inventory.rb #{playbooks}"
-end
+task :apply => ['ansible:apply', 'dns:apply', 'fly_proxy:apply']
 
 task :default => :ci
 

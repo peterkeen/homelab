@@ -33,7 +33,6 @@ end
 class Host < T::Struct
   const :hostname, String
   const :stacks, T::Array[Stack], default: []
-  const :configs, T::Array[String], default: []
   const :groups, T::Array[String], default: []
   const :pre_start, T::Array[String], default: []
   const :environment, T::Array[String], default: []
@@ -79,10 +78,15 @@ class Config < T::Struct
     raw_hosts["__default"] = {}
 
     secrets = Secrets.load_all!
-    tailnet_ips = Tailscale.load_all!
+    tailnet_ips = Tailscale.addresses
 
-    stacks = Dir.glob(File.expand_path(File.join(hosts_path, "../stacks/*.yml"))).map do |stack_file|
-      stack_name = File.basename(stack_file, ".yml")
+    stacks = Dir.glob(File.expand_path(File.join(hosts_path, "../stacks/*"))).map do |stack_path|
+      next unless Dir.exist?(stack_path)
+
+      stack_name = File.basename(stack_path)
+      stack_file = File.join(stack_path, "docker-compose.yml")
+      next unless File.exist?(stack_file)
+
       stack_config = YAML.load_file(stack_file, aliases: true)
 
       next if stack_config.nil?
@@ -102,9 +106,7 @@ class Config < T::Struct
       host_conf["pre_start"] = host_conf.delete("pre-start")
       host_conf["tailnet_ip"] = tailnet_ips[hostname]
 
-      auth_key = Tailscale.auth_key!
-
-      env = host_conf["environment"] + secrets[hostname].map { |k,v| %Q[#{k}="#{v}"] } + ["TAILNET_IP=#{tailnet_ips[hostname]}", "TS_AUTHKEY=#{auth_key}"]
+      env = host_conf["environment"] + secrets[hostname].map { |k,v| %Q[#{k}="#{v}"] } + ["TAILNET_IP=#{tailnet_ips[hostname]}", "HOSTNAME=#{hostname}"]
 
       host_conf["environment"] = env
 
@@ -115,6 +117,7 @@ class Config < T::Struct
     end.to_h
 
     config_files = Dir.glob(File.join(root_path, '**', '*.erb'), File::FNM_DOTMATCH).to_a
+    config_files = config_files.reject { |f| f =~ /ansible\/files\/build/ }
 
     config_hash = {
       "hosts" => hosts,

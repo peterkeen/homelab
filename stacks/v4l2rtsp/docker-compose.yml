@@ -1,0 +1,10 @@
+services:
+  v4l2rtsp:
+    container_name: v4l2rtsp
+    image: mpromonet/v4l2rtspserver:latest
+    privileged: true
+    restart: always
+    devices:
+      - /dev/video0
+    ports:
+      - 8554:8554

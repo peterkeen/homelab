@@ -1,3 +1,0 @@
-<%- Config.instance.this_host.crons.each do |cron| -%>
-<%= cron.schedule %> cd /app && <%= Config.instance.this_host.base_docker_compose.join(" ") %> run --rm -T "<%= cron.service %>" > /proc/1/fd/1 2>&1
-<%- end -%>

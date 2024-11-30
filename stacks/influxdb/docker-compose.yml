@@ -1,0 +1,18 @@
+# compose.yaml
+services:
+  influxdb2:
+    image: influxdb:2
+    container_name: influxdb2-db
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USERNAME}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: keenland
+      DOCKER_INFLUXDB_INIT_BUCKET: home
+    volumes:
+      - /data/influxdb2/data:/var/lib/influxdb2
+      - /data/influxdb2/config:/etc/influxdb2
+
+    x-tailscale:
+      hostname: influxdb
+      upstream: http://influxdb2-db:8086

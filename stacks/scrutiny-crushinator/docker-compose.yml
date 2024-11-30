@@ -1,0 +1,20 @@
+services:
+  scrutiny:
+    container_name: scrutiny
+    image: ghcr.io/analogj/scrutiny:master-omnibus
+    environment:
+      - CONFIGS_SHA
+    cap_add:
+      - SYS_RAWIO
+    ports:
+      - "${TAILNET_IP}:8081:8080" # webapp
+      - "${TAILNET_IP}:8086:8086" # influxDB admin
+    volumes:
+      - /run/udev:/run/udev:ro
+      - ${CONFIGS_DIR}/scrutiny-crushinator/collector.yaml:/opt/scrutiny/config/collector.yaml
+      - /data/scrutiny/influxdb:/opt/scrutiny/influxdb
+    devices:
+      - "/dev/sda"
+      - "/dev/sdb"
+      - "/dev/sdc"      
+    

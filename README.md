@@ -7,7 +7,6 @@ In this scheme, hosts are running a single docker-compose app containing a confi
 Each host has an entry in `hosts.yml` that describes:
 
 - the stacks it should be running
-- the configs that should be copied to the host
 - any environment variables that should be set (copied to a `.env` file)
 - optionally, one or more ansible groups that the host should belong to
 
@@ -17,8 +16,7 @@ my tailnet hosts to the MagicDNS resolver IP (MagicDNS taking over DNS on some h
 
 This is what the other stuff does:
 
-- `stacks/` contains the docker compose stack files
-- `configs/` contains various config files for the stacks
+- `stacks/` contains the docker compose stacks
 - `lib/` is where the code that interprets `hosts.yml` and drives the system lives
 - `playbooks/` contains the ansible playbooks that, among other things, deploys the stacks to the hosts
 
@@ -31,7 +29,7 @@ Really I just wanted `T::Struct` to parse `hosts.yml`, there aren't any `sig`s a
 
 1. Loads `hosts.yml`
 1. Gathers secrets from 1Password using the `op` command line tool
-2. Generates a Tailscale auth key using an OAuth credential found in 1Password
+2. Generates a Tailscale auth key for each combination of tags found in the stacks using an OAuth credential found in 1Password
 3. Renders any templated files that it finds (i.e. files ending in `.erb`)
 4. Re-loads `hosts.yml`
 5. Iterates over each host in the config and builds a directory to be rsync'd to the host
@@ -44,20 +42,21 @@ Stacks generally put data in `/data` so that's also a soft prereq for my particu
 
 ## Compose extensions
 
-I have two compose extensions that I use pretty frequently:
+I have three compose extensions that I use pretty frequently:
 
 - `x-web` sets up a reverse proxy entry in my `int-proxy` config
 - `x-tailscale` sets up a [`tsnsrv`](https://github.com/boinkor-net/tsnsrv) proxy sidecar to put individual containers on my tailnet with automatic https
+- `x-public-ingress` sets up public ingress from an app running on fly.io (specified in `fly-proxy/` to any host in my tailnet
 
 By convention, my stacks put data in `/data/<stackname>` and I try to have them run as user `1000:1000` as much as possible.
 
 ## Secrets
 
 I have a 1Password vault dedicated to lab secrets.
-In that vault are two kinds of items, Servers and Secure Notes. 
+In that vault are two kinds of items, Servers and Secure Notes.
 Each host has a Server item named with it's hostname and tagged, generally, with `server` and it's hostname.
 
-Each Secure Note is a set of secrets and is tagged with the same taxonomy. 
+Each Secure Note is a set of secrets and is tagged with the same taxonomy.
 Secrets consist of a Text entry where the name is the environment variable to set and the value is the secret itself.
 
 Much time was spent making secret loading as fast as possible because the `op` command can be pretty slow.

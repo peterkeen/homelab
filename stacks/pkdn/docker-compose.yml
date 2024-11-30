@@ -1,0 +1,30 @@
+services:
+  pkdn:
+    image: ghcr.io/peterkeen/site:main
+    container_name: pkdn-up
+    restart: unless-stopped
+
+    x-tailscale:
+      hostname: pkdn
+      upstream: http://pkdn-up:80
+      tags:
+        - tag:production
+        - tag:server
+
+    x-public-ingress:
+      upstream: https://pkdn.tailnet-a578.ts.net:443
+      hostname: www.petekeen.net
+      alternate_hostnames:
+        - pkn.me
+        - www.pkn.me
+        - petekeen.net
+        - www.bugsplat.info
+        - bugsplat.info
+        - www.bugsplat.org
+        - bugsplat.org
+        - www.petekeen.com
+        - petekeen.com
+        - www.peterkeen.com
+        - peterkeen.com
+        - www.petekeen.org
+        - petekeen.org

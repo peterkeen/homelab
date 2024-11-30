@@ -1,0 +1,19 @@
+---
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent-up
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - WEBUI_PORT=8080
+      - TORRENTING_PORT=6881
+    volumes:
+      - /data/qbittorrent/config:/config
+      - /data/qbittorrent/downloads:/downloads #optional
+    restart: unless-stopped
+
+    x-tailscale:
+      hostname: qbittorrent
+      upstream: http://qbittorrent-up:8080/

@@ -1,0 +1,31 @@
+services:
+  app:
+    container_name: manyfold-up
+    image: ghcr.io/manyfold3d/manyfold-solo:latest
+    volumes:
+      - /data/manyfold/database:/config
+      - /data/manyfold/library:/libraries
+    environment:
+      SECRET_KEY_BASE: bf3cbea2cbb933aad040730f3bafaf66c7429f06b74ec96528e15cda0fd4806f444b68c0e2fc458276fedfc896e1251a4b5623ecd63f142b43a8917a2accdcf9
+      PUID: 1000
+      PGID: 1000
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETUID
+      - SETGID
+
+    x-tailscale:
+      hostname: manyfold
+      upstream: http://manyfold-up:3214
+
+    x-web:
+      hostname: manyfold
+      upstream: https://manyfold.tailnet-a578.ts.net
+
+    

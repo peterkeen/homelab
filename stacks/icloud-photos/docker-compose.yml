@@ -1,0 +1,36 @@
+services:
+  pete-icloud-photos:
+    user: 1000:1000
+    image: icloudpd/icloudpd:latest
+    container_name: pete-icloud-photos-up
+    environment:
+      - TZ
+    volumes:
+      - /tank/photos/pete:/data
+      - /data/pete-icloud-photos:/auth
+      - /data/pete-icloud-photos/keyring:/.local
+    command: [ "icloudpd", "--directory", "/data", "--username", "${PETE_ICLOUD_PHOTO_EMAIL}", "--password-provider", "keyring", "--password-provider", "webui", "--cookie-directory", "/auth", "--mfa-provider", "webui", "--watch-with-interval", "3600", ]
+    x-tailscale:
+      upstream: http://pete-icloud-photos-up:8080
+      hostname: pete-icloud-photos
+    x-web:
+      upstream: https://pete-icloud-photos.tailnet-a578.ts.net
+      hostname: pete-icloud-photos
+
+  emily-icloud-photos:
+    user: 1000:1000
+    image: icloudpd/icloudpd:latest
+    container_name: emily-icloud-photos-up
+    environment:
+      - TZ
+    volumes:
+      - /tank/photos/emily:/data
+      - /data/emily-icloud-photos:/auth
+      - /data/emily-icloud-photos/keyring:/.local
+    command: [ "icloudpd", "--directory", "/data", "--username", "${EMILY_ICLOUD_PHOTO_EMAIL}", "--password-provider", "keyring", "--password-provider", "webui", "--cookie-directory", "/auth", "--mfa-provider", "webui", "--watch-with-interval", "3600", "--smtp-host", "${ICLOUD_PHOTO_SMTP_HOST}", "--smtp-username", "${ICLOUD_PHOTO_SMTP_USERNAME}", "--smtp-password", "${ICLOUD_PHOTO_SMTP_PASSWORD}", "--notification-email", "${EMILY_ICLOUD_PHOTO_EMAIL}", "--notification-email-from", "emily-icloud@keen.land" ]
+    x-tailscale:
+      upstream: http://emily-icloud-photos-up:8080
+      hostname: emily-icloud-photos
+    x-web:
+      upstream: https://emily-icloud-photos.tailnet-a578.ts.net
+      hostname: emily-icloud-photos

@@ -1,0 +1,13 @@
+services:
+  u2if:
+    container_name: u2if
+    image: ghcr.io/peterkeen/u2if:main
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    command: python script.py
+    environment:
+      - CONFIGS_SHA
+    volumes:
+      - /dev:/dev
+      - ${CONFIGS_DIR}/u2if/script.py:/app/script.py

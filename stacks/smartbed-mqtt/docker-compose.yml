@@ -1,0 +1,16 @@
+services:
+  smartbed-mqtt:
+    container_name: smartbed-mqtt
+    image: "ghcr.io/peterkeen/smartbed-mqtt:main"
+    environment:
+      - LANG=en_US.UTF-8
+      - LANGUAGE=en-US.UTF-8
+      - LC_ALL=en_US.UTF-8
+      - MQTTHOST
+      - MQTTPORT
+      - MQTTUSER
+      - MQTTPASSWORD
+    volumes:
+      - /data/smartbed-mqtt:/data
+    command: node index.js
+    restart: unless-stopped

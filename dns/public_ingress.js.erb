@@ -1,0 +1,24 @@
+<%-
+lines = []
+Config.instance.all_stacks.each do |stack_name, stack|
+  (stack.config['services'] || []).each do |service_name, service_conf|
+    ingress_conf = service_conf['x-public-ingress']
+    next if ingress_conf.nil?
+
+    hosts = [ingress_conf['hostname']] + ingress_conf.fetch('alternate_hostnames', [])
+    hosts.each do |host|
+      parts = host.split('.')
+      domain = parts.pop(2).join('.')
+      if parts.length == 0
+        subdomain = "@"
+      else
+        subdomain = parts.join('.')
+      end
+  
+      lines << %Q{D_EXTEND("#{domain}", FLY_CERT("#{subdomain}", "#{domain}"));}
+    end
+  end
+
+end
+-%>
+<%= lines.join("\n") %>

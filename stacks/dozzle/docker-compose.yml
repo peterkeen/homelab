@@ -1,0 +1,14 @@
+services:
+  dozzle:
+    container_name: dozzle-up
+    hostname: logs
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    environment:
+      - "DOZZLE_HOSTNAME=${HOSTNAME}"
+      - "DOZZLE_ENABLE_ACTIONS=true"
+    x-tailscale:
+      hostname: "dozzle-${HOSTNAME}"
+      upstream: http://dozzle-up:8080

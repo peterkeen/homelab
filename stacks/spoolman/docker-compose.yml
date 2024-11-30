@@ -1,0 +1,16 @@
+services:
+  spoolman:
+    container_name: spoolman-up
+    image: ghcr.io/donkie/spoolman:latest
+    restart: unless-stopped
+    volumes:
+      - /data/spoolman:/home/app/.local/share/spoolman
+    environment:
+      - TZ=America/Detroit
+    x-tailscale:
+      hostname: spoolman
+      upstream: http://spoolman-up:8000
+    x-web:
+      hostname: spoolman
+      upstream: https://spoolman.tailnet-a578.ts.net
+      require_auth: true

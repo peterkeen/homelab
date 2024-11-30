@@ -1,0 +1,142 @@
+<%-
+configs = []
+Config.instance.hosts.each do |hostname, host|
+  host.stacks.each do |stack|
+    services = stack.config.fetch("services", [])
+    services.each do |service_name, service|
+      next if service["x-public-ingress"].nil?
+
+      ingress = service["x-public-ingress"]
+      configs << ingress
+    end
+  end
+end
+-%>
+proxy_cache_path /cache levels=1:2 keys_zone=sites_cache:64m max_size=10g inactive=2y;
+
+limit_req_zone $binary_remote_addr zone=remoteaddr:10m rate=300r/m;
+limit_req zone=remoteaddr burst=100 nodelay;
+
+log_format combined_with_hostname '$remote_addr - $remote_user [$time_local] '
+                    '$http_host "$request" $status $body_bytes_sent '
+                    '"$http_referer" "$http_user_agent"';
+
+access_log /dev/stdout combined_with_hostname;
+error_log /dev/stdout info;
+
+geo $http_fly_client_ip $block {
+  default 0;
+  include block.conf;
+}
+
+geo $http_x_pk_test_ip $block_pk {
+  default 0;
+  include block.conf;
+}
+
+# backends
+map $http_host $proxy_backend {
+  hostnames;
+
+  default https://pkdn.tailnet-a578.ts.net:443;
+
+  <%- configs.each do |conf| -%>
+  <%= conf["hostname"] %>  <%= conf["upstream"] %>;
+  <%- end -%>
+
+  vmsave.petekeen.net https://vmsave-prod.tailnet-a578.ts.net:443;
+  twitter-fiction-reader.bugsplat.info https://twitter-fiction-reader.herokuapp.com:443;
+  www.corastreetpress.com http://www.corastreetpress.com.s3-website-us-east-1.amazonaws.com:80;
+  www.payola.io           http://www.payola.io.s3-website-us-east-1.amazonaws.com:80;
+  www.okapi.io            http://www.okapi.io.s3-website-us-east-1.amazonaws.com:80;
+}
+
+# redirects
+map $http_host $new_host {
+  hostnames;
+
+  default "";
+
+  <%- configs.each do |conf| -%>
+  <%- conf.fetch("alternate_hostnames", []).each do |redirect| -%>
+  <%= redirect %> <%= conf["hostname"] %>;
+  <%- end -%>
+  <%- end -%>
+
+  corastreetpress.com www.corastreetpress.com;
+
+  okapi.io www.okapi.io;
+  payola.io www.payola.io;
+
+  masteringmodernpayments.com     www.masteringmodernpayments.com;
+  www.masteringmodernpayments.org www.masteringmodernpayments.com;
+  masteringmodernpayments.org     www.masteringmodernpayments.com;
+  www.masteringmodernpayments.net www.masteringmodernpayments.com;
+  masteringmodernpayments.net     www.masteringmodernpayments.com;
+  mstr.mp                         www.masteringmodernpayments.com;
+}
+
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+
+  server_tokens off;
+
+  error_log /dev/stdout info;
+
+  gzip off;
+
+  if ($http_x_forwarded_ssl = "off") {
+     rewrite ^(.*)$ https://$http_host$request_uri? permanent;
+  }
+
+  if ($new_host != "") {
+    rewrite ^(.*)$ $http_x_forwarded_proto://$new_host$request_uri permanent;
+  }
+
+  location ~* \.php {
+    return 503 "";
+  }
+
+  location ~* (wp-admin|wp-login|wp-content) {
+    return 503 "";
+  }
+
+  if ($block = 1) {
+    return 503 "";
+  }
+
+  if ($block_pk = 1) {
+    return 418 "🫖";
+  }
+
+  location / {
+    resolver 100.100.100.100:53 ipv6=on;
+
+    proxy_http_version 1.1;
+
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+
+    proxy_set_header Host $http_host;
+    proxy_set_header X-NginX-Proxy true;
+    proxy_redirect off;
+
+    # Enables WS support
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+
+    add_header X-Cache-Status $upstream_cache_status;
+    proxy_cache_key $scheme$http_host$proxy_host$request_uri;
+    proxy_cache sites_cache;
+    proxy_cache_revalidate on;
+    proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504 http_403 http_404 http_429;
+    proxy_cache_background_update on;
+    proxy_cache_lock on;
+
+    proxy_ssl_verify off;
+    proxy_ssl_server_name on;
+
+    proxy_pass $proxy_backend;
+  }
+}

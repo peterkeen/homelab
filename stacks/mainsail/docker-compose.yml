@@ -1,0 +1,18 @@
+services:
+  mainsail:
+    image: ghcr.io/mainsail-crew/mainsail:edge
+    restart: unless-stopped
+    container_name: mainsail-up
+    environment:
+      - CONFIGS_SHA
+
+    volumes:
+      - ${CONFIGS_DIR}/mainsail/config.json:/usr/share/nginx/html/config.json
+
+    x-tailscale:
+      upstream: http://mainsail-up:80
+      hostname: mainsail
+
+    x-web:
+      upstream: https://mainsail.tailnet-a578.ts.net
+      hostname: mainsail

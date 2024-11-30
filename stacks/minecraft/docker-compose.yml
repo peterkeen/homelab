@@ -1,0 +1,41 @@
+---
+services:
+  lobby:
+    container_name: mc-lobby
+    hostname: mc-lobby
+    image: itzg/minecraft-server
+    restart: unless-stopped
+    user: 1000:1000
+    ports:
+    - 25565:25565
+    - "${TAILNET_IP}:25575:25575"
+    - "${TAILNET_IP}:8080:8080"
+    - "${TAILNET_IP}:8100:8100"
+    - 19132:19132
+    - 19132:19132/udp
+    volumes:
+    - "/data/minecraft/lobby:/data"
+    environment:
+      TZ: America/Detroit
+      TYPE: PAPER
+      EULA: 'true'
+      MODE: creative
+      DIFFICULTY: peaceful
+      RCON_PASSWORD: "${RCON_PASSWORD}"
+      MEMORY: 8G
+      ENABLE_AUTOPAUSE: "TRUE"
+      OVERRIDE_SERVER_PROPERTIES: "TRUE"
+      MAX_TICK_TIME: "-1"
+      JVM_DD_OPTS: "disable.watchdog:true      "
+      OPS: |2
+                  .zr4il
+                  zr4il
+      PLUGINS: |2
+                  https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/spigot
+                  https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot
+                  https://download.luckperms.net/1556/bukkit/loader/LuckPerms-Bukkit-5.4.141.jar
+                  https://hangarcdn.papermc.io/plugins/Multiverse/Multiverse-Core/versions/4.3.12/PAPER/multiverse-core-4.3.12.jar
+                  https://hangarcdn.papermc.io/plugins/Multiverse/Multiverse-Inventories/versions/4.2.6/PAPER/multiverse-inventories-4.2.6.jar
+                  https://hangarcdn.papermc.io/plugins/Multiverse/Multiverse-SignPortals/versions/4.2.2/PAPER/multiverse-signportals-4.2.2.jar
+                  https://hangarcdn.papermc.io/plugins/Blue/BlueMap/versions/3.20/PAPER/BlueMap-3.20-paper.jar
+                  https://github.com/mesacarlos/WebConsole/releases/download/v2.5/WebConsole-2.5.jar

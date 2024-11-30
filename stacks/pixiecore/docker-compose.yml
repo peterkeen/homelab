@@ -1,0 +1,26 @@
+services:
+  pixiecore:
+    build: ./netboot
+    network_mode: host
+    command: 
+      - pixiecore
+      - boot
+      - https://boot.netboot.xyz
+      - '--dhcp-no-bind'
+
+  netboot:
+    container_name: pixiecore-netboot
+    hostname: netboot
+    image: ghcr.io/netbootxyz/netbootxyz
+    volumes:
+      - /data/netboot/config:/config
+      - /data/netboot/assets:/assets
+    ports:
+      - 69:69
+      - 8869:80
+    x-tailscale:
+      hostname: netboot
+      upstream: http://pixiecore-netboot:3000
+    x-web:
+      require_auth: false
+      port: 8869

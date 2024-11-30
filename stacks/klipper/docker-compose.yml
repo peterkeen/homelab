@@ -1,0 +1,54 @@
+services:
+  klipper:
+    container_name: klipper
+    image: mkuf/klipper:latest
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - CONFIGS_SHA
+    command: -I /opt/printer_data/run/klipper.tty -a /opt/printer_data/run/klipper.sock /opt/printer_data/config/printer.cfg -l /opt/printer_data/logs/klippy.log
+    volumes:
+      - ${CONFIGS_DIR}/klipper/klipper_extras/led_effect.py:/opt/klipper/klippy/extras/led_effect.py
+      - ${CONFIGS_DIR}/klipper/klipper_extras/led_bulk.py:/opt/klipper/klippy/extras/led_bulk.py
+      - /dev:/dev
+      - /data/prind/config:/opt/printer_data/config
+      - run:/opt/printer_data/run
+      - /data/prind/gcodes:/opt/printer_data/gcodes
+      - /data/prind/logs:/opt/printer_data/logs
+
+  ## WebApi
+  ##
+  moonraker:
+    container_name: moonraker
+    image: mkuf/moonraker:latest
+    restart: unless-stopped
+    pid: host
+    network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - CONFIGS_SHA
+    depends_on:
+      klipper:
+        condition: service_started
+    volumes:
+      - /dev/null:/opt/klipper/config/null
+      - /dev/null:/opt/klipper/docs/null
+      - run:/opt/printer_data/run
+      - /data/prind/gcodes:/opt/printer_data/gcodes
+      - /data/prind/logs:/opt/printer_data/logs
+      - /data/prind/db:/opt/printer_data/database
+      - /data/prind/config:/opt/printer_data/config      
+
+    x-tailscale:
+      hostname: "moonraker-${HOSTNAME}"
+      upstream: "http://host.docker.internal:7125"
+      
+
+volumes:
+  run:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

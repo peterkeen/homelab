@@ -8,15 +8,17 @@ auto-save-list
 tramp
 .\#*
 configs/ser2net/ser2net.conf.out.*
-build
+ansible/files/build
+.env
 .gitignore
-configs/backups/backup_hosts.sh
-configs/dockerstack.cron
-configs/int-proxy/proxy.conf
-configs/monitoring/prometheus.yaml
-configs/ser2net/ser2net.yaml
-stacks/dozzle.yml
-stacks/parametric-zigbee.yml
-stacks/parametric-zwave.yml
-stacks/tailscale-auto.yml
+ansible/files/backups/backup_hosts.sh
+dns/creds.json
+dns/public_ingress.js
+fly-proxy/proxy.conf
+stacks/genmon/docker-compose.yml
+stacks/int-proxy/proxy.conf
+stacks/monitoring/prometheus.yaml
+stacks/parametric-zigbee/docker-compose.yml
+stacks/parametric-zwave/docker-compose.yml
+stacks/tailscale-auto/docker-compose.yml
 
