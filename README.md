@@ -40,7 +40,7 @@ The only prerequisites for a host is to be on my tailnet.
 
 ## Compose extensions
 
-I have two compose extensions that I use pretty frequently:
+I have several compose extensions that I use pretty frequently:
 
 - `x-web` sets up a reverse proxy entry in the `local-proxy` config
 - `x-op-item` see 'Secrets' below
