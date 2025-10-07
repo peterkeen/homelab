@@ -19,7 +19,9 @@ Config.instance.hosts.each do |hostname, host|
 
   compose_filename = File.join(output_path, "docker-compose.yml")
   File.open(compose_filename, "w+") do |f|
-    include = host.stacks.map { |stack| "stacks/#{stack.name}/docker-compose.yml" }
+    include = host.stacks.map do |stack| 
+      {"path" => ["stacks/#{stack.name}/docker-compose.yml"]}
+    end
     f.write({"include" => include}.to_yaml)
   end
 

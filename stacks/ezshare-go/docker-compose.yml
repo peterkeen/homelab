@@ -1,0 +1,17 @@
+services:
+  ezshare:
+    container_name: ezshare
+    image: ghcr.io/keenfamily-us/infra/stacks/ezshare-go:latest
+    restart: unless-stopped
+    environment:
+      - DATA_DIR=/data
+    volumes:
+      - cpap-nfs:/data
+
+volumes:
+  cpap-nfs:
+    driver: local
+    driver_opts:
+      type: nfs
+      device: ":/mnt/tank/cpap/pete"
+      o: "addr=10.73.95.84,rw,nfsvers=4,async,nolock"

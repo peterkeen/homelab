@@ -9,6 +9,12 @@ tramp
 .\#*
 configs/ser2net/ser2net.conf.out.*
 ansible/files/build
+dns/public_ingress.js
+dns/fly-certs.txt
+ts-compose.yml
+serveconfig.json
+.DS_Store
+secrets.store
 <%- Config.instance.config_files.each do |file| -%>
 <%= file.gsub(Config.instance.root_path + "/", '').gsub(".erb", "") %>
 <%- end %>

@@ -1,23 +1,26 @@
 <%-
-hosts = Config.instance.hosts.select { |_,h| h.serials.keys.include?("zwave") }.sort_by { |h| h[0] }
+hosts = %w[house shed office garage]
 -%>
 
 services:
-  <%- hosts.each_with_index do |host, i| -%>
-  <%- _, host = host -%>
-  <%- name = "zwavejs2mqtt-" + host.hostname -%>
-  <%= name %>:
-    container_name: <%= name %>
-    hostname: <%= name %>
-    image: ghcr.io/zwave-js/zwave-js-ui:9.6.0
+  <%- hosts.each_with_index do |name, i| -%>
+  <%- ui_port = 8091 + i -%>
+  <%- ws_port = 3000 + i -%>
+  zwave-<%= name %>:
+    container_name: zwave-<%= name %>
+    hostname: zwave-<%= name %>
+    image: ghcr.io/zwave-js/zwave-js-ui:11.3.0
     restart: always
     stop_signal: SIGINT
     ports:
-      - ${TAILNET_IP}:<%= host.serials["zwave"].remote_ui_port %>:8091
-      - ${TAILNET_IP}:<%= host.serials["zwave"].remote_ws_port %>:3000
+      - ${TAILNET_IP}:<%= ui_port %>:8091
+      - ${TAILNET_IP}:<%= ws_port %>:3000
     environment:
       - ZWAVEJS_EXTERNAL_CONFIG=/usr/src/app/store/.config-db
       - CONFIGS_SHA
     volumes:
-      - /data/media/zwave/<%= name %>:/usr/src/app/store
+      - /data/zwave/<%= name %>:/usr/src/app/store
+    x-backup:
+      paths:
+        - /data/zwave/<%= name %>
   <%- end -%>

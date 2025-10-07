@@ -1,21 +1,9 @@
 services:
   http-echo:
     image: hashicorp/http-echo
-    container_name: http-echo-up
+    container_name: http-echo
     environment:
       - CONFIGS_SHA
     command: "-text=${HOSTNAME}"
-    x-tailscale:
-      hostname: http-echo
-      upstream: http://http-echo-up:5678
-
-  # http-echo-tsnsrv:
-  #   image: ghcr.io/boinkor-net/tsnsrv:latest
-  #   container_name: http-echo-tsnsrv
-  #   hostname: http-echo
-  #   environment:
-  #     - TS_STATE_DIR=/var/lib/tailscale
-  #     - TS_AUTHKEY
-  #   volumes:
-  #     - "/data/ts/http-echo-tsnsrv:/var/lib/tailscale"
-  #   command: ["-name", "http-echo", "http://127.0.0.1:5678"]
+    x-tailscale-2:
+      port: 5678

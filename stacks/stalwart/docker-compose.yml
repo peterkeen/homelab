@@ -1,0 +1,10 @@
+services:
+  stalwart:
+    image: stalwartlabs/stalwart:latest
+    hostname: stalwart
+    container_name: stalwart
+    restart: unless-stopped
+    volumes:
+      - /data/stalwart:/opt/stalwart
+    x-web:
+      port: 8080

@@ -15,9 +15,6 @@ Config.instance.hosts.map do |_, host|
   next if host.hostname == "__default"
 
   host_groups = host.groups
-  if host.serials.length > 0 || host.hostname =~ /wyse-3040/
-    host_groups << "serial"
-  end
 
   if host.stacks.length > 1
     host_groups << "stacked"

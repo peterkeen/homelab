@@ -1,0 +1,17 @@
+[project]
+name = "agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "chromadb>=1.0.15",
+    "fastapi[standard]>=0.115.14",
+    "hass-client",
+    "litellm>=1.74.0",
+    "ollama>=0.5.1",
+    "sse-starlette>=2.4.1",
+]
+
+[tool.uv.sources]
+hass-client = { git = "https://github.com/music-assistant/python-hass-client" }

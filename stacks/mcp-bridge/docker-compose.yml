@@ -1,0 +1,13 @@
+services:
+  mcp-bridge:
+    container_name: mcp-bridge-up
+    image: ghcr.io/secretiveshell/mcp-bridge/mcp-bridge:0.5.1
+    restart: always
+    environment:
+      - CONFIGS_SHA
+      - MCP_BRIDGE__CONFIG__FILE=/mcp_bridge/config.json
+    volumes:
+      - ${CONFIGS_DIR}/mcp-bridge/config.json:/mcp_bridge/config.json
+    x-tailscale:
+      hostname: mcp-bridge
+      upstream: http://mcp-bridge-up:8000

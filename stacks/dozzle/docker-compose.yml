@@ -3,12 +3,10 @@ services:
     container_name: dozzle-up
     hostname: logs
     image: amir20/dozzle:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: always
     environment:
-      - "DOZZLE_HOSTNAME=${HOSTNAME}"
       - "DOZZLE_ENABLE_ACTIONS=true"
+      - "DOZZLE_REMOTE_AGENT=#<Host:0x0000000107fa3d60>.tailnet-a578.ts.net:7007,#<Host:0x00000001082c7aa0>.tailnet-a578.ts.net:7007,#<Host:0x00000001082c5660>.tailnet-a578.ts.net:7007,#<Host:0x0000000108b8e4e0>.tailnet-a578.ts.net:7007"
     x-tailscale:
-      hostname: "dozzle-${HOSTNAME}"
+      hostname: dozzle
       upstream: http://dozzle-up:8080

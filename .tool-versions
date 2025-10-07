@@ -1,1 +1,4 @@
-ruby 3.2.2
+ruby                         3.2.2
+ubi:StackExchange/dnscontrol 4.25.0
+lazydocker                   latest
+oxker                        latest

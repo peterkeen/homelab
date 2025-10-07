@@ -48,6 +48,6 @@ scrape_configs:
     scheme: http
     metrics_path: '/metrics'
     static_configs:
-      - targets: [<%= Config.instance.hostnames.map { |h| "'#{h}.tailnet-a578.ts.net:9100'" }.join(',') %>]
+      - targets: [<%= all_hosts.map { |_, h| "'#{h}.tailnet-a578.ts.net:9100'" }.join(',') %>]
       - targets: ['backups.tailnet-a578.ts.net:9100']
 

@@ -1,0 +1,23 @@
+<%-
+endpoints = []
+
+all_host_services do |host, stack, service_name, service|
+  endpoint = service.fetch("x-gatus", {})    
+  web_conf = web_config_from_service(service)
+
+  next unless endpoint.length > 0 || web_conf
+
+  endpoint["name"] ||= service_name
+  endpoint["url"] ||= "http://" + web_conf["fqdn"]
+  endpoint["interval"] ||= "5m"
+  endpoint["conditions"] ||= ["[STATUS] == 200"]
+  endpoint["alerts"] ||= [
+    {
+      "type" => "email", 
+    }
+  ]
+  endpoints << endpoint
+end
+
+-%>
+<%= {"endpoints" => endpoints}.to_yaml %>

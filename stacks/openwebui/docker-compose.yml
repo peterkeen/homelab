@@ -1,0 +1,20 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui-up
+    volumes:
+      - /data/open-web-ui:/app/backend/data
+    restart: unless-stopped
+    x-tailscale:
+      upstream: http://open-webui-up:8080
+      hostname: ollama-web
+    x-web:
+      upstream: https://ollama-web.tailnet-a578.ts.net
+      hostname: ollama
+      require_auth: false
+
+  open-webui-pipelines:
+    image: ghcr.io/open-webui/pipelines:main
+    container_name: open-webui-pipelines
+    volumes:
+      - /data/open-web-ui-pipelines:/app/pipelines

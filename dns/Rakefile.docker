@@ -1,0 +1,7 @@
+DNS_PATH = "."
+FLY_PATH = "/flyctl"
+
+load 'shared_tasks.rb'
+
+task :default => :apply
+

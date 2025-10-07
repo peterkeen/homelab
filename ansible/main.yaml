@@ -21,3 +21,6 @@
 
 - name: Import hypervisor
   ansible.builtin.import_playbook: hypervisor.yaml
+
+- name: Import node_exporter
+  ansible.builtin.import_playbook: node_exporter.yaml

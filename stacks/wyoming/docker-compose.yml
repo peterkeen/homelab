@@ -1,29 +1,45 @@
 services:
   whisper:
     container_name: whisper-up
-    image: rhasspy/wyoming-whisper
+    image: lscr.io/linuxserver/faster-whisper:gpu
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all      
+      - WHISPER_MODEL=distil-small.en
+      - WHISPER_LANG=en
     volumes:
       - /data/whisper-piper:/data
-    command: ["--model", "tiny-int8", "--language", "en"]
+    #command: ["--model", "distil-small.en", "--language", "en", "--data-dir", "/data", "--device", "cuda"]
     restart: unless-stopped
     ports:
       - "${TAILNET_IP}:10300:10300"
 
   piper:
     container_name: piper-up
-    image: rhasspy/wyoming-piper
+    image: lscr.io/linuxserver/piper:latest
+    environment:
+      - PIPER_VOICE=en_US-lessac-medium
     volumes:
       - /data/whisper-piper:/data
-    command: ["--voice", "en_US-lessac-medium"]
     restart: unless-stopped
     ports:
       - "${TAILNET_IP}:10200:10200"
 
-
   openwakeword:
     container_name: openwakeword-up
     image: rhasspy/wyoming-openwakeword
-    command: ["--preload-model", "ok_nabu"]
+    command: ["--preload-model", "hey_jarvis"]
     restart: unless-stopped
     ports:
       - "${TAILNET_IP}:10400:10400"
+
+  speech-to-phrase:
+    container_name: speech-to-phrase-up
+    image: rhasspy/wyoming-speech-to-phrase
+    volumes:
+      - /data/whisper-speech-to-phrase/models:/models
+      - /data/whisper-speech-to-phrase/train:/train
+    ports:
+      - "${TAILNET_IP}:10500:10300"
+    command: ["--hass-websocket-uri", "ws://home.tailnet-a578.ts.net:8123/api/websocket", "--hass-token", "${HASS_API_TOKEN}", "--retrain-on-start"]
+    restart: unless-stopped

@@ -1,0 +1,8 @@
+# zwave
+
+connection: &zwave
+  accepter: tcp,6638
+  connector: serialdev,DEVNODE,115200n81,local
+  options:
+    kickolduser: true
+

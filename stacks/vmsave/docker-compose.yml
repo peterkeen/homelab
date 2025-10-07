@@ -1,0 +1,89 @@
+x-common-env: &common-env
+  - DATABASE_URL=${VMSAVE_DATABASE_URL}
+  - RAILS_ENV=production
+  - RACK_ENV=production
+  - RAILS_SERVE_STATIC_ASSETS=enabled
+  - APP_HOSTNAME=vmsave.petekeen.net
+  - TRUEMAIL_CLIENT_HOST=vmsave-truemail
+  - TRUEMAIL_CLIENT_PORT=9292
+  - ADMIN_PASSWORD
+  - ADMIN_USERNAME
+  - BLAZER_PASSWORD
+  - BLAZER_USERNAME
+  - JEMALLOC_ENABLED=true
+  - NOTIFIER_FROM_ADDRESS
+  - NOTIFIER_TO_ADDRESS
+  - POSTMARK_SMTP_ADDRESS
+  - POSTMARK_SMTP_PASSWORD
+  - POSTMARK_SMTP_PORT
+  - POSTMARK_SMTP_USER_NAME
+  - POSTMARK_WEBHOOKS_PASSWORD
+  - RESET_AUTH_TOKEN
+  - SECRET_KEY_BASE
+  - SLACK_WEBHOOK_URL
+  - SMTP_SERVER_DOMAIN
+  - STRIPE_PUBLISHABLE_KEY
+  - STRIPE_SECRET_KEY
+  - TRUEMAIL_CLIENT_SECURE_CONNECTION
+  - TRUEMAIL_CLIENT_TOKEN
+  - TWILIO_ACCOUNT_SID
+  - TWILIO_AUTH_TOKEN
+  - TWILIO_FROM_NUMBER
+  - TWILIO_TO_NUMBER
+  - PORT=8086
+x-common-secrets: &common-secrets
+  - yv7vw5l2mzefl63shlu7rkivn4
+
+services:
+  vmsave-db:
+    container_name: vmsave-db
+    image: postgres:18
+    environment:
+      - CONFIGS_SHA
+      - POSTGRES_DB=vmsave
+      - POSTGRES_USER=${VMSAVE_DATABASE_USER}
+      - POSTGRES_PASSWORD=${VMSAVE_DATABASE_PASSWORD}
+    volumes:
+      - /data/vmsave/postgres:/var/lib/postgresql
+      - /data/vmsave/backups:/backups
+      - ${CONFIGS_DIR}/vmsave/backup.sh:/backup.sh
+    restart: unless-stopped
+    x-op-items: *common-secrets
+    x-backup:
+      prepare:
+        - sh /backup.sh
+      paths:
+        - /data/vmsave/backups
+
+  vmsave-web:
+    container_name: vmsave-web
+    image: ghcr.io/keenfamily-us/vmsave:master
+    restart: unless-stopped
+    environment: *common-env
+    depends_on:
+      vmsave-db:
+        condition: service_started
+    x-op-items: *common-secrets
+    x-gatus:
+      url: https://vmsave.petekeen.net
+
+  vmsave-worker:
+    container_name: vmsave-worker
+    image: ghcr.io/keenfamily-us/vmsave:master
+    restart: unless-stopped
+    environment: *common-env
+    command: ["bin/worker"]
+    depends_on:
+      vmsave-db:
+        condition: service_started
+    x-op-items: *common-secrets
+
+  vmsave-truemail:
+    container_name: vmsave-truemail
+    image: truemail/truemail-rack:latest
+    restart: unless-stopped
+    environment:
+      - ACCESS_TOKENS
+      - VERIFIER_EMAIL
+    x-op-items:
+      - wpybb7xenjgybymcioqp3qksca

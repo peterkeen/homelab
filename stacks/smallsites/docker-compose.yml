@@ -1,0 +1,9 @@
+services:
+  smallsites:
+    image: ghcr.io/keenfamily-us/infra/stacks/smallsites:latest
+    container_name: smallsites-up
+    restart: unless-stopped
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.name=smallsites"
+      - "tsbridge.service.port=80"

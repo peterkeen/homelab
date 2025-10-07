@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Payola - Stripe Payments for Rails Apps</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" />
+  <link href="https://www.payola.io/blog/index.xml" rel="alternate" type="application/atom+xml" />
+  <link href="/stylesheets/application.css" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+   <![endif]-->
+    <style type="text/css">
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight .cm {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .cp {
+  color: #999999;
+  font-weight: bold;
+}
+.highlight .c1 {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .cs {
+  color: #999999;
+  font-weight: bold;
+  font-style: italic;
+}
+.highlight .c, .highlight .cd {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .err {
+  color: #a61717;
+  background-color: #e3d2d2;
+}
+.highlight .gd {
+  color: #000000;
+  background-color: #ffdddd;
+}
+.highlight .ge {
+  color: #000000;
+  font-style: italic;
+}
+.highlight .gr {
+  color: #aa0000;
+}
+.highlight .gh {
+  color: #999999;
+}
+.highlight .gi {
+  color: #000000;
+  background-color: #ddffdd;
+}
+.highlight .go {
+  color: #888888;
+}
+.highlight .gp {
+  color: #555555;
+}
+.highlight .gs {
+  font-weight: bold;
+}
+.highlight .gu {
+  color: #aaaaaa;
+}
+.highlight .gt {
+  color: #aa0000;
+}
+.highlight .kc {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kd {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kn {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kp {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kr {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kt {
+  color: #445588;
+  font-weight: bold;
+}
+.highlight .k, .highlight .kv {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .mf {
+  color: #009999;
+}
+.highlight .mh {
+  color: #009999;
+}
+.highlight .il {
+  color: #009999;
+}
+.highlight .mi {
+  color: #009999;
+}
+.highlight .mo {
+  color: #009999;
+}
+.highlight .m, .highlight .mb, .highlight .mx {
+  color: #009999;
+}
+.highlight .sb {
+  color: #d14;
+}
+.highlight .sc {
+  color: #d14;
+}
+.highlight .sd {
+  color: #d14;
+}
+.highlight .s2 {
+  color: #d14;
+}
+.highlight .se {
+  color: #d14;
+}
+.highlight .sh {
+  color: #d14;
+}
+.highlight .si {
+  color: #d14;
+}
+.highlight .sx {
+  color: #d14;
+}
+.highlight .sr {
+  color: #009926;
+}
+.highlight .s1 {
+  color: #d14;
+}
+.highlight .ss {
+  color: #990073;
+}
+.highlight .s {
+  color: #d14;
+}
+.highlight .na {
+  color: #008080;
+}
+.highlight .bp {
+  color: #999999;
+}
+.highlight .nb {
+  color: #0086B3;
+}
+.highlight .nc {
+  color: #445588;
+  font-weight: bold;
+}
+.highlight .no {
+  color: #008080;
+}
+.highlight .nd {
+  color: #3c5d5d;
+  font-weight: bold;
+}
+.highlight .ni {
+  color: #800080;
+}
+.highlight .ne {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nf {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nl {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nn {
+  color: #555555;
+}
+.highlight .nt {
+  color: #000080;
+}
+.highlight .vc {
+  color: #008080;
+}
+.highlight .vg {
+  color: #008080;
+}
+.highlight .vi {
+  color: #008080;
+}
+.highlight .nv {
+  color: #008080;
+}
+.highlight .ow {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .o {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .w {
+  color: #bbbbbb;
+}
+.highlight {
+  background-color: #f8f8f8;
+}
+    </style>
+</head>
+<body>
+  <div class="jumbotron header">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h1>Payola</h1>
+          <p>Stripe payments for your Rails app</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <ul class="head-nav">
+            <li><a class="" href="/">Home</a></li>
+            <li><a href="/blog">Blog</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h1 class="blogpost-title">Payola v1.2: Now with Subscriptions</h1>
+  <div class="blogpost">
+    <p class="text-center"><small>17 Nov 2014</p>
+    <p>Today is release day for <a href="https://www.payola.io">Payola v1.2.0</a> and the big watch word is <strong>subscriptions</strong>. So now that they&rsquo;re here, how do you use subscriptions with Payola? It&rsquo;s easy:</p>
+
+<ol>
+<li>Install the gem</li>
+<li>Configure a model and a controller</li>
+<li>Set up a form</li>
+<li>Profit!</li>
+</ol>
+
+<p></p>
+
+<p>Here&rsquo;s the steps that Payola goes through when your customer clicks your Subscribe button:</p>
+
+<ol>
+<li>Contact Stripe to get a token from the credit card information</li>
+<li>POST your form <em>asynchronously</em> (see below for an example controller)</li>
+<li>Creates the Stripe::Subscription record <em>asynchronously</em></li>
+<li>On the client, waits for subscription processing to finish before redirecting to the URL specified by <code>SubscriptionPlan#redirect_path</code> (defaulting to <code>/</code>).</li>
+</ol>
+
+<p>Let&rsquo;s go through how you setup Payola subscriptions in more detail:</p>
+
+<h2>1. Installation</h2>
+
+<p>Add <code>payola-payments</code> to your <code>Gemfile</code>:</p>
+
+<pre><code class="ruby">gem &#39;payola-payments&#39;, &#39;&gt;= 1.2.4&#39;
+</code></pre>
+
+<p>Now run bundler and install the migrations:</p>
+
+<pre><code class="bash">$ bundle install
+$ rails g payola:install
+$ rake db:migrate
+</code></pre>
+
+<p>Payola assumes you have your Stripe keys in environment variables named <code>STRIPE_SECRET_KEY</code> and <code>STRIPE_PUBLISHABLE_KEY</code>. Make sure to set those up or configure them in Payola&rsquo;s initializer.</p>
+
+<h2>2. Model</h2>
+
+<p>Payola tracks everything about a subscription for you, but you have to tell it about your plans. For that, create a <code>Plan</code> model and include the appropriate Payola module:</p>
+
+<pre><code class="bash">$ rails g model Plan \
+    stripe_id:string \
+    name:string \
+    amount:integer \
+    interval:string
+$ rake db:migrate
+</code></pre>
+
+<p>Now open up <code>app/models/plan.rb</code> and add the concern:</p>
+
+<pre><code class="ruby">class Plan &lt; ActiveRecord::Base
+  include Payola::Plan
+end
+</code></pre>
+
+<p>At this point you should be able to open up a console and add a plan:</p>
+
+<pre><code class="bash">$ rails console
+irb(main):001:0&gt; Plan.create(name: &#39;Test Plan&#39;, stripe_id: &#39;test-plan&#39;, amount: 100, interval: &#39;month&#39;, interval_count: 1)
+</code></pre>
+
+<p>This will create a <code>Plan</code> object as well as create a plan within Stripe.</p>
+
+<h2>3. Form</h2>
+
+<p>Payola currently only supports custom forms for subscriptions but it makes it as easy as possible to do. Let&rsquo;s create a simple controller first at <code>app/controllers/subscriptions_controller.rb</code>:</p>
+
+<pre><code class="ruby">class SubscriptionsController &lt; ApplicationController
+  # bring in the `render_payola_status` helper.
+  include Payola::StatusBehavior
+
+  def new
+    @plan = Plan.first
+  end
+
+  def create
+    # do any required setup here, including finding or creating the owner object
+    owner = current_user # this is just an example for Devise
+
+    # set your plan in the params hash
+    params[:plan] = SubscriptionPlan.find_by(id: params[:plan_id])
+
+    # call Payola::CreateSubscription
+    subscription = Payola::CreateSubscription.call(params, owner)
+
+    # Render the status json that Payola&#39;s javascript expects
+    render_payola_status(subscription)
+  end
+end
+</code></pre>
+
+<p>This is what our form is going to look like:</p>
+
+<p><img src="https://d2s7foagexgnc2.cloudfront.net/files/184ec12c3fd67e6f7775/payola_subscription_form.png"></img></p>
+
+<p>Here&rsquo;s what the view looks like, using Bootstrap 3 for layout:</p>
+
+<pre><code class="rhtml">&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jquery.payment/1.2.1/jquery.payment.min.js&quot;&gt;&lt;/script&gt;
+&lt;div class=&quot;row&quot;&gt;
+  &lt;div class=&quot;col-xs-8 col-xs-offset-2&quot;&gt;
+    &lt;div class=&quot;well&quot;&gt;
+    &lt;%= form_tag(&#39;/subscriptions&#39;,
+      role: &#39;form&#39;,
+      class: &#39;payola-onestep-subscription-form&#39;,
+      &#39;data-payola-base-path&#39; =&gt; &#39;/payola&#39;,
+      &#39;data-payola-error-selector&#39; =&gt; &#39;.payola-error&#39;,
+      &#39;data-payola-plan-type&#39; =&gt; @plan.plan_class,
+      &#39;data-payola-plan-id&#39; =&gt; @plan.id) do %&gt;
+      &lt;div class=&quot;form-group&quot;&gt;
+        &lt;label&gt;Email Address&lt;/label&gt;
+        &lt;input type=&quot;email&quot;
+               name=&quot;email&quot;
+               data-payola=&quot;email&quot;
+               placeholder=&quot;you@example.com&quot;
+               class=&quot;form-control&quot;&gt;&lt;/input&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;form-group&quot;&gt;
+        &lt;label&gt;Card number&lt;/label&gt;
+        &lt;input type=&quot;text&quot;
+               size=&quot;20&quot;
+               data-stripe=&quot;number&quot;
+               class=&quot;card-number form-control&quot;
+               placeholder=&quot;**** **** **** ****&quot;&gt;&lt;/input&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;row&quot;&gt;
+        &lt;div class=&quot;col-md-6&quot;&gt;
+          &lt;div class=&quot;form-group&quot;&gt;
+            &lt;label&gt;Exp&lt;/label&gt;
+            &lt;input type=&quot;text&quot;
+                   size=&quot;8&quot;
+                   class=&quot;exp-date form-control&quot;
+                   placeholder=&quot;MM / YY&quot;&gt;&lt;/input&gt;
+            &lt;input type=&quot;hidden&quot; data-stripe=&quot;exp_month&quot;&gt;&lt;/input&gt;
+            &lt;input type=&quot;hidden&quot; data-stripe=&quot;exp_year&quot;&gt;&lt;/input&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;col-md-6&quot;&gt;
+          &lt;div class=&quot;form-group&quot;&gt;
+            &lt;label&gt;CVC&lt;/label&gt;
+            &lt;input type=&quot;text&quot;
+                   size=&quot;4&quot;
+                   data-stripe=&quot;cvc&quot;
+                   class=&quot;form-control&quot;
+                   placeholder=&quot;***&quot;&gt;&lt;/input&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;text-center&quot;&gt;
+        &lt;input type=&quot;submit&quot; value=&quot;Subscribe&quot; class=&quot;btn btn-info btn-lg&quot;&gt;&lt;/input&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;alert alert-warning payola-error&quot; style=&quot;display: none&quot;&gt;&lt;/div&gt;
+      &lt;% end %&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>Payola&rsquo;s subscription form behavior is triggered by your form having the class <code>payola-onestep-subscription-form</code>. After that, you just mark up the data destined for Stripe with <code>data-stripe</code> attributes.</p>
+
+<p>This particular form has a few additional niceties provided by the <a href="https://github.com/stripe/jquery.payment">jquery.payment</a> library from Stripe. Here&rsquo;s the javascript for the form, in <code>app/assets/javascripts/form.js</code>:</p>
+
+<pre><code class="javascript">$(function() {
+  $(&#39;.exp-date&#39;).payment(&#39;formatCardExpiry&#39;);
+  $(&#39;input[data-stripe=&quot;number&quot;]&#39;).payment(&#39;formatCardNumber&#39;);
+  $(&#39;input[data-stripe=&quot;cvc&quot;]&#39;).payment(&#39;formatCardCVC&#39;);
+
+  $(&#39;.exp-date&#39;).on(&#39;keyup&#39;, function() {
+      var e = $(&#39;.exp-date&#39;).first();
+      var out = $.payment.cardExpiryVal(e.val());
+      $(&#39;input[data-stripe=&quot;exp_month&quot;]&#39;).val(out.month);
+      $(&#39;input[data-stripe=&quot;exp_year&quot;]&#39;).val(out.year);
+  });
+
+  $(&#39;.card-number&#39;).on(&#39;keyup&#39;, function() {
+    var e = $(&#39;.card-number&#39;).first();
+    var type = $.payment.cardType(e.val());
+    var img = &quot;card.png&quot;;
+    switch(type) {
+        case &quot;visa&quot;:
+          img = &quot;visa.png&quot;;
+          break;
+        case &quot;mastercard&quot;:
+          img = &quot;mastercard.png&quot;;
+          break;
+        case &quot;discover&quot;:
+          img = &quot;discover.png&quot;;
+          break;
+        case &quot;amex&quot;:
+          img = &quot;amex.png&quot;;
+          break;
+    }
+    e.css(&#39;background-image&#39;, &#39;url(/images/&#39; + img + &#39;)&#39;);
+  });
+
+});
+</code></pre>
+
+<p>This does three separate things. First, it sets up formatters on the form&rsquo;s expiration date, card, and cvc number fields. Next, the JS sets up another event handler that uses <code>jquery.payment</code>&rsquo;s <code>cardExpiryVal</code> function to parse the card expiration date into a month and a year, and sets the hidden fields to that value.</p>
+
+<p>Finally, it sets up an event handler that changes the credit card icon based on what type of card the customer is entering. The particular images that I&rsquo;m using are from <a href="https://creativemarket.com/Shpigford/12572-Flat-Credit-Card-Icons">a very nice set of flat icons</a> off of Creative Market. Shopify put out a <a href="http://www.shopify.com/blog/6335014-32-free-credit-card-icons">free set</a> a while back as well.</p>
+
+<p>In order to make the icon actually show up in the right place, you need to add this small CSS snippet:</p>
+
+<pre><code class="css">.card-number {
+  background-image: url(/images/card.png);
+  background-repeat: no-repeat;
+  background-size: 30px;
+  background-position: right 10px center;
+}
+</code></pre>
+
+<p>(<code>card.png</code> is the default green card image.)</p>
+
+<p>Ok, so now we have a form, but what exactly happens here? Payola Subscriptions works like this:</p>
+
+<ol>
+<li>When the customer hits the submit button, Payola intercepts that and sends the fields tagged with <code>data-stripe</code> to Stripe to get a card token.</li>
+<li>When Stripe returns a token, Payola POSTs that along with the email address field to <code>/subscriptions</code>, which creates a <code>Payola::Subscription</code> using the service class <code>Payola::CreateSubscription</code>. This automatically launches a background job that attempts to create a <code>Stripe::Customer</code>. The controller then returns a JSON status hash back to Payola&rsquo;s javascript handler.</li>
+<li>The javascript then polls every 500ms, waiting for the subscription to finish. When it&rsquo;s done, the user&rsquo;s browser will be redirected to whatever URL the <code>redirect_path</code> on <code>Plan</code> returns, or if it&rsquo;s not implemented <code>/</code>. Payola will set <code>flash[:notice]</code> appropriately.</li>
+</ol>
+
+<h2>4. Profit!</h2>
+
+<p>At this point you have a functional subscription system. Payola provides all sorts of hooks and notifications that you can use to trigger additional application-specific behavior, which you can read all about in <a href="https://github.com/peterkeen/payola">the README</a>.</p>
+
+<hr>
+
+<p><strong>P.S.:</strong> Payola Pro is an add-on to Payola that provides priority email support, pre-built integrations with several 3rd party services, Stripe Connect marketplace support, along with a lawyer-friendly commercial license. You can read all about it at <a href="https://www.payola.io/pro">payola.io/pro</a>, and all of the modules have documentation on <a href="https://github.com/peterkeen/payola/wiki">the Payola wiki</a>.</p>
+
+<p><strong>P.P.S.:</strong> I want to thank <a href="http://www.octolabs.com">Jeremy Green</a> who has been instrumental in driving this forward. Subscriptions would probably be another month away without Jeremy&rsquo;s help.</p>
+
+  </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center">
+    &copy Cora Street Press LLC. Built by <a href="https://www.petekeen.net/">Pete Keen</a>.
+  </footer>
+  <script src="/javascripts/application.js" type="text/javascript"></script>
+</body>
+</html>

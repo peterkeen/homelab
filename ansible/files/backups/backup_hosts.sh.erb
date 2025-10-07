@@ -1,8 +1,7 @@
 #!/bin/sh
 
 HOSTS=$(cat <<-EOM
-<%- Config.instance.hosts.each do |hostname, host| -%>
-<%- next if hostname == '__default' -%>
+<%- all_hosts.each do |hostname, host| -%>
 <%= hostname %>.tailnet-a578.ts.net
 <%- end -%>
 EOM

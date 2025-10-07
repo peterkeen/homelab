@@ -1,0 +1,11 @@
+services:
+  adsb-bubble:
+    container_name: adsb-bubble-up
+    build: .
+    restart: unless-stopped
+    environment:
+      - HASS_API_KEY
+
+    x-tailscale:
+      upstream: http://adsb-bubble-up:4567
+      hostname: adsb-bubble

@@ -1,0 +1,12 @@
+services:
+  dozzle:
+    container_name: dozzle-up
+    hostname: logs
+    image: amir20/dozzle:latest
+    restart: always
+    environment:
+      - "DOZZLE_ENABLE_ACTIONS=true"
+      - "DOZZLE_REMOTE_AGENT=<%= all_hosts.map { |_, h| "#{h}.tailnet-a578.ts.net:7007" }.join(',') %>"
+    x-tailscale:
+      hostname: dozzle
+      upstream: http://dozzle-up:8080

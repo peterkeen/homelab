@@ -1,0 +1,6 @@
+<%- this_host_services do |stack, service_name, service| -%>
+<%- next unless service.key?("x-backup") %>
+<%- (service.dig("x-backup", "paths") || []).each do |path| -%>
+<%= path %>
+<%- end -%>
+<%- end -%>

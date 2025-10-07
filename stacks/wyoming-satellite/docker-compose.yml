@@ -1,0 +1,38 @@
+services:
+  microphone:
+    image: "rhasspy/wyoming-mic-external"
+    ports:
+      - "${TAILNET_IP}:10600:10600"
+    devices:
+      - /dev/snd:/dev/snd
+    group_add:
+      - audio
+    command:
+      - "--device"
+      - "sysdefault"
+      - "--debug"
+  playback:
+    image: "rhasspy/wyoming-snd-external"
+    ports:
+      - "${TAILNET_IP}:10601:10601"
+    devices:
+      - /dev/snd:/dev/snd
+    group_add:
+      - audio
+    command:
+      - "--device"
+      - "sysdefault"
+      - "--debug"
+  satellite:
+    image: "rhasspy/wyoming-satellite"
+    ports:
+      - "${TAILNET_IP}:10700:10700"
+    command:
+      - "--name"
+      - "living room satellite"
+      - "--mic-uri"
+      - "tcp://${TAILNET_IP}:10600"
+      - "--snd-uri"
+      - "tcp://${TAILNET_IP}:10601"
+      - "--debug"
+  

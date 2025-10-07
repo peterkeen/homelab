@@ -1,0 +1,8 @@
+# zigbee
+
+connection: &zigbee
+  accepter: tcp,6639
+  connector: serialdev,DEVNODE,115200n81,nobreak,local
+  options:
+    kickolduser: true
+

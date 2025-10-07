@@ -15,3 +15,5 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/grafana-agent:/etc/agent/data
       - ${CONFIGS_DIR}/grafana-agent/${AGENT_CONFIG_FILE:-agent.yaml}:/etc/agent/agent.yaml
+    x-op-items:
+      - "woeicmrt2nhippgeqftco67a2i"

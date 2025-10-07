@@ -1,10 +1,10 @@
 <%- 
-  secrets = Secrets.load_all!.first.last
+  secret = Secrets.instance.get("n6zq3ryqxlvminvgt55bkmn3vi")
 -%>
 {
   "csp_r53": {
     "TYPE": "ROUTE53",
-    "KeyId": "<%= secrets['AWS_ACCESS_KEY_ID'] %>",
-    "SecretKey": "<%= secrets['AWS_SECRET_ACCESS_KEY'] %>"
+    "KeyId": "<%= secret['AWS_ACCESS_KEY_ID'] %>",
+    "SecretKey": "<%= secret['AWS_SECRET_ACCESS_KEY'] %>"
   }
 }

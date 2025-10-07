@@ -13,32 +13,15 @@ class Stack < T::Struct
   const :config, Hash
 
   def path
-    "stacks/#{name}.yml"
+    "stacks/#{name}"
   end
-end
-
-class Cron < T::Struct
-  const :schedule, String
-  const :service, String
-end
-
-class SerialPort < T::Struct
-  const :path, String
-  const :port, Integer
-  const :baud, String, default: "115200 NONE 1STOPBIT 8DATABITS LOCAL NOBREAK"
-  const :remote_ui_port, T.nilable(Integer)
-  const :remote_ws_port, T.nilable(Integer)
 end
 
 class Host < T::Struct
   const :hostname, String
   const :stacks, T::Array[Stack], default: []
   const :groups, T::Array[String], default: []
-  const :pre_start, T::Array[String], default: []
   const :environment, T::Array[String], default: []
-  const :crons, T::Array[Cron], default: []
-  const :serials, T::Hash[String, SerialPort], default: {}
-  const :secrets, T::Hash[String, String], default: {}
   const :tailnet_ip, String, default: ""
 
   def base_docker_compose
@@ -49,6 +32,15 @@ class Host < T::Struct
       "-f",
       "docker-compose.yml",
     ] + stacks.flat_map { |s| ['-f', s.path] }
+  end
+
+  LOCAL_ADDRESS_REGEXP = /(10\.73\.95\.\d+)/
+
+  def local_address
+    return @local_address if @local_address
+
+    resp = Subprocess.check_output(Shellwords.split("ssh root@#{hostname} ip addr"))
+    @local_address = resp.lines.filter_map { |l| LOCAL_ADDRESS_REGEXP.match(l)&.to_a&.last }.first
   end
 end
 
@@ -66,6 +58,13 @@ class Config < T::Struct
     @instance = load!
   end
 
+  def self.hostnames
+    root_path = File.expand_path(File.join(__FILE__, '../..'))
+    hosts_path = File.join(root_path, 'hosts.yml')
+    config = YAML.load_file(hosts_path)
+    config["hosts"].keys
+  end
+
   def self.load!
     LOGGER.info("Config.load!")
     root_path = File.expand_path(File.join(__FILE__, '../..'))
@@ -77,7 +76,7 @@ class Config < T::Struct
 
     raw_hosts["__default"] = {}
 
-    secrets = Secrets.load_all!
+    secrets = Secrets.instance
     tailnet_ips = Tailscale.addresses
 
     stacks = Dir.glob(File.expand_path(File.join(hosts_path, "../stacks/*"))).map do |stack_path|
@@ -103,10 +102,14 @@ class Config < T::Struct
 
       host_conf["stacks"] = host_stacks.map { |name| stacks[name] }.compact
 
-      host_conf["pre_start"] = host_conf.delete("pre-start")
       host_conf["tailnet_ip"] = tailnet_ips[hostname]
 
-      env = host_conf["environment"] + secrets[hostname].map { |k,v| %Q[#{k}="#{v}"] } + ["TAILNET_IP=#{tailnet_ips[hostname]}", "HOSTNAME=#{hostname}"]
+      host_secrets = {}
+      secrets.items_for_server(hostname).each do |item|
+        host_secrets = host_secrets.merge(item.vars)
+      end
+
+      env = host_conf["environment"] + host_secrets.map { |k,v| %Q[#{k}="#{v}"] } + ["TAILNET_IP=#{tailnet_ips[hostname]}", "HOSTNAME=#{hostname}"]
 
       host_conf["environment"] = env
 
@@ -129,11 +132,8 @@ class Config < T::Struct
     from_hash(config_hash)
   end
 
-  def docker_hosts
-    hostnames = hosts.select do |hn, h|
-      h.stacks.length > 1
-    end.map(&:first).reject { |h| h == "__default" }
-
+  def all_hosts
+    hostnames = hosts.map(&:first).reject { |h| h == "__default" }
     hosts.slice(*hostnames)
   end
 
@@ -146,12 +146,66 @@ class Config < T::Struct
     hosts.keys
   end
 
+  def all_web_configs(defaults={}, &block)
+    all_host_services do |host, stack, service_name, service|
+      next unless service["x-web"]
+      web_conf = web_config_from_service(service, defaults)
+      yield host, stack, service_name, web_conf
+    end
+  end
+
+  def all_host_services(&block)
+    all_hosts.each do |hostname, host|
+      host.stacks.each do |stack|
+        stack.config.fetch("services", []).each do |service_name, service|
+          yield host, stack, service_name, service.dup
+        end
+      end
+    end
+  end
+
+  def web_config_from_service(service, defaults={})
+    return unless service["x-web"]
+
+    conf = defaults.dup.merge(service.fetch("x-web", {}))
+
+    conf["hostname"] ||= service["hostname"]
+    conf["fqdn"] ||= "#{conf['hostname']}.keen.land"
+
+    if conf["port"].nil? && conf["upstream"].nil?
+      raise "Need port for service #{service_name} in #{stack.name}, can't determine default"
+    end
+    conf["upstream"] ||= "http://#{service["container_name"]}:#{conf['port']}"
+
+    conf
+  end
+
+  def this_host_web_configs(defaults={}, &block)
+    all_web_configs(defaults) do |host, stack, service_name, web_conf|
+      next unless host == this_host
+      yield stack, service_name, web_conf
+    end
+  end
+
+  def this_host_services(&block)
+    all_host_services do |host, stack, service_name, service|
+      next unless host == this_host
+      yield stack, service_name, service
+    end
+  end
+
+  def secrets
+    Secrets.instance
+  end
+
   def generate_templated_files!
     LOGGER.info('generate_templated_files!')
     config_files.each do |filename|
       output_filename = filename.gsub(/\.erb$/, '')
       generate_templated_file(filename, output_filename)
     end
+
+    generate_env_files!
   end
 
   def generate_templated_file(template_filename, output_filename, host: nil)
@@ -165,5 +219,28 @@ class Config < T::Struct
     template.filename = template_filename
 
     template.result(binding)
+  end
+
+  def generate_env_files!
+    all_stacks.each do |name, stack|
+      stack_vars = {}
+
+      stack.config.fetch("services", []).each do |service_name, service_conf|
+        next unless service_conf["x-op-items"]
+        service_conf["x-op-items"].each do |item_id|
+          stack_vars.merge!(Secrets.instance.get(item_id).vars)
+        end
+      end
+
+      next if stack_vars.length == 0
+
+      env_path = File.join(root_path, stack.path, ".env")
+
+      File.open(env_path, "w+") do |f|
+        stack_vars.each do |key, val|
+          f.puts("#{key}=#{val}")
+        end
+      end
+    end
   end
 end

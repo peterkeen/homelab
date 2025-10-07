@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Payola - Stripe Payments for Rails Apps</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" />
+  <link href="https://www.payola.io/blog/index.xml" rel="alternate" type="application/atom+xml" />
+  <link href="/stylesheets/application.css" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+   <![endif]-->
+    <style type="text/css">
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight .cm {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .cp {
+  color: #999999;
+  font-weight: bold;
+}
+.highlight .c1 {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .cs {
+  color: #999999;
+  font-weight: bold;
+  font-style: italic;
+}
+.highlight .c, .highlight .cd {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .err {
+  color: #a61717;
+  background-color: #e3d2d2;
+}
+.highlight .gd {
+  color: #000000;
+  background-color: #ffdddd;
+}
+.highlight .ge {
+  color: #000000;
+  font-style: italic;
+}
+.highlight .gr {
+  color: #aa0000;
+}
+.highlight .gh {
+  color: #999999;
+}
+.highlight .gi {
+  color: #000000;
+  background-color: #ddffdd;
+}
+.highlight .go {
+  color: #888888;
+}
+.highlight .gp {
+  color: #555555;
+}
+.highlight .gs {
+  font-weight: bold;
+}
+.highlight .gu {
+  color: #aaaaaa;
+}
+.highlight .gt {
+  color: #aa0000;
+}
+.highlight .kc {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kd {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kn {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kp {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kr {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kt {
+  color: #445588;
+  font-weight: bold;
+}
+.highlight .k, .highlight .kv {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .mf {
+  color: #009999;
+}
+.highlight .mh {
+  color: #009999;
+}
+.highlight .il {
+  color: #009999;
+}
+.highlight .mi {
+  color: #009999;
+}
+.highlight .mo {
+  color: #009999;
+}
+.highlight .m, .highlight .mb, .highlight .mx {
+  color: #009999;
+}
+.highlight .sb {
+  color: #d14;
+}
+.highlight .sc {
+  color: #d14;
+}
+.highlight .sd {
+  color: #d14;
+}
+.highlight .s2 {
+  color: #d14;
+}
+.highlight .se {
+  color: #d14;
+}
+.highlight .sh {
+  color: #d14;
+}
+.highlight .si {
+  color: #d14;
+}
+.highlight .sx {
+  color: #d14;
+}
+.highlight .sr {
+  color: #009926;
+}
+.highlight .s1 {
+  color: #d14;
+}
+.highlight .ss {
+  color: #990073;
+}
+.highlight .s {
+  color: #d14;
+}
+.highlight .na {
+  color: #008080;
+}
+.highlight .bp {
+  color: #999999;
+}
+.highlight .nb {
+  color: #0086B3;
+}
+.highlight .nc {
+  color: #445588;
+  font-weight: bold;
+}
+.highlight .no {
+  color: #008080;
+}
+.highlight .nd {
+  color: #3c5d5d;
+  font-weight: bold;
+}
+.highlight .ni {
+  color: #800080;
+}
+.highlight .ne {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nf {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nl {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nn {
+  color: #555555;
+}
+.highlight .nt {
+  color: #000080;
+}
+.highlight .vc {
+  color: #008080;
+}
+.highlight .vg {
+  color: #008080;
+}
+.highlight .vi {
+  color: #008080;
+}
+.highlight .nv {
+  color: #008080;
+}
+.highlight .ow {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .o {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .w {
+  color: #bbbbbb;
+}
+.highlight {
+  background-color: #f8f8f8;
+}
+    </style>
+</head>
+<body>
+  <div class="jumbotron header">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h1>Payola</h1>
+          <p>Stripe payments for your Rails app</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <ul class="head-nav">
+            <li><a class="" href="/">Home</a></li>
+            <li><a href="/blog">Blog</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h1 class="blogpost-title">Introducing Payola</h1>
+  <div class="blogpost">
+    <p class="text-center"><small>20 Oct 2014</p>
+    <p>I released an open source Rails engine named <a href="http://www.payola.io">Payola</a> that you can drop into any application to have robust, reliable self-hosted Stripe payments up and running with just a little bit of fuss.</p>
+
+<p></p>
+
+<p>When you&rsquo;re setting up Stripe in a Rails application there are a lot of choices you have to make. <em>What should you use for webhooks? Do you even need webhooks? How much information should you keep in your database? Should you use Checkout or do you need to design your own form?</em> Amongst all of these choices, you also have to decide what libraries you want to use, and boy howdy are there even <em>more</em> options here. <a href="http://koudoku.org">Koudoku</a>, <a href="https://github.com/integrallis/stripe_event">StripeEvent</a>, <a href="https://github.com/thefrontside/stripe-rails">Stripe::Rails</a>, not to mention commercial options like <a href="https://gumroad.com">Gumroad</a>, <a href="https://plasso.co">Plasso</a>, and <a href="http://cargocollective.com">Cargo</a>.</p>
+
+<p>One of the reasons why I wrote my book <a href="https://www.masteringmodernpayments.com">Mastering Modern Payments: Using Stripe with Rails</a> is to help you narrow down that set of choices to something reasonable, and I think it does a very good job of it. That said, even if you&rsquo;re using my book you still have to actually write the code to implement Stripe. Not that it&rsquo;s a lot of code, but it&rsquo;s basically always the same.</p>
+
+<p>For the recent relaunch of MMP I decided to actually sit down and formalize the &ldquo;hows&rdquo; laid out in the book into a Rails engine. Anyone can drop Payola into an application and have payments going without too much drama, and notably none of the choices outlined above.</p>
+
+<h2>What Payola Does</h2>
+
+<p>Payola provides a complete solution for accepting Stripe payments within a Rails application. It is focused on selling items one at a time and includes a drop-in partial for setting up a <a href="https://stripe.com/checkout">Stripe Checkout</a> button, along with a complete server-side asynchronous processing system for completing payments with Stripe.</p>
+
+<p>To see a demo, click on or inspect one of the buttons in the <a href="https://www.masteringmodernpayments.com">Packages section on the MMP website</a>.</p>
+
+<h2>Design</h2>
+
+<p>I designed Payola to be robust in the face of failure, whether that means network failure, bugs, Stripe API slowness, or anything in between. It consists of a few moving pieces:</p>
+
+<ul>
+<li>User-facing Javascript that gets a token from Stripe and sends it, along with other Payment-related information, to the backend.</li>
+<li>An async backend that uses a state machine to track a payment through every stage.</li>
+<li>Integration with your application via a model concern and ActiveSupport notifications when interesting things happen.</li>
+</ul>
+
+<p>Payola has built-in support for <a href="https://sidekiq.org">Sidekiq</a> and <a href="https://github.com/brandonhilkert/sucker_punch">Sucker Punch</a>, but it&rsquo;s easy to add new backend worker systems which makes it even easier to adapt to your current system.</p>
+
+<p>Payola should also be transparent to your customers. There should never be a time when they actually see a Payola URL in their address bar, nor should they ever see something Payola branded. From a buyer&rsquo;s perspective it should be <em>your</em> site selling the product, not Payola.</p>
+
+<h2>How A Click Becomes A Charge</h2>
+
+<p>Here are all of the steps in a successful charge:</p>
+
+<ol>
+<li>Buyer clicks a checkout button, which spawns a Stripe Checkout lightbox.</li>
+<li>Buyer enters their card information and clicks the Pay button.</li>
+<li>Stripe validates their card information and creates a token.</li>
+<li>Token is passed the Payola&rsquo;s javascript, which in turn POSTs it to the backend.</li>
+<li>Payola creates a <code>Payola::Sale</code> object with the token and sets it to <code>pending</code> state.</li>
+<li>Payola queues a background job to create a Stripe charge for the corresponding sale and passes the sale&rsquo;s <code>guid</code> attribute back to the JS.</li>
+<li>The buyer&rsquo;s browser disables the button and polls Payola every 500ms asking for the state of their charge.</li>
+<li>The background job calls the <code>Payola.charge_verifier</code> callback, then creates the charge with Stripe, then sends the <code>payola.&lt;product&gt;.sale.finished</code> notification to your application.</li>
+<li>The background job finally sets the sale&rsquo;s state to <code>finished</code>, which is picked up by the JS.</li>
+<li>The user&rsquo;s browser redirects to <code>/payola/confirm/&lt;guid&gt;</code> and then is immediately redirected to whatever the product&rsquo;s <code>redirect_url</code> returns, defaulting to <code>/</code>.</li>
+</ol>
+
+<p>A charge will typically fail in the background job (step 8), either because the <code>charge_verifier</code> rejects it or Stripe rejects it. In that case, the sale is set to <code>errored</code>, the error message is set in the <code>error</code> column, and the Payola JS shows it in a (customizable) <code>div</code> after re-enabling the button. Your application will also receive a <code>payola.&lt;product&gt;.sale.errored</code> notification.</p>
+
+<h2>Installation</h2>
+
+<p>Installing Payola in your app is just a few steps. First, add the gem:</p>
+
+<pre><code class="ruby">gem &#39;payola-payments&#39;
+</code></pre>
+
+<p>Then, run the installer and install the migrations:</p>
+
+<pre><code class="bash">$ rails g payola:install
+$ rake db:migrate
+</code></pre>
+
+<p>Next add the <code>Payola::Sellable</code> concern to the models you want to sell:</p>
+
+<pre><code class="ruby">class SomeProduct &lt; ActiveRecord::Base
+  include Payola::Sellable
+end
+</code></pre>
+
+<p>Your model needs three attributes:</p>
+
+<ul>
+<li><code>permalink</code>: a unique, human readable name</li>
+<li><code>name</code>: a short description</li>
+<li><code>price</code>: the price for the sellable in whatever format Stripe expects. For USD this is cents, for other currencies it could be different.</li>
+</ul>
+
+<p>By default Payola will use USD but you can change that by adding an optional <code>currency</code> method to your sellable model. This can either be a fixed method if you&rsquo;re only using one currency, or it can be a column in the database if your products come in multiple currencies.</p>
+
+<p>Optionally, you can provide a method named <code>redirect_path</code>. This method takes a <code>Payola::Sale</code> instance and returns a path where Payola should redirect the browser after a successful purchase. If you don&rsquo;t provide this Payola will redirect to &rsquo;/&rsquo;.</p>
+
+<p>Finally, use the <code>checkout</code> partial to render a checkout button:</p>
+
+<pre><code class="rhtml">&lt;%= render &#39;payola/transactions/checkout&#39;,
+    sellable: SomeProduct.first %&gt;
+</code></pre>
+
+<p>While the <code>checkout</code> partial has reasonable defaults for getting off the ground, you can customize basically every aspect of it. See the <a href="https://github.com/peterkeen/payola#checkout-button">documentation</a> for details.</p>
+
+<h2>Event Handling</h2>
+
+<p>Stripe has excellent support for webhook events and the StripeEvent gem does an excellent job handling them. Payola thinly wraps StripeEvent and adds a bit of behavior. To receive events, just set up a webhook url in your <a href="https://dashboard.stripe.com/account/webhooks">Stripe account settings</a> that points at <code>https://www.example.com/payola/events</code>. Then, configure an event listener in <code>config/initializers/payola.rb</code>:</p>
+
+<pre><code class="ruby">Payola.configure do |config|
+  config.subscribe &#39;charge.succeeded&#39; do |event|
+    puts &quot;whoohoo!&quot;
+  end
+end
+</code></pre>
+
+<p>Payola adds deduplification to StripeEvent. It records every <code>event_id</code> that comes in and will only ever process an event once. If you&rsquo;d like to further filter events, you can set <code>event_filter</code>, which should either return a <code>Stripe::Event</code> or <code>nil</code> if you&rsquo;d like to stop processing.</p>
+
+<p>In addition to Stripe&rsquo;s webhooks, you can listen for three special events:</p>
+
+<ul>
+<li><code>payola.&lt;underscored product class&gt;.payment.finished</code></li>
+<li><code>payola.&lt;underscored product class&gt;.payment.failed</code></li>
+<li><code>payola.&lt;underscored product class&gt;.payment.refunded</code></li>
+</ul>
+
+<p>These are invoked with the corresponding <code>Payola::Sale</code>, not a <code>Stripe::Event</code> and are executed in-line with the async processing chain, which means you can do things like create a user or send an email before the user-facing javascript returns.</p>
+
+<h2>What&rsquo;s Next</h2>
+
+<p>Currently Payola does not handle subscriptions or marketplaces, so those will be next on the list. Along with those I&rsquo;ll be adding support for custom forms instead of the Checkout button. I&rsquo;m also planning on building out a Pro version that will include priority support and a bunch of pre-built integrations for external systems like Mailchimp, Mixpanel, Infusionsoft, and more.</p>
+
+<p>Here&rsquo;s some more links to Payola stuff:</p>
+
+<ul>
+<li><a href="https://github.com/peterkeen/payola">Payola GitHub</a></li>
+<li><a href="https://github.com/peterkeen/payola/issues">Submit an issue for bug reports or feature requests</a></li>
+<li><a href="https://groups.google.com/forum/#!forum/payola-payments">Google group for annoucements (very low traffic)</a></li>
+</ul>
+
+<p><a href="mailto:hi@petekeen.net?subject=Payola">Send me an email</a> if you&rsquo;d like to talk about Payola or Payola Pro.</p>
+
+  </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center">
+    &copy Cora Street Press LLC. Built by <a href="https://www.petekeen.net/">Pete Keen</a>.
+  </footer>
+  <script src="/javascripts/application.js" type="text/javascript"></script>
+</body>
+</html>

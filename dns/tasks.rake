@@ -1,10 +1,7 @@
-namespace :dns do
-  task :preview => :ci do
-    sh "cd dns && dnscontrol preview"
-  end
+DNS_PATH = "dns"
+FLY_PATH = "flyctl"
 
-  task :apply => :ci do
-    sh "cd dns && dnscontrol push"
-  end
-end
+load 'dns/shared_tasks.rb'
 
+build_docker
+k8s_apply

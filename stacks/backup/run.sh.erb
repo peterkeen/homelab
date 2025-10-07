@@ -1,0 +1,26 @@
+#!/bin/sh
+
+chmod 600 /root/app/stacks/backup/backup_key
+
+<%- this_host_services do |stack, service_name, service| -%>
+<%- next unless service.key?("x-backup") && service["x-backup"].key?("prepare") -%>
+<%- service["x-backup"]["prepare"].each do |script| -%>
+docker exec -it <%= service["container_name"] %> <%= script %>
+<%- end -%>
+<%- end -%>
+
+backup_path=/mnt/tank/backups/hosts/$(hostname -s)
+
+ssh -i /root/app/stacks/backup/backup_key hbackup@10.73.95.84 mkdir -p $backup_path
+
+rsync --rsh "ssh -i /root/app/stacks/backup/backup_key" \
+    --verbose \
+    --recursive \
+    --archive \
+    --files-from=/root/app/stacks/backup/file_list.txt \
+    / hbackup@10.73.95.84:$backup_path
+
+<%- secret = secrets.get("g6tkyx7ryhhdig3vgspawa6c2m") -%>
+<%- if secret[this_host.hostname] -%>
+curl -XPOST -H "Authorization: Bearer <%= secret[this_host.hostname] %>" 'https://gatus.keen.land/api/v1/endpoints/host-backups_<%= this_host.hostname %>/external?success=true'
+<%- end -%>

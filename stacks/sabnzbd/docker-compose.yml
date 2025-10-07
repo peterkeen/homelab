@@ -2,14 +2,16 @@ services:
   sabnzbd:
     container_name: sabnzbd-up
     image: lscr.io/linuxserver/sabnzbd:latest
+    hostname: sabnzbd
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=America/Detroit
     volumes:
       - ${CONFIG}/sabnzbd:/config
-      - /tank/media:/downloads #optional
-      - ${SCRATCH}:/incomplete-downloads #optional
+      - media-nfs:/downloads
+      - sabnzbd-scratch:/incomplete-downloads
+      - cwa-book-ingest:/cwa-book-ingest
     restart: unless-stopped
     ulimits:
       nproc: 65535
@@ -17,8 +19,10 @@ services:
         soft: 20000
         hard: 40000
     x-web:
-      hostname: sabnzbd
-      upstream: https://sabnzbd.tailnet-a578.ts.net
-    x-tailscale:
-      hostname: sabnzbd
-      upstream: http://sabnzbd-up:8080
+      port: 8080
+    x-backup:
+      paths:
+        - /data/sabnzbd
+
+volumes:
+  sabnzbd-scratch:

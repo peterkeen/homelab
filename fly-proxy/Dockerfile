@@ -1,16 +1,13 @@
-FROM alpine:latest as builder
+FROM nginx:stable
+
 WORKDIR /app
-COPY . ./
 
-FROM tailscale/tailscale:latest as tailscale
+RUN apt-get update && apt-get install -y ca-certificates
 
-FROM nginx:stable-alpine
-RUN apk add --no-cache ca-certificates iptables ip6tables
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /usr/local/bin
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /usr/local/bin
 
-COPY --from=tailscale /usr/local/bin/tailscaled /usr/local/bin
-COPY --from=tailscale /usr/local/bin/tailscale /usr/local/bin
-COPY --from=builder /app/proxy.conf /etc/nginx/conf.d/proxy.conf
-COPY --from=builder /app/resolv.conf /etc/resolv.conf
-COPY --from=builder /app/block.conf /etc/nginx/block.conf
-COPY --from=builder /app/00-start-tailscale.sh /docker-entrypoint.d
-COPY --from=builder /app/40-clear-cache.sh /docker-entrypoint.d
+COPY proxy.conf /etc/nginx/conf.d/proxy.conf
+COPY block.conf /etc/nginx/block.conf
+COPY 00-start-tailscale.sh /docker-entrypoint.d
+COPY 40-clear-cache.sh /docker-entrypoint.d

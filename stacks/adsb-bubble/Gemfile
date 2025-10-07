@@ -1,0 +1,7 @@
+source 'https://rubygems.org'
+
+gem 'faraday'
+gem 'sorbet-runtime'
+gem 'sinatra', require: false
+gem 'puma'
+gem 'rackup'

@@ -1,20 +1,22 @@
 services:
   homeassistant:
-    container_name: homeassistant
+    container_name: home-assistant
     hostname: hass
     image: "ghcr.io/home-assistant/home-assistant:stable"
     environment:
       - LANG=en_US.UTF-8
       - LANGUAGE=en-US.UTF-8
-      - LC_ALL en_US.UTF-8      
-      - DAIKIN_SKYPORT_EMAIL
-      - DAIKIN_SKYPORT_PASSWORD
+      - LC_ALL=en_US.UTF-8      
     volumes:
-      - /data/homeassistant:/config
+      - /data/home-assistant:/config
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
     restart: unless-stopped
     network_mode: host
+    dns:
+      - 100.100.100.100
     x-web:
-      port: 8123
-      require_auth: false
+      upstream: http://10.73.95.4:8123
+    x-backup:
+      paths:
+        - /data/home-assistant/backups

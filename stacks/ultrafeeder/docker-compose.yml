@@ -43,6 +43,8 @@ services:
       - ULTRAFEEDER_CONFIG=
           adsb,100.125.250.26,30978,uat_in;
           adsb,100.125.250.26,30005,beast_in;
+          adsb,in.adsb.lol,30004,beast_reduce_plus_out;
+          mlat,in.adsb.lol,31090,39001;
       # --------------------------------------------------
       - UUID=63bbb008-e602-41f7-a2a6-9803671f89f1
       - MLAT_USER=7395
@@ -94,8 +96,15 @@ services:
       hostname: ultrafeeder
       upstream: http://ultrafeeder-up:80
 
-
     x-web:
       hostname: planes
       upstream: https://ultrafeeder.tailnet-a578.ts.net
       require_auth: false
+
+  ultrafeeder-aircraft-shipper:
+    container_name: ultrafeeder-aircraft-shipper
+    image: timberio/vector:0.44.0-debian
+    environment:
+      - CONFIGS_SHA
+    volumes:
+      - ${CONFIGS_DIR}/ultrafeeder/vector.yaml:/etc/vector/vector.yaml:ro

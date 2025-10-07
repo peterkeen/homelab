@@ -1,0 +1,12 @@
+services:
+  zigbee2mqtt:
+    container_name: zigbee2mqtt-up
+    image: koenkk/zigbee2mqtt:latest
+    restart: always
+    stop_signal: SIGINT
+    volumes:
+      - /data/zigbee:/app/data
+    x-tailscale:
+      hostname: house-zigbee
+      upstream: http://zigbee2mqtt-up:8080
+

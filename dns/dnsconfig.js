@@ -2,6 +2,8 @@ var DSP_CSP_R53 = NewDnsProvider("csp_r53");
 var REG_CSP_R53 = NewRegistrar("csp_r53");
 var REG_NONE = NewRegistrar("none");
 
+var EXT_PROXY_IP = '149.28.125.148'
+
 var FORWARDEMAIL = function(the_domain, site_verification) {
   return [
     MX('@', 10, 'mx1.forwardemail.net.'),
@@ -19,37 +21,10 @@ var NO_EMAIL = [
 ]
 
 
-var FLY_CERT = function(subdomain, the_domain) {
-  var acme_target = the_domain + '.w128.flydns.net.';
-  var acme_subdomain = "";
-
-  if (subdomain != "@") {
-    acme_target = subdomain + '.' + acme_target;
-    acme_subdomain = '.' + subdomain;
-  }
-
-  var acme_cname = '_acme-challenge' + acme_subdomain;
-  
-  var records = [
-    CNAME(acme_cname, acme_target, TTL(60))    
-  ];
-
-  if (subdomain == '@') {
-    records.push(A('@', '66.241.125.38', TTL(60)));
-    records.push(AAAA('@', '2a09:8280:1:8968:d249:6201:cd71:c56b', TTL(60)));
-  } else {
-    records.push(CNAME(subdomain, 'morning-voice-9704.fly.dev.', TTL(60)));
-  }
-
-  return records;
-}
-
-var FLY_PROXY = function(the_domain) {
-  return [
-    , FLY_CERT('@', the_domain)
-    , FLY_CERT('www', the_domain)
-  ]
-}
+var EXT_PROXY = [
+  A('@', EXT_PROXY_IP, TTL(60))
+  , A('www', EXT_PROXY_IP, TTL(60))
+]
 
 var NULL = function(the_domain) {
   D(the_domain, REG_CSP_R53
@@ -80,12 +55,12 @@ NULL("stripereceipt.com")
 D("corastreetpress.com", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
   , DefaultTTL(60)
-  , FLY_PROXY("corastreetpress.com")
   , FORWARDEMAIL("corastreetpress.com", "aTYtp07XSX")
+  , EXT_PROXY
 )
 D("corastreetpress.org", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("corastreetpress.org")
+  , EXT_PROXY
   , NO_EMAIL
 )
 
@@ -93,6 +68,7 @@ D("bugsplat.org", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
   , DefaultTTL(86400)
   , FORWARDEMAIL("bugsplat.org", "AJkYGJl3cC")
+  , EXT_PROXY
 )
 D("bugsplat.info", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
@@ -110,56 +86,58 @@ D("bugsplat.info", REG_CSP_R53
   , CNAME('twitter-fiction-reader', 'morning-voice-9704.fly.dev.')
   , A('vmsave-prod', '165.227.222.11')
   , CNAME('*.vmsave-prod', 'vmsave-prod.bugsplat.info.')
+  , A('ord1.ext-proxy', '149.28.125.148')
+  , EXT_PROXY
 )
 
 
 D("docverter.org", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("docverter.org")
+  , EXT_PROXY
   , NO_EMAIL
 )
 D("docverter.com", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("docverter.com")
+  , EXT_PROXY
   , NO_EMAIL
   , CNAME('c', 'docverter-demo.herokuapp.com.')
  )
 D("docverter.net", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("docverter.net")
+  , EXT_PROXY
   , NO_EMAIL
 )
 
 D("payola.io", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("payola.io")
   , NO_EMAIL
+  , EXT_PROXY
 )
 
 D("masteringmodernpayments.net", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
   , NO_EMAIL
-  , FLY_PROXY("masteringmodernpayments.net")
+  , EXT_PROXY
 )
 D("masteringmodernpayments.com", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
   , NO_EMAIL
-  , FLY_PROXY("masteringmodernpayments.com")
+  , EXT_PROXY
 )
 D("masteringmodernpayments.org", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("masteringmodernpayments.org")
+  , EXT_PROXY
   , NO_EMAIL
 )
 D("mstr.mp", REG_NONE
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("mstr.mp")
+  , EXT_PROXY
   , NO_EMAIL
 )
 
 D("handleyourbusiness.net", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("handleyourbusiness.net")
+  , EXT_PROXY
   , NO_EMAIL
 )
 
@@ -168,32 +146,24 @@ D("pkn.me", REG_CSP_R53
   , DefaultTTL(60)
   , CNAME('po', 'subspace.bugsplat.info.', TTL(300))
   , NO_EMAIL
+  , EXT_PROXY
 )
 
-D("keen.land", REG_CSP_R53
+D("keen.land", REG_CSP_R53, NO_PURGE
   , DnsProvider(DSP_CSP_R53)
-  , A('@', '100.94.233.13')
-  , CNAME('jellyfin', 'home.keen.land.')
-  , CNAME('sonarr', 'home.keen.land.')
-  , CNAME('radarr', 'home.keen.land.')
-  , CNAME('bazarr', 'home.keen.land.')
-  , CNAME('prowlarr', 'home.keen.land.')
-  , CNAME('lidarr', 'home.keen.land.')
-  , CNAME('sabnzbd', 'home.keen.land.')
-  , CNAME('jellyseerr', 'home.keen.land.')
-  , CNAME('unifi', 'home.keen.land.')
-  , CNAME('protect', 'home.keen.land.')
-  , CNAME('vouch', 'home.keen.land.')  
-  , CNAME('hass', 'home.keen.land.')
-  , CNAME('omada', 'home.keen.land.')
-  , CNAME('genmon', 'home.keen.land.')
-  , CNAME('status', 'home.keen.land.')
-  , CNAME('spoolman', 'home.keen.land.')
-  , CNAME('docs', 'home.keen.land.')
   , CNAME('pm-bounces', 'pm.mtasv.net.')
-  , CNAME('home', 'subspace.bugsplat.info.')
   , FORWARDEMAIL("keen.land", "I1IEohSKaQ")
   , TXT('20211126004422pm._domainkey', 'k=rsa;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCT0mQS8NXz+lpm9x+LDHGqm/Mhb/eLFsmuzxdYmzFOQgTaB9qBqKWb7+SNghH4J4id4i5MjfBXwj0EwVYD5IMBlnGtNYWuJlHf2E8EdjkQfee17bCYdhifoo91VCNOvqil9abzib551Jluqk251SHJTESV+qaOygLARWPeOsDFKQIDAQAB')
+  , A("omada", "10.73.95.4")
+  , A("protect", "10.73.95.42")
+  , A("infra-git", "10.73.95.46")
+  , A("zwave-shed", "10.73.95.4")
+  , A("zwave-office", "10.73.95.4")
+  , A("zwave-house", "10.73.95.4")
+  , A("zwave-garage", "10.73.95.4")
+  , A("zigbee-house", "10.73.95.4")
+  , A("zigbee-office", "10.73.95.4")
+  , A("@", "10.73.95.4")
 )
 
 D("emilykeen.net", REG_CSP_R53
@@ -207,50 +177,50 @@ D("emilykeen.org", REG_CSP_R53
 
 D("eni889.net", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("eni889.net")
+  , EXT_PROXY
   , FORWARDEMAIL("eni889.net", "gaII8h5ZAr")
 )
 D("eni889.org", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("eni889.org")
+  , EXT_PROXY
   , FORWARDEMAIL("eni889.org", "7wkRX7gBDO")
 )
 D("eni889.com", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("eni889.com")
+  , EXT_PROXY
   , FORWARDEMAIL("eni889.com", "nLYU16rHbE")
 )
 D("emilynieset.com", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("emilynieset.com")
+  , EXT_PROXY
   , FORWARDEMAIL("emilynieset.com", "fmxic58jns")
 )
 D("emilynieset.net", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("emilynieset.net")
+  , EXT_PROXY
   , FORWARDEMAIL("emilynieset.net", "X9ck2l9OGN")
 )
 D("emilynieset.org", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("emilynieset.org")
+  , EXT_PROXY
   , FORWARDEMAIL("emilynieset.org", "T2rCHy3meR")
 )
 D("fucktimezones.com", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("fucktimezones.com")
+  , EXT_PROXY
   , NO_EMAIL
 )
 D("okapi.io", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , FLY_PROXY("okapi.io")
   , FORWARDEMAIL("okapi.io", "4rZQNA0rGX")
+  , EXT_PROXY
 )
 D("zrail.net", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
   , DefaultTTL(60)
   , NO_EMAIL
   , TXT('_atproto', 'did=did:plc:4tdje2f3mnmrxjidmu7mekf5')
-  , FLY_PROXY("zrail.net")
+  , EXT_PROXY
 )
 D("keenfamily.us", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
@@ -268,11 +238,13 @@ D("petekeen.org", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
   , DefaultTTL(60)
   , NO_EMAIL
+  , EXT_PROXY
 )
 D("petekeen.com", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
   , DefaultTTL(60)
   , NO_EMAIL
+  , EXT_PROXY
 )
 D("petekeen.net", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
@@ -287,24 +259,37 @@ D("petekeen.net", REG_CSP_R53
   , CNAME('umnpldf5lhmrtfvihzorth4w636fk6de._domainkey.payments', 'umnpldf5lhmrtfvihzorth4w636fk6de.dkim.custom-email-domain.stripe.com.')
   , CNAME('bounce.payments', 'custom-email-domain.stripe.com.')
   , CNAME('pm-bounces', 'pm.mtasv.net.')
-  , FLY_CERT('vmsave', 'petekeen.net')
-  , FLY_CERT('stage', 'petekeen.net')
-
   , TXT('fe-b375ce025c._domainkey', 'v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4tm6HJ16oMaMtiuHINNIa2RnsQ5Um5xXGmgUzmbFNgQ8CicMx/nW+MiF5uB3ianG5eADrYSWUsnvlOmvxJD5Xy1BL2eOAtJ2IWL1GEtstVRIAhdrXaQlVKo5s/8we1s8n6zJSsGSZJUgv9LRv04NSbgahKsL+mD5s/3IEbJF2fwIDAQAB;')
   , TXT('_dmarc', 'v=DMARC1; p=none; pct=100; rua=mailto:dmarc-65d8079eb3fe9f23d8948a5e@forwardemail.net;')
+  , A('vmsave', EXT_PROXY_IP, TTL(60))
+  , EXT_PROXY
 )
 D("peterkeen.com", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
   , DefaultTTL(60)
-  , FLY_PROXY("peterkeen.net")
   , NO_EMAIL
+  , EXT_PROXY
 )
 
 D("wrought.io", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
   , DefaultTTL(60)
-  , FLY_PROXY("wrought.io")
+  , EXT_PROXY
   , NO_EMAIL
-)
+ )
 
-require('public_ingress.js')
+D("gulfse.cx", REG_NONE
+  , DnsProvider(DSP_CSP_R53)
+  , DefaultTTL(60)
+  , EXT_PROXY
+  , NO_EMAIL
+ )
+
+D("golfse.cx", REG_NONE
+  , DnsProvider(DSP_CSP_R53)
+  , DefaultTTL(60)
+  , EXT_PROXY
+  , NO_EMAIL
+ )
+
+require("local_ingress.js")

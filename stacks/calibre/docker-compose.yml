@@ -1,21 +1,23 @@
 services:
   calibre-web:
-    image: lscr.io/linuxserver/calibre-web:latest
+    image: ghcr.io/crocodilestick/calibre-web-automated:latest
     container_name: calibre-web-up
     environment:
       - PUID=1000
       - PGID=1000
       - TZ
-      - DOCKER_MODS=linuxserver/mods:universal-calibre #optional
-      - OAUTHLIB_RELAX_TOKEN_SCOPE=1 #optional
     volumes:
       - /data/calibre:/config
-      - /tank/media:/media
+      - type: volume
+        source: media-nfs
+        target: /calibre-library
+        volume:
+          subpath: books
+      - cwa-book-ingest:/cwa-book-ingest      
     restart: unless-stopped
-    x-tailscale:
-      hostname: books
-      upstream: http://calibre-web-up:8083
     x-web:
+      port: 8083
       hostname: books
-      upstream: https://books.tailnet-a578.ts.net
-      require_auth: false
+    x-backup:
+      paths:
+        - /data/calibre

@@ -1,0 +1,20 @@
+services:
+  local-proxy:
+    container_name: local-proxy
+    image: nginx:1.29.1
+    environment:
+      - CONFIGS_SHA
+    volumes:
+      - ${CONFIGS_DIR}/local-proxy/00_logging.conf:/etc/nginx/conf.d/00_logging.conf
+      - ${CONFIGS_DIR}/local-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
+      - ${CONFIGS_DIR}/local-proxy/common.conf:/etc/nginx/snippets/common.conf
+      - ${CONFIGS_DIR}/local-proxy/dhparam:/etc/nginx/dhparam
+      - keenland-certs:/etc/letsencrypt/certificates:ro
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - certificates
+    labels:
+      com.centurylinklabs.watchtower.depends-on: "/certificates"

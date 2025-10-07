@@ -1,146 +1,94 @@
 services:
   sonarr:
-    image: kfcr.fly.dev/linuxserver/sonarr:latest
+    image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr-up
+    hostname: sonarr
     volumes:
       - ${CONFIG}/sonarr:/config
-      - /tank/media:/media
-      - ${SCRATCH}:/scratch
+      - media-nfs:/media
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Detroit      
+      - TZ=America/Detroit
     restart: always
-    x-tailscale:
-      upstream: http://sonarr-up:8989
-      hostname: sonarr
     x-web:
-      hostname: sonarr
-      upstream: https://sonarr.tailnet-a578.ts.net
-      alternate_hostnames:
-        - tv
+      port: 8989
+    x-backup:
+      paths:
+        - /data/sonarr/Backups
 
   radarr:
-    image: kfcr.fly.dev/linuxserver/radarr:latest
+    image: lscr.io/linuxserver/radarr:latest
     container_name: radarr-up
-
+    hostname: radarr
     volumes:
       - ${CONFIG}/radarr:/config
-      - /tank/media:/media
-      - ${SCRATCH}:/scratch
+      - media-nfs:/media
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Detroit            
+      - TZ=America/Detroit
     restart: always
-    x-tailscale:
-      upstream: http://radarr-up:7878
-      hostname: radarr
     x-web:
-      require_auth: false
-      hostname: radarr
-      upstream: https://radarr.tailnet-a578.ts.net
-      alternate_hostnames:
-        - movies
-
-  lidarr:
-    image: kfcr.fly.dev/linuxserver/lidarr:latest
-    container_name: lidarr-up
-    volumes:
-      - ${CONFIG}/lidarr:/config
-      - /tank/media:/media
-      - ${SCRATCH}:/scratch
-    environment:
-      - "DOCKER_MODS=linuxserver/mods:lidarr-flac2mp3"
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Detroit            
-    restart: always
-    x-tailscale:
-      upstream: http://lidarr-up:8686
-      hostname: lidarr
-    x-web:
-      hostname: lidarr
-      upstream: https://lidarr.tailnet-a578.ts.net
+      port: 7878
+    x-backup:
+      paths:
+        - /data/radarr/Backups      
 
   prowlarr:
     image: ghcr.io/linuxserver/prowlarr:latest
     container_name: prowlarr-up
+    hostname: prowlarr
     volumes:
-      - ${CONFIG}/prowlarr:/config
-      - /tank/media:/media
-      - ${SCRATCH}:/scratch
+      - /data/prowlarr:/config
+      - media-nfs:/media
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Detroit            
+      - TZ=America/Detroit
     restart: always
-    x-tailscale:
-      upstream: http://prowlarr-up:9696
-      hostname: prowlarr
     x-web:
-      require_auth: false
-      upstream: https://prowlarr.tailnet-a578.ts.net
-      hostname: prowlarr
-      alternate_hostnames:
-        - indexers
+      port: 9696
+    x-backup:
+      paths:
+        - /data/prowlarr/Backups
 
   bazarr:
-    image: kfcr.fly.dev/linuxserver/bazarr
+    image: lscr.io/linuxserver/bazarr:latest
     container_name: bazarr-up
+    hostname: bazarr
     volumes:
-      - ${CONFIG}/bazarr:/config
-      - /tank/media:/media
-      - ${SCRATCH}:/scratch
+      - /data/bazarr:/config
+      - media-nfs:/media
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Detroit            
+      - TZ=America/Detroit
     restart: always
-    x-tailscale:
-      upstream: http://bazarr-up:6767
-      hostname: bazarr
     x-web:
-      upstream: https://bazarr.tailnet-a578.ts.net
-      hostname: bazarr
-      alternate_hostnames:
-        - subtitles
-
-  # readarr:
-  #   image: lscr.io/linuxserver/readarr:develop
-  #   container_name: readarr-up
-  #   volumes:
-  #     - ${CONFIG}/readarr:/config
-  #     - /tank/media:/media
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=America/Detroit            
-  #   restart: always      
-  #   x-tailscale:
-  #     upstream: http://readarr-up:8787
-  #     hostname: readarr
-  #   x-web:
-  #     upstream: https://readarr.tailnet-a578.ts.net
-  #     hostname: readarr
+      port: 6767
+    x-backup:
+      paths:
+        - /data/bazarr/backup
 
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr-up
+    hostname: jellyseerr
     user: 1000:1000
     environment:
       - LOG_LEVEL=debug
       - TZ=America/Detroit
     volumes:
-      - ${CONFIG}/jellyseerr:/app/config
+      - /data/jellyseerr:/app/config
+      - ${CONFIGS_DIR}/media/backup-jellyseerr.js:/backup-jellyseerr.js
     restart: always
-    x-tailscale:
-      upstream: http://jellyseerr-up:5055
-      hostname: jellyseerr
     x-web:
-      upstream: https://jellyseerr.tailnet-a578.ts.net
-      hostname: jellyseerr
-      require_auth: false
-      alternate_hostnames:
-        - request
-        - requests
+      port: 5055
+    x-backup:
+      prepare:
+        - rm -f /app/config/db/db.backup.sqlite3
+        - node /backup-jellyseerr.js
+      paths:
+        - /data/jellyseerr/db/db.backup.sqlite3
+        - /data/jellyseerr/settings.json

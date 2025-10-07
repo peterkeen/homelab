@@ -1,14 +1,18 @@
 services:
   ext-proxy:
     container_name: ext-proxy
-    image: kfcr.fly.dev/nginx:1.23
-    network_mode: host
+    image: nginx:stable
     environment:
       - CONFIGS_SHA
+    ports:
+      - 80:80
+      - 443:443
     volumes:
       - ${CONFIGS_DIR}/ext-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
       - ${CONFIGS_DIR}/ext-proxy/common.conf:/etc/nginx/snippets/common.conf
       - ${CONFIGS_DIR}/ext-proxy/00-remove-default.sh:/docker-entrypoint.d/00-remove-default.sh
+      - ${CONFIGS_DIR}/ext-proxy/00_logging.conf:/etc/nginx/conf.d/00_logging.conf
+      - ${CONFIGS_DIR}/ext-proxy/40-clear-cache.sh:/docker-entrypoint.d/40-clear-cache.sh
       - ${CONFIGS_DIR}/ext-proxy/dhparam:/etc/nginx/dhparam      
       - keenland-certs:/etc/letsencrypt/certificates:ro
     restart: unless-stopped

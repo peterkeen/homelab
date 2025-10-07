@@ -1,0 +1,17 @@
+services:
+  hass_rag:
+    container_name: hass-rag-up
+    build: .
+    restart: unless-stopped
+    environment:
+      - HASS_API_TOKEN
+      - LITELLM_TOKEN
+      - OLLAMA_BASE_URL=http://nibbler.tailnet-a578.ts.net:11434
+      - DATA_PATH=/data
+      - LITELLM_BASE_URL=https://litellm.tailnet-a578.ts.net
+      - HASS_BASE_URL=http://home.tailnet-a578.ts.net:8123 
+    volumes:
+      - /data/hass-rag:/data
+    x-tailscale:
+      hostname: hass-rag
+      upstream: http://hass-rag-up:8000

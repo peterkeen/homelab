@@ -6,11 +6,13 @@ services:
       - CONFIGS_SHA
     network_mode: host
     volumes:
+      - ${CONFIGS_DIR}/int-proxy/00_logging.conf:/etc/nginx/conf.d/00_logging.conf
       - ${CONFIGS_DIR}/int-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
-      - ${CONFIGS_DIR}/int-proxy/jellyfin.conf:/etc/nginx/conf.d/jellyfin.conf
       - ${CONFIGS_DIR}/int-proxy/common.conf:/etc/nginx/snippets/common.conf
       - ${CONFIGS_DIR}/int-proxy/40-clear-cache.sh:/docker-entrypoint.d/40-clear-cache.sh
       - ${CONFIGS_DIR}/int-proxy/dhparam:/etc/nginx/dhparam
+      - ${CONFIGS_DIR}/int-proxy/omicron-control-plane.conf:/etc/nginx/stream-conf.d/omicron-control-plane.conf
+      - ${CONFIGS_DIR}/int-proxy/nginx.conf:/etc/nginx/nginx.conf
       - /scratch/nginx_cache:/cache
       - keenland-certs:/etc/letsencrypt/certificates:ro
     restart: unless-stopped
@@ -18,3 +20,18 @@ services:
       - certificates
     labels:
       com.centurylinklabs.watchtower.depends-on: "/certificates"
+
+  keepalived:
+    image: ghcr.io/shawly/keepalived
+    environment:
+      TZ: America/Detroit
+      KEEPALIVED_VIRTUAL_IP: 10.10.10.10
+      KEEPALIVED_VIRTUAL_MASK: 24
+      KEEPALIVED_CHECK_IP: any
+      KEEPALIVED_CHECK_PORT: 80
+      KEEPALIVED_VRID: 150
+      KEEPALIVED_INTERFACE: ${KEEPALIVED_INTERFACE}
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_BROADCAST

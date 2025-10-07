@@ -1,0 +1,10 @@
+services:
+  rancher:
+    image: rancher/rancher:latest
+    container_name: rancher
+    command: ["--no-cacerts"]
+    privileged: true
+    volumes:
+      - /data/rancher:/var/lib/rancher
+    x-tailscale-2:
+      port: 80

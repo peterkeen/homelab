@@ -1,0 +1,8 @@
+# waterfurnace
+
+connection: &waterfurnace
+  accepter: tcp,6637
+  connector: serialdev,DEVNODE,19200e81,local
+  options:
+    kickolduser: true
+

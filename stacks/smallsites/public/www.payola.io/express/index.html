@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Payola - Stripe Payments for Rails Apps</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" />
+  <link href="https://www.payola.io/blog/index.xml" rel="alternate" type="application/atom+xml" />
+  <link href="/stylesheets/application.css" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+   <![endif]-->
+    <style type="text/css">
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight .cm {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .cp {
+  color: #999999;
+  font-weight: bold;
+}
+.highlight .c1 {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .cs {
+  color: #999999;
+  font-weight: bold;
+  font-style: italic;
+}
+.highlight .c, .highlight .cd {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .err {
+  color: #a61717;
+  background-color: #e3d2d2;
+}
+.highlight .gd {
+  color: #000000;
+  background-color: #ffdddd;
+}
+.highlight .ge {
+  color: #000000;
+  font-style: italic;
+}
+.highlight .gr {
+  color: #aa0000;
+}
+.highlight .gh {
+  color: #999999;
+}
+.highlight .gi {
+  color: #000000;
+  background-color: #ddffdd;
+}
+.highlight .go {
+  color: #888888;
+}
+.highlight .gp {
+  color: #555555;
+}
+.highlight .gs {
+  font-weight: bold;
+}
+.highlight .gu {
+  color: #aaaaaa;
+}
+.highlight .gt {
+  color: #aa0000;
+}
+.highlight .kc {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kd {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kn {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kp {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kr {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kt {
+  color: #445588;
+  font-weight: bold;
+}
+.highlight .k, .highlight .kv {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .mf {
+  color: #009999;
+}
+.highlight .mh {
+  color: #009999;
+}
+.highlight .il {
+  color: #009999;
+}
+.highlight .mi {
+  color: #009999;
+}
+.highlight .mo {
+  color: #009999;
+}
+.highlight .m, .highlight .mb, .highlight .mx {
+  color: #009999;
+}
+.highlight .sb {
+  color: #d14;
+}
+.highlight .sc {
+  color: #d14;
+}
+.highlight .sd {
+  color: #d14;
+}
+.highlight .s2 {
+  color: #d14;
+}
+.highlight .se {
+  color: #d14;
+}
+.highlight .sh {
+  color: #d14;
+}
+.highlight .si {
+  color: #d14;
+}
+.highlight .sx {
+  color: #d14;
+}
+.highlight .sr {
+  color: #009926;
+}
+.highlight .s1 {
+  color: #d14;
+}
+.highlight .ss {
+  color: #990073;
+}
+.highlight .s {
+  color: #d14;
+}
+.highlight .na {
+  color: #008080;
+}
+.highlight .bp {
+  color: #999999;
+}
+.highlight .nb {
+  color: #0086B3;
+}
+.highlight .nc {
+  color: #445588;
+  font-weight: bold;
+}
+.highlight .no {
+  color: #008080;
+}
+.highlight .nd {
+  color: #3c5d5d;
+  font-weight: bold;
+}
+.highlight .ni {
+  color: #800080;
+}
+.highlight .ne {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nf {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nl {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nn {
+  color: #555555;
+}
+.highlight .nt {
+  color: #000080;
+}
+.highlight .vc {
+  color: #008080;
+}
+.highlight .vg {
+  color: #008080;
+}
+.highlight .vi {
+  color: #008080;
+}
+.highlight .nv {
+  color: #008080;
+}
+.highlight .ow {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .o {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .w {
+  color: #bbbbbb;
+}
+.highlight {
+  background-color: #f8f8f8;
+}
+    </style>
+</head>
+<body>
+  <div class="jumbotron header">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h1>Payola</h1>
+          <p>Stripe payments for your Rails app</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <ul class="head-nav">
+            <li><a class="" href="/">Home</a></li>
+            <li><a href="/blog">Blog</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h2>You're a busy person.</h2>
+
+<p>When you're building your business and writing the software at it&#39;s core, you hardly have time to breathe, let alone do things like integrate payments.</p>
+
+<p>Payola Express gets you from zero to <strong>money in the bank in less than one week.</strong></p>
+
+<h3>When you buy</h3>
+
+<p>After you buy, we&#39;ll schedule our first meeting, where we&#39;ll talk about your application and what you need Stripe to do for you. This is also your opportunity to pick my brain about anything Stripe or payments related.</p>
+
+<p>After our meeting I&#39;ll clone your Rails application off of GitHub and set up your Stripe payments using Payola, Payola Pro, and any customizations that we discuss in our first meeting. As I&#39;m working I&#39;ll keep you in the loop, making sure things are on track. When I&#39;m close to done we&#39;ll schedule the second meeting.</p>
+
+<p>At the second meeting we&#39;ll go through the code that I wrote for you and I&#39;ll answer any questions you have. The whole process typically takes three to five business days.</p>
+
+<h3>What you get</h3>
+
+<p>Payola Express helps you in two ways. First, you get the <strong>peace of mind</strong> of having a payments expert build your Stripe and Rails integration for you. Second, you&#39;ll get two sessions with me to <strong>ask questions</strong> and talk through any concerns you have with Stripe, credit card payments, and how that all interacts with your application. Third, you get a <strong>free year of Payola Pro</strong>.</p>
+
+<h3>Answered Questions</h3>
+
+<p><strong>Can you work on my PHP/PHP/Node/Perl/COBOL application?</strong></p>
+
+<p>Payola Express is only for Ruby on Rails applications, specifically Rails 4.1 and up.</p>
+
+<p><strong>What if I&#39;m not on Rails 4.1 yet?</strong></p>
+
+<p>If you&#39;re not to 4.1 yet we can work through the pain together, but there will be an additional charge based on how much upgrade work there is to do.</p>
+
+<p><strong>How much does it cost?</strong></p>
+
+<p>Payola Express is $2,500.</p>
+
+<p><strong>Do you do other consulting work?</strong></p>
+<p>I sure do! <a href="mailto:hi@petekeen.net">Email me</a> and tell me all about your projects.</p>
+
+<h3>Who am I?</h3>
+
+<p>Hi! I&#39;m <strong>Pete Keen</strong>. I&#39;ve been a professional software developer for about eight years and I&#39;ve personally worked on many stripe integrations for companies just like yours. I&#39;m the author of <a href="https://www.masteringmodernpayments.com">Mastering Modern Payments: Using Stripe with Rails</a>, the only book on how to properly write your Stripe integration. I&#39;m also the main author of <a href="https://github.com/peterkeen/payola">Payola</a>, a drop-in Rails engine for Stripe payments.</p>
+
+<h3>Billing done right</h3>
+
+<p>If you want an easy-to-use billing system that you can have confidence in, you&#39;ve come to the right place:</p>
+
+<p class="tall text-center"><a href="/express-apply" class="btn btn-lg btn-info">Get Reliable Payments</a></p>
+
+<p>If you order right now you will have a guaranteed spot on my schedule within the next <strong>3 weeks</strong>. Here are the <a href="/express-terms">terms and conditions</a> if you&#39;re interested.</p>
+
+<p>Have questions? Great! Email me at <a href="mailto:hi@payola.io">hi@payola.io</a> with anything. I&#39;d love to hear from you and read all about your application. Thanks for reading!</p>
+
+<p>&mdash; Pete Keen</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center">
+    &copy Cora Street Press LLC. Built by <a href="https://www.petekeen.net/">Pete Keen</a>.
+  </footer>
+  <script src="/javascripts/application.js" type="text/javascript"></script>
+</body>
+</html>

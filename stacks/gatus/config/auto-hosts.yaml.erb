@@ -1,0 +1,17 @@
+<%-
+endpoints = []
+secret = secrets.get("g6tkyx7ryhhdig3vgspawa6c2m")
+
+all_hosts.each do |hostname, host|
+  next unless secret[hostname]
+  endpoints << {
+    "name" => hostname,
+    "group" => "host-backups",
+    "token" => secret[hostname],
+    "heartbeat" => {
+      "interval" => "24h"
+    }
+  }
+end
+-%>
+<%= {"external-endpoints" => endpoints}.to_yaml %>

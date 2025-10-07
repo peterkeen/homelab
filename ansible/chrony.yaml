@@ -10,21 +10,21 @@
       ansible.builtin.package:
         name: gpsd
         state: present
-      when: "'wyse-3040-9c0d' in inventory_hostname"
+      when: "'lrrr' in inventory_hostname"
 
     - name: Enable gpsd
       ansible.builtin.service:
         name: gpsd
         state: started
         enabled: yes
-      when: "'wyse-3040-9c0d' in inventory_hostname"
+      when: "'lrrr' in inventory_hostname"
 
     - name: Copy stratum0 conf
       ansible.builtin.copy:
         src: files/chrony/chrony.stratum0.conf
         dest: /etc/chrony/chrony.conf
         backup: yes
-      when: "'wyse-3040-9c0d' in inventory_hostname"        
+      when: "'lrrr' in inventory_hostname"        
       notify:
         - restart chronyd
 
@@ -33,7 +33,7 @@
         src: files/chrony/chrony.conf
         dest: /etc/chrony/chrony.conf
         backup: yes
-      when: "'wyse-3040-9c0d' not in inventory_hostname"
+      when: "'lrrr' not in inventory_hostname"
       notify:
         - restart chronyd
 

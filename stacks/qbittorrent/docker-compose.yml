@@ -11,7 +11,7 @@ services:
       - TORRENTING_PORT=6881
     volumes:
       - /data/qbittorrent/config:/config
-      - /data/qbittorrent/downloads:/downloads #optional
+      - /tank/media:/downloads #optional
     restart: unless-stopped
 
     x-tailscale:

@@ -1,35 +1,160 @@
-require 'json'
+# frozen_string_literal: true
+
+require 'yajl'
 require 'subprocess'
-require 'sorbet-runtime'
-require_relative './ds_logger'
+require 'singleton'
+require 'tempfile'
+require 'pstore'
+require 'time'
+require 'shellwords'
 
-class Secrets < T::Struct
-  def self.load_all!
+class Secrets
+  include Singleton
 
-    return @secrets if defined? @secrets
-
-    LOGGER.info('Secrets.load_all!')
-    items_json = `op item list --format json --categories 'Secure Note,Server' --vault 'keen.land secrets' | op item get - --format json`
-
-    all_items = items_json.split(%r[(?<=})\n(?={)]m).map do |item|
-      JSON.parse(item)
+  class Item
+    def initialize(raw)
+      @raw = raw
     end
 
-    servers = all_items.select { |i| i["category"] == "SERVER" }
-    notes = all_items.select { |i| i["category"] == "SECURE_NOTE" }
+    def vars
+      map_fields do |field|
+        if field["type"] == "SSHKEY"
+          [field["label"], field.dig("ssh_formats", "openssh", "value")]
+        else
+          [field["label"], field["value"]]
+        end
+      end.to_h
+    end
 
-    secrets_by_hostname = Hash.new { |h,k| h[k] = {} }
+    def refs
+      map_fields do |field|
+        [field["label"], field["reference"]]
+      end.to_h
+    end
 
-    servers.each do |server|
-      notes.select { |n| (n["tags"]&.intersection(server["tags"])&.length || 0) > 0 }.each do |note|
-        note["fields"].each do |field|
-          next if field["label"] == "notesPlain"
+    def obfuscated_refs
+      vault = @raw["vault"]["id"]
+      item_id = @raw["id"]
 
-          secrets_by_hostname[server["title"]][field["label"]] = field["value"]
+      map_fields do |field|
+        field_id = field["id"]
+        [field["label"], "op://#{vault}/#{item_id}/#{field_id}"]
+      end.to_h
+    end
+
+    def [](key)
+      vars[key]
+    end
+
+    def updated_at
+      DateTime.parse(@raw["updated_at"])
+    end
+
+    def map_fields(&block)
+      @raw["fields"].filter_map do |field|
+        next if field["label"] == "notesPlain"
+        yield field
+      end
+    end
+  end
+
+  def items_for_server(server)
+    ids = @tags_by_server[server].flat_map do |tag|
+      @items_by_tag[tag]
+    end.sort.uniq
+
+    fetch_items(ids)
+  end
+
+  def get(id)
+    fetch_items([id]).first
+  end
+
+  private
+
+  VAULT_UUID = "fmycvdzmeyvbndk7s7pjyrebtq"
+  PSTORE_PATH = File.expand_path(File.join(__FILE__, '../../secrets.store'))
+  PSTORE_ITEMS_LIST_KEY = "items_list"
+  PSTORE_ITEMS_LIST_CACHE_TTL = 10
+
+  def initialize
+    @items = PStore.new(PSTORE_PATH)
+    @items_by_tag = Hash.new {|h,k| h[k] = []}
+    @tags_by_server = Hash.new {|h,k| h[k] = []}
+
+    preload
+  end
+
+  def transaction(&block)
+    @items.transaction do
+      yield
+    end
+  end
+
+  def preload
+    transaction do
+      items_list.each do |item|
+        if @items.key?(item["id"])
+          stored = @items[item["id"]]
+          new_ts = DateTime.parse(item["updated_at"])
+
+          @items.delete(item["id"]) if stored.updated_at < new_ts
+        end
+
+        if item["category"] == "SECURE_NOTE"
+          item.fetch("tags", []).each do |tag|
+            @items_by_tag[tag] << item["id"]
+          end
+        else
+          @tags_by_server[item["title"]] = item["tags"]
         end
       end
     end
-
-    @secrets = secrets_by_hostname
   end
+
+  def items_list
+    list = @items[PSTORE_ITEMS_LIST_KEY]
+    if list.nil? || (list[:updated_at] + PSTORE_ITEMS_LIST_CACHE_TTL) < Time.now
+      (@items[PSTORE_ITEMS_LIST_KEY] = {
+        items: fetch_items_list,
+        updated_at: Time.now
+      })[:items]
+    else
+      list[:items]
+    end
+  end
+
+  def fetch_items_list
+    raw = Subprocess.check_output(Shellwords.split("op item list --format json --categories 'Secure Note,Server' --vault #{VAULT_UUID}"))
+    items = Yajl::Parser.new.parse(raw)
+    items.select { |item| !item["tags"].nil? }
+  end
+
+  def fetch_items(ids)
+    transaction do
+      known_items = ids.filter_map { |id| next unless @items.key?(id); [id, @items[id]] }.to_h
+      unknown_ids = (ids - known_items.keys).sort.uniq
+
+      if unknown_ids.length == 0
+        return known_items.values
+      end
+
+      fetch_json = unknown_ids.map do |id|
+        {"id" => id, "vault" => {"id" => VAULT_UUID}}
+      end
+
+      items_json = nil
+      Subprocess.check_call(%W{op item get - --format json}, stdin: Subprocess::PIPE, stdout: Subprocess::PIPE) do |p|
+        stdout, _stderr = p.communicate(fetch_json.to_json)
+        items_json = stdout
+      end
+
+      Yajl::Parser.new.parse(items_json) do |item|
+        @items[item["id"]] = Item.new(item)
+      end
+
+      ids.map { |id| @items[id] }
+    end
+  end
+
 end

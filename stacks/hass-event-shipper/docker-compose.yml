@@ -1,0 +1,8 @@
+services:
+  hass-event-shipper:
+    container_name: hass-event-shipper
+    build: .
+    environment:
+      - HASS_API_TOKEN
+      - HASS_URL=http://home.tailnet-a578.ts.net:8123
+    restart: unless-stopped

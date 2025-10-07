@@ -1,0 +1,18 @@
+services:
+  tsbridge:
+    image: ghcr.io/jtdowney/tsbridge:latest
+    container_name: tsbridge
+    command: ["--provider", "docker"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Required for label discovery
+      - /data/tsbridge:/state
+    environment:
+      - TS_API_CLIENT_ID
+      - TS_API_CLIENT_SECRET
+    labels:
+      - "tsbridge.tailscale.oauth_client_id_env=TS_API_CLIENT_ID"
+      - "tsbridge.tailscale.oauth_client_secret_env=TS_API_CLIENT_SECRET"
+      - "tsbridge.tailscale.state_dir=/state"
+      - "tsbridge.tailscale.default_tags=tag:server" # Must match or be owned by your OAuth client's tag
+    x-op-items:
+      - "kndwf5beko2fibasfcrjahlvzi"

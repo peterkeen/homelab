@@ -1,0 +1,3 @@
+<%- all_web_configs do |host, _, _, web_conf|-%>
+D_EXTEND("keen.land", A("<%= web_conf["hostname"] %>", "<%= host.local_address %>"));
+<%- end -%>

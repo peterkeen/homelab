@@ -1,0 +1,25 @@
+services:
+  litellm-database:
+    image: postgres
+    restart: always
+    hostname: litellm-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgress
+      - POSTGRES_DB=postgres
+    volumes:
+      - /data/litellm/pg:/var/lib/postgresql/data
+
+  litellm:
+    image: ghcr.io/berriai/litellm-database:main-latest
+    restart: always
+    container_name: litellm-up
+    environment:
+      - DATABASE_URL=postgres://postgres:postgress@litellm-db/postgres
+      - LITELLM_MASTER_KEY=sk-1234
+      - STORE_MODEL_IN_DB=true
+    x-tailscale:
+      upstream: http://litellm-up:4000
+      hostname: litellm
+
+

@@ -45,17 +45,6 @@
         username: peterkeen
         password: "{{ ghcr_password.stdout }}"
 
-    - name: Gather kfcr.fly.dev password
-      command: "op read 'op://Personal/kfcr login/password'"
-      register: kfcr_password
-      delegate_to: localhost      
-
-    - name: Login to kfcr.fly.dev
-      community.docker.docker_login:
-        registry_url: kfcr.fly.dev
-        username: peterkeen
-        password: "{{ kfcr_password.stdout }}"
-
     - name: Set up prune cron
       ansible.builtin.cron:
         name: "docker system prune"
