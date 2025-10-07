@@ -18,7 +18,7 @@ This is what the other stuff does:
 
 - `stacks/` contains the docker compose stacks
 - `lib/` is where the code that interprets `hosts.yml` and drives the system lives
-- `playbooks/` contains the ansible playbooks that, among other things, deploys the stacks to the hosts
+- `ansible/` contains the ansible playbooks that, among other things, deploys the stacks to the hosts
 
 The code in `lib` is lightly typed with Sorbet.
 Really I just wanted `T::Struct` to parse `hosts.yml`, there aren't any `sig`s and I don't bother with `srb`.
