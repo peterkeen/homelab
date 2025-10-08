@@ -1,4 +1,0 @@
-resources:
-  - app.yaml
-  - wildcard.yaml
-  - protect-cert-sync.yaml
