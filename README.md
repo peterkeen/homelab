@@ -40,15 +40,17 @@ The only prerequisites for a host is to be on my tailnet.
 
 ## Compose extensions
 
-I have two compose extensions that I use pretty frequently:
+I have several compose extensions that I use pretty frequently:
 
 - `x-web` sets up a reverse proxy entry in the `local-proxy` config
-- `x-op-item` see 'Secrets' below
-- `x-backup` see 'Backups' below
+- `x-op-item` feeds secrets to services
+- `x-backup` backs up parts of the data directory
+- `x-depends` expresses stack-level dependencies
+- `x-cron` see 'Cron' below
 
 By convention, my stacks put data in `/data/<stackname>` and I try to have them run as user `1000:1000` as much as possible.
 
-## Networking
+### Networking
 
 Each internally facing host that runs web applications runs the stack `local-proxy`. This stack has an automatically generated nginx config that:
 
@@ -57,7 +59,7 @@ Each internally facing host that runs web applications runs the stack `local-pro
 
 DNS is configured (via `rake dns:apply` in `dns/`) to send traffic for the hostname associated with a container to the machine running that container. Thus, no overlay network necessary.
 
-## Secrets
+### Secrets
 
 Secrets are stored in a hard-coded 1Password vault as secure notes. Each note has one or more plain text or password fields representing environment variables, where the field name is the variable name and the value is the variable value.
 
@@ -82,6 +84,26 @@ Prepare scripts are run inside the container prior to rsync and are expected to 
 
 Cron on the host runs backups nightly.
 
+### Dependencies
+
+Stacks can optionally declare a `x-depends` top-level attribute. This consists of a list of other stacks that must be present for this stack to function correctly. The dependency tree is recursively resolved at build time. Example:
+
+```
+x-depends:
+  - certificate-client
+```
+
+### Cron
+
+Services can optionally declare `x-cron`, which is a list of cron definitions fed to [`ofelia`](https://github.com/mcuadros/ofelia). Crons run in the context of the container that they are defined within. Example:
+
+```
+x-cron:
+  - name: "some job"
+    schedule: "0 * * * * *" # every minute. IMPORTANT: ofelia requires a seconds column in the schedule
+    command: "/some-script.sh"
+```
+
 ## Health checks
 
 Docker compose allows one to define health checks but doesn't do anything with them directly. I have set up a 5 minute cron that restarts any container in an unhealthy state. This lets me do things like, eg, restart the Waterfurnace MQTT gateway container automatically every 12 hours by making a healthcheck fail.
@@ -91,45 +113,4 @@ Docker compose allows one to define health checks but doesn't do anything with t
 Probably don't. I don't have the bandwidth to help you so you're entirely on your own.
 
 That said, I'm proud of some of the ideas and if you want to steal them for your own setup be my guest.
-
-## Migrations
-
-Things to move back here
-
-### Critical Production
-
-- [*] gatus
-- [*] genmon 
-- [*] home assistant
-- [*] homer
-- [*] mosquitto
-- [*] paperless-ngx
-- [*] waterfurnace
-- [*] wg-easy
-- [*] zigbee
-- [*] zwave
-- [*] sabnzbd
-
-### External Production
-- [*] pkdn
-- [*] smallsites
-- [*] vmsave
-
-### Non-critical Production
-
-- [ ] adsb-bubble
-- [*] bazarr
-- [x] calendar-sync
-- [x] calibre
-- [ ] ersatztv
-- [x] ezshare-sync
-- [x] icloudpd-web
-- [*] jellyfin
-- [*] jellyseerr
-- [*] prowlarr
-- [*] radarr
-- [*] sonarr
-- [ ] ultrafeeder
-- [ ] ultrafeeder-feeder
-- [ ] unifi controller
 
