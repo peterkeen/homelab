@@ -1,0 +1,161 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: minecraft-pvc
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft
+  labels:
+    app: minecraft
+  annotations:
+    keel.sh/policy: "major"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "0"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: minecraft
+  template:
+    metadata:
+      labels:
+        app: minecraft
+    spec:
+      nodeSelector:
+        topology.kubernetes.io/zone: home-1
+      volumes:
+        - name: minecraft-data
+          persistentVolumeClaim:
+            claimName: minecraft-pvc
+      containers:
+        - name: minecraft
+          image: ghcr.io/itzg/minecraft-server:2025.8.0
+          imagePullPolicy: "IfNotPresent"
+          resources:
+            requests:
+              memory: 6Gi
+            limits:
+              memory: 6Gi
+          volumeMounts:
+            - name: minecraft-data
+              mountPath: /data
+          ports:
+            - containerPort: 8100
+            - containerPort: 25565
+            - containerPort: 19132
+            - containerPort: 19132
+              protocol: UDP
+          env:
+            - name: TZ
+              value: America/Detroit
+            - name: TYPE
+              value: PAPER
+            - name: EULA
+              value: "true"
+            - name: MODE
+              value: creative
+            - name: DIFFICULTY
+              value: peaceful
+            - name: MEMORY
+              value: 8G
+            - name: ENABLE_AUTOPAUSE
+              value: "TRUE"
+            - name: OVERRIDE_SERVER_PROPERTIES
+              value: "TRUE"
+            - name: MAX_TICK_TIME
+              value: "-1"
+            - name: JVM_DD_OPTS
+              value: "disable.watchdog:true"
+            # - name: OPS
+            #   value: |2
+            #       .zr4il
+            #       zr4il
+            - name: MODRINTH_FORCE_SYNCHRONIZE
+              value: "true"
+            - name: MODRINTH_PROJECTS
+              value: |
+                geyser:beta
+                luckperms:beta
+                multiverse-core:beta
+                multiverse-inventories:beta
+                multiverse-signportals:beta
+                bluemap:beta
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft
+spec:
+  type: LoadBalancer
+  selector:
+    app: minecraft
+  ports:
+    - port: 25565
+      targetPort: 25565
+      name: java
+    - port: 19132
+      targetPort: 19132
+      name: bedrock
+    - port: 19132
+      targetPort: 19132
+      protocol: UDP
+      name: bedrock-udp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft-bluemap
+spec:
+  selector:
+    app: minecraft
+  ports:
+    - protocol: TCP
+      port: 8100
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minecraft-bluemap
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - mc.keen.land
+      secretName: keenland-minecraft-ingress-cert
+  rules:
+    - host: mc.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minecraft-bluemap
+                port:
+                  number: 8100
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: minecraft
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       minecraft
+  updatePolicy:
+    updateMode: "Off"

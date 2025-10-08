@@ -40,7 +40,7 @@ The only prerequisites for a host is to be on my tailnet.
 
 ## Compose extensions
 
-I have several compose extensions that I use pretty frequently:
+I have two compose extensions that I use pretty frequently:
 
 - `x-web` sets up a reverse proxy entry in the `local-proxy` config
 - `x-op-item` see 'Secrets' below
@@ -91,4 +91,45 @@ Docker compose allows one to define health checks but doesn't do anything with t
 Probably don't. I don't have the bandwidth to help you so you're entirely on your own.
 
 That said, I'm proud of some of the ideas and if you want to steal them for your own setup be my guest.
+
+## Migrations
+
+Things to move back here
+
+### Critical Production
+
+- [*] gatus
+- [*] genmon 
+- [*] home assistant
+- [*] homer
+- [*] mosquitto
+- [*] paperless-ngx
+- [*] waterfurnace
+- [*] wg-easy
+- [*] zigbee
+- [*] zwave
+- [*] sabnzbd
+
+### External Production
+- [*] pkdn
+- [*] smallsites
+- [*] vmsave
+
+### Non-critical Production
+
+- [ ] adsb-bubble
+- [*] bazarr
+- [x] calendar-sync
+- [x] calibre
+- [ ] ersatztv
+- [x] ezshare-sync
+- [x] icloudpd-web
+- [*] jellyfin
+- [*] jellyseerr
+- [*] prowlarr
+- [*] radarr
+- [*] sonarr
+- [ ] ultrafeeder
+- [ ] ultrafeeder-feeder
+- [ ] unifi controller
 

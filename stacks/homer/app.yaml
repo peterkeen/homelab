@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homer
+  labels:
+    app: homer
+  annotations:
+    keel.sh/policy: "force"
+    keel.sh/approvals: "0"
+    operator.1password.io/auto-restart: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homer
+  template:
+    metadata:
+      labels:
+        app: homer
+    spec:
+      imagePullSecrets:
+        - name: ghcr.io
+      containers:
+        - name: homer
+          image: ghcr.io/keenfamily-us/infra/stacks/homer:latest
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              memory: 16Mi
+            limits:
+              memory: 16Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homer
+spec:
+  selector:
+    app: homer
+  ports:
+    - protocol: TCP
+      port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homer
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"    
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - keen.land
+      secretName: keenland-homer-ingress-cert
+  rules:
+    - host: keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homer
+                port:
+                  number: 8080
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: homer
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       homer
+  updatePolicy:
+    updateMode: "Off"

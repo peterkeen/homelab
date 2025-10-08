@@ -36,13 +36,6 @@
         minute: "*/5"
         job: "/usr/local/bin/restart-unhealthy-containers.sh"
 
-    - name: Install backup cron
-      ansible.builtin.cron:
-        name: "run stack backups"
-        hour: 1
-        minute: 10
-        job: "/bin/sh /root/app/stacks/backup/run.sh"
-
     - name: Start stack
       ansible.builtin.shell: docker compose up --detach --quiet-pull --no-color --build --remove-orphans
       args:

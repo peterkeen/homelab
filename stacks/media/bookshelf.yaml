@@ -1,0 +1,96 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: bookshelf-configs-pvc
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookshelf
+  labels:
+    app: bookshelf
+  annotations:
+    keel.sh/policy: "force"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 168h"
+    keel.sh/approvals: "0"
+    keel.sh/match-tag: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  
+  selector:
+    matchLabels:
+      app: bookshelf
+  template:
+    metadata:
+      labels:
+        app: bookshelf
+    spec:
+      nodeSelector:
+        topology.kubernetes.io/zone: home-1
+      volumes:
+        - name: media-nfs
+          nfs:
+            server: 10.73.95.84
+            path: /mnt/tank/media
+        - name: bookshelf-configs
+          persistentVolumeClaim:
+            claimName: bookshelf-configs-pvc
+      containers:
+        - name: bookshelf
+          image: ghcr.io/pennydreadful/bookshelf:hardcover
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: media-nfs
+              mountPath: /media
+            - name: bookshelf-configs
+              mountPath: /config
+          env:
+            - name: HARDCOVER
+              value: "false"
+            - name: METADATA_URL
+              value: "https://api.bookinfo.pro"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookshelf
+spec:
+  selector:
+    app: bookshelf
+  ports:
+    - protocol: TCP
+      port: 8787
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bookshelf-private
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - bookshelf.keen.land
+      secretName: keenland-bookshelf-ingress-cert-2
+  rules:
+    - host: bookshelf.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bookshelf
+                port:
+                  number: 8787

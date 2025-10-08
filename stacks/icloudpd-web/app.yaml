@@ -1,0 +1,109 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: icloudpd-web-configs-pvc
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 128Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: icloudpd-web
+  labels:
+    app: icloudpd-web
+  annotations:
+    keel.sh/policy: "force"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "0"
+    keel.sh/match-tag: "true"
+    operator.1password.io/auto-restart: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  
+  selector:
+    matchLabels:
+      app: icloudpd-web
+  template:
+    metadata:
+      labels:
+        app: icloudpd-web
+    spec:
+      volumes:
+        - name: icloudpd-web-configs
+          persistentVolumeClaim:
+            claimName: icloudpd-web-configs-pvc
+        - name: photos-nfs
+          nfs:
+            server: 10.73.95.84
+            path: /mnt/tank/photos
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: ["sh", "-c", "chown -R 101000:101000 /config"]
+          volumeMounts:
+            - name: icloudpd-web-configs
+              mountPath: /config   
+      containers:
+        - name: icloudpd-web
+          image: spicadust/icloudpd-web:latest
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            runAsUser: 101000
+            runAsGroup: 101000
+          volumeMounts:
+            - name: icloudpd-web-configs
+              mountPath: /config
+            - name: photos-nfs
+              mountPath: /app/downloads
+          env:
+            - name: SECRET_HASH_PATH
+              value: /config/secret_hash
+            - name: COOKIE_DIRECTORY
+              value: /config/cookies
+            - name: TOML_PATH
+              value: /config/policies.toml
+            - name: APPRISE_CONFIG_PATH
+              value: /config/apprise.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: icloudpd-web
+spec:
+  selector:
+    app: icloudpd-web
+  ports:
+    - protocol: TCP
+      port: 5000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: icloudpd-web-private
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - icloudpd.keen.land
+      secretName: keenland-icloudpd-web-ingress-cert
+  rules:
+    - host: icloudpd.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: icloudpd-web
+                port:
+                  number: 5000
+  

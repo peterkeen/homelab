@@ -1,0 +1,100 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jellyseerr-configs-pvc
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyseerr
+  labels:
+    app: jellyseerr
+  annotations:
+    keel.sh/policy: "major"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "0"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  
+  selector:
+    matchLabels:
+      app: jellyseerr
+  template:
+    metadata:
+      labels:
+        app: jellyseerr
+    spec:
+      nodeSelector:
+        topology.kubernetes.io/zone: home-1
+      volumes:
+        - name: jellyseerr-configs
+          persistentVolumeClaim:
+            claimName: jellyseerr-configs-pvc
+      containers:
+        - name: jellyseerr
+          image: ghcr.io/fallenbagel/jellyseerr:2.7.2
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: jellyseerr-configs
+              mountPath: /app/config
+          resources:
+            requests:
+              memory: 512Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyseerr
+spec:
+  selector:
+    app: jellyseerr
+  ports:
+    - protocol: TCP
+      port: 5055
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyseerr-private
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - jellyseerr.keen.land
+      secretName: keenland-jellyseerr-ingress-cert
+  rules:
+    - host: jellyseerr.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyseerr
+                port:
+                  number: 5055
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: jellyseerr
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       jellyseerr
+  updatePolicy:
+    updateMode: "Off"

@@ -1,0 +1,91 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: lidarr-configs-pvc
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidarr
+  labels:
+    app: lidarr
+  annotations:
+    keel.sh/policy: "force"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 168h"
+    keel.sh/approvals: "0"
+    keel.sh/match-tag: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  
+  selector:
+    matchLabels:
+      app: lidarr
+  template:
+    metadata:
+      labels:
+        app: lidarr
+    spec:
+      nodeSelector:
+        topology.kubernetes.io/zone: home-1
+      volumes:
+        - name: media-nfs
+          nfs:
+            server: 10.73.95.84
+            path: /mnt/tank/media
+        - name: lidarr-configs
+          persistentVolumeClaim:
+            claimName: lidarr-configs-pvc
+      containers:
+        - name: lidarr
+          image: blampe/lidarr:latest
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: media-nfs
+              mountPath: /media
+            - name: lidarr-configs
+              mountPath: /config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lidarr
+spec:
+  selector:
+    app: lidarr
+  ports:
+    - protocol: TCP
+      port: 8686
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lidarr-private
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - lidarr.keen.land
+      secretName: keenland-lidarr-ingress-cert
+  rules:
+    - host: lidarr.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lidarr
+                port:
+                  number: 8686

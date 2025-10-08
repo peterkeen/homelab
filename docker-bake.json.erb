@@ -1,0 +1,25 @@
+<%-
+contents = {
+  "group" => {
+    "default" => {
+      "targets" => []
+    }
+  },
+  "target" => {},
+}
+all_stacks.each do |stack_name, stack|
+  dockerfile_path = File.join(stack.path, "Dockerfile")
+
+  next unless File.exist?(File.join(stack.path, "Dockerfile"))
+
+  target = {
+    "dockerfile" => "Dockerfile",
+    "context" => "./" + stack.path,
+    "tags" => ["ghcr.io/keenfamily-us/infra/#{stack.path}:latest"],
+    "platforms" => ["linux/amd64"]
+  }
+  contents["target"][stack.name] = target
+  contents["group"]["default"]["targets"] << stack.name
+end
+-%>
+<%= JSON.pretty_generate(contents) %>

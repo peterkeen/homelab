@@ -1,0 +1,51 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: agent-secrets
+  namespace: localllama
+spec:
+  itemPath: "vaults/fmycvdzmeyvbndk7s7pjyrebtq/items/3qgfa3bzpo6quioetssezditl4"
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent
+  namespace: localllama  
+  labels:
+    app: agent
+  annotations:
+    keel.sh/policy: "force"
+    keel.sh/approvals: "0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      imagePullSecrets:
+        - name: ghcr.io      
+      containers:
+        - name: agent
+          image: ghcr.io/keenfamily-us/infra/stacks/agent:latest
+          imagePullPolicy: "Always"
+          envFrom:
+            - secretRef:
+                name: agent-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent
+  namespace: localllama  
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: agent
+  ports:
+    - protocol: TCP
+      port: 11434

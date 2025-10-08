@@ -1,0 +1,193 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: unifi-secrets
+spec:
+  itemPath: "vaults/fmycvdzmeyvbndk7s7pjyrebtq/items/tvz4xct4jfl6ap7dgl2qv4wd3e"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifi-mongodb-pvc
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi-mongodb
+  annotations:
+    keel.sh/policy: "patch"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "1"  
+spec:
+  replicas: 1  # Adjust as per your requirements
+  selector:
+    matchLabels:
+      app: unifi-mongodb
+  template:
+    metadata:
+      labels:
+        app: unifi-mongodb
+    spec:
+      volumes:
+      - name: unifi-mongodb-data
+        persistentVolumeClaim:
+          claimName: unifi-mongodb-pvc
+      containers:
+      - name: mongodb
+        image: mongo:8.0.12-noble  # Use the official MongoDB Docker image
+        imagePullPolicy: "IfNotPresent"
+        resources:
+          requests:
+            memory: "1024Mi"
+          limits:
+            memory: "2048Mi"        
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: unifi-mongodb-data
+          mountPath: /data/db
+        envFrom:
+        - secretRef:
+            name: unifi-secrets
+            
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-mongodb
+spec:
+  clusterIP: None
+  selector:
+    app: unifi-mongodb
+  ports:
+  - port: 27017
+    targetPort: 27017
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifi-controller-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi-controller
+  annotations:
+    keel.sh/policy: "minor"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "1"    
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: unifi-controller    
+  template:
+    metadata:
+      labels:
+        app: unifi-controller
+      annotations:
+        k8s.v1.cni.cncf.io/networks: |
+          [
+            {
+              "name": "macvlan-static",
+              "ips": ["10.73.95.7/24"]
+            }
+          ]    
+    spec:
+      containers:
+      - name: unifi-controller
+        image: linuxserver/unifi-network-application:9.3.45
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: "150m"
+            memory: "1024Mi"
+          limits:
+            cpu: "512m"
+            memory: "2048Mi"
+        volumeMounts:
+          - name: unifi-data
+            mountPath: /config
+        env:
+          - name: MONGO_HOST
+            value: unifi-mongodb.default.svc.omicron.keen.land
+          - name: MONGO_PORT
+            value: "27017"
+        envFrom:
+          - secretRef:
+              name: unifi-secrets
+      volumes:
+        - name: unifi-data
+          persistentVolumeClaim:
+            claimName: unifi-controller-pvc
+---            
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-controller
+spec:
+  type: LoadBalancer
+  selector:
+    app: unifi-controller
+  ports:
+  - name: manage-https
+    port: 8443
+    targetPort: 8443
+    protocol: TCP    
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unifi-private
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 3g
+    nginx.ingress.kubernetes.io/backend-protocol: https    
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - unifi.keen.land
+      secretName: keenland-unifi-ingress-cert
+  rules:
+    - host: unifi.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: unifi-controller
+                port:
+                  number: 8443
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: unifi-controller
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       unifi-controller
+  updatePolicy:
+    updateMode: "Off"

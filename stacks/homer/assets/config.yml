@@ -68,7 +68,7 @@ services:
     - name: TP Link Omada Network
       subtitle: Wi-Fi and network switches
       url: https://omada.keen.land
-      logo: https://omada.keen.land/theme/img/svg/Omada.svg
+      logo: assets/omada.svg
     - name: UniFi Network
       subtitle: Some network switches
       url: https://unifi.keen.land

@@ -17,14 +17,8 @@ task :clean => 'ansible:clean' do
   sh "git clean -xf"
 end
 
-task :build_all_docker do
-  builds = Rake.application.tasks.filter_map do |task|
-    task.name if task.name =~ /build_and_push_docker/
-  end.to_a
-
-  builds.each do |build|
-    Rake::Task[build].invoke
-  end
+task :bake => :ci do
+  exec "docker buildx bake --push"
 end
 
 task :apply => ['ansible:apply', 'dns:apply', 'fly_proxy:apply']

@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: protect-cert-sync-script
+data:
+  sync.sh: |
+    #!/bin/sh
+
+    set -e
+    set -x
+
+    apk add openssh-client
+    scp -o StrictHostKeyChecking=no -i /etc/protect-cert-sync-identity/protect-cert-sync /etc/wildcard-cert/tls.crt /etc/wildcard-cert/tls.key /scripts/install.sh root@10.73.95.42:/tmp
+    ssh -o StrictHostKeyChecking=no -i /etc/protect-cert-sync-identity/protect-cert-sync root@10.73.95.42 "sh /tmp/install.sh"
+
+  install.sh: |
+    #!/bin/sh
+
+    set -e
+    set -x
+
+    if cmp /tmp/tls.crt /data/unifi-core/config/unifi-core.crt; then
+      echo "No update needed"
+      exit 0
+    fi
+
+    mv /tmp/tls.crt /data/unifi-core/config/unifi-core.crt
+    mv /tmp/tls.key /data/unifi-core/config/unifi-core.key
+
+    systemctl restart unifi-core
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: protect-cert-sync
+spec:
+  schedule: "15 3 * * *"
+  concurrencyPolicy: Forbid  
+  failedJobsHistoryLimit: 1  
+  jobTemplate:
+    spec:
+      backoffLimit: 0      
+      template:
+        spec:
+          restartPolicy: Never
+          volumes:
+            - name: cert
+              secret:
+                secretName: keenland-wildcard-cert-2
+            - name: ssh-key
+              secret:
+                secretName: protect-cert-sync-identity
+                defaultMode: 0400
+            - name: script
+              configMap:
+                name: protect-cert-sync-script
+          containers:
+            - name: alpine
+              image: alpine:3
+              command: ["sh", "/scripts/sync.sh"]
+              resources:
+                requests:
+                  memory: "64Mi"
+                limits:
+                  memory: "64Mi"
+              volumeMounts:
+                - name: cert
+                  readOnly: true
+                  mountPath: "/etc/wildcard-cert"
+                - name: ssh-key
+                  readOnly: true
+                  mountPath: "/etc/protect-cert-sync-identity"
+                - name: script
+                  mountPath: "/scripts"

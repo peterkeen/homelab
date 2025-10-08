@@ -1,0 +1,263 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: ultrafeeder-secrets
+  namespace: iot-system
+spec:
+  itemPath: "vaults/fmycvdzmeyvbndk7s7pjyrebtq/items/j2bixjtfunmasv2wwoimmesleq"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ultrafeeder-feeder-env
+  namespace: iot-system
+  labels:
+    app: ultrafeeder-feeder
+data:
+  LOGLEVEL: error
+  TZ: America/Detroit
+  READSB_DEVICE_TYPE: "rtlsdr"
+  READSB_RTLSDR_DEVICE: "1090"
+  READSB_RTLSDR_PPM: "0"
+  READSB_LAT: "42.331307"
+  READSB_LON: "-83.879102"
+  READSB_ALT: "288.95m"
+  READSB_GAIN: "auto"
+  READSB_RX_LOCATION_ACCURACY: "2"
+  READSB_STATS_RANGE: "true"
+  MLAT_USER: "7395"
+  READSB_FORWARD_MLAT_SBS: "true"
+  TAR1090_DISABLE: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dump-978-env
+  namespace: iot-system
+  labels:
+    app: ultrafeeder-feeder
+data:
+  TZ: America/Detroit
+  LAT: "42.331307"
+  LON: "-83.879102"
+  DUMP978_RTLSDR_DEVICE: "978"
+  DUMP978_SDR_GAIN: "auto"
+  DUMP978_SDR_PPM: "1"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ultrafeeder-feeder
+  namespace: iot-system
+  labels:
+    app: ultrafeeder-feeder
+  annotations:
+    keel.sh/policy: "force"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "0"
+    keel.sh/match-tag: "true"    
+    operator.1password.io/auto-restart: "true"
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ultrafeeder-feeder
+  template:
+    metadata:
+      labels:
+        app: ultrafeeder-feeder
+    spec:
+      tolerations:
+        - key: node-role.keen.land/iot-host
+          operator: Exists
+          effect: NoExecute
+      volumes:
+        - name: secrets
+          secret:
+            secretName: ultrafeeder-secrets
+        - name: devices
+          hostPath:
+            path: /dev
+        - name: run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+        - name: log
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+      imagePullSecrets:
+        - name: ghcr.io
+      restartPolicy: Always
+      nodeName: wyse-3040-9588
+      containers:
+        - name: ultrafeeder
+          image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder:telegraf
+          imagePullPolicy: "Always"
+          env:
+            - name: UUID
+              valueFrom:
+                secretKeyRef:
+                  name: ultrafeeder-secrets
+                  key: FEEDER_UUID
+          envFrom:
+            - configMapRef:
+                name: ultrafeeder-feeder-env
+          volumeMounts:
+            - name: devices
+              mountPath: /dev
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: 256Mi
+            limits:
+              memory: 256Mi            
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ultrafeeder-feeder-uat
+  namespace: iot-system
+  labels:
+    app: ultrafeeder-feeder-uat
+  annotations:
+    keel.sh/policy: "force"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "0"
+    keel.sh/match-tag: "true"
+    operator.1password.io/auto-restart: "true"
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ultrafeeder-feeder-uat
+  template:
+    metadata:
+      labels:
+        app: ultrafeeder-feeder-uat
+    spec:
+      tolerations:
+        - key: node-role.keen.land/iot-host
+          operator: Exists
+          effect: NoExecute
+      volumes:
+        - name: devices
+          hostPath:
+            path: /dev
+        - name: run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+        - name: log
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+      imagePullSecrets:
+        - name: ghcr.io
+      restartPolicy: Always
+      nodeName: wyse-3040-9588
+      containers:
+        - name: dump978
+          image: ghcr.io/sdr-enthusiasts/docker-dump978:latest
+          imagePullPolicy: "Always"
+          env:
+            - name: TZ
+              value: "America/Detroit"
+            - name: LAT
+              value: "42.331307"
+            - name: LON
+              value: "-83.879102"
+            - name: DUMP978_RTLSDR_DEVICE
+              value: "978"
+            - name: DUMP978_SDR_GAIN
+              value: "35"
+            - name: DUMP978_SDR_PPM
+              value: "1"
+          volumeMounts:
+            - name: devices
+              mountPath: /dev
+            - name: run
+              mountPath: /run
+            - name: tmp
+              mountPath: /tmp
+            - name: log
+              mountPath: /var/log
+          securityContext:
+            privileged: true
+            runAsUser: 0            
+          resources:
+            requests:
+              memory: 512Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ultrafeeder-feeder
+  namespace: iot-system
+spec:
+  selector:
+    app: ultrafeeder-feeder
+  ports:
+    - protocol: TCP
+      port: 30005
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ultrafeeder-feeder-uat
+  namespace: iot-system
+spec:
+  selector:
+    app: ultrafeeder-feeder-uat
+  ports:
+    - protocol: TCP
+      port: 80
+      name: web
+    - protocol: TCP
+      port: 30978
+      name: uat
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: ultrafeeder-feeder
+  namespace: iot-system  
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       ultrafeeder-feeder
+  updatePolicy:
+    updateMode: "Off"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: ultrafeeder-feeder-uat
+  namespace: iot-system
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       ultrafeeder-feeder-uat
+  updatePolicy:
+    updateMode: "Off"

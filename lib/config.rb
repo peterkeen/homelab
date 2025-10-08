@@ -98,7 +98,7 @@ class Config < T::Struct
 
       host_conf["hostname"] = hostname
 
-      host_stacks = host_conf.delete("stacks").sort.uniq
+      host_stacks = resolve_dependencies(stacks, host_conf.delete("stacks").sort.uniq)
 
       host_conf["stacks"] = host_stacks.map { |name| stacks[name] }.compact
 
@@ -130,6 +130,16 @@ class Config < T::Struct
     }
 
     from_hash(config_hash)
+  end
+
+  def self.resolve_dependencies(stack_configs, src_stacks)
+    src_stacks.filter_map do |src_stack|
+      depends = stack_configs[src_stack]["config"]["x-depends"]
+
+      next [src_stack] unless depends
+
+      ([src_stack] + resolve_dependencies(stack_configs, depends)).sort.uniq
+    end.flatten
   end
 
   def all_hosts

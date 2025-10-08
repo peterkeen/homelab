@@ -1,0 +1,17 @@
+services:
+  certificate-client:
+    container_name: certificate-client
+    image: eeacms/rsync
+    environment:
+      - CONFIGS_SHA
+    volumes:
+      - /data/certificates:/certificates
+      - ${CONFIGS_DIR}/backup/backup_key:/backup_key
+      - ${CONFIGS_DIR}/certificate-client/entrypoint.sh:/entrypoint.sh
+      - ${CONFIGS_DIR}/certificate-client/sync.sh:/sync.sh
+    entrypoint: /bin/ash
+    command: /entrypoint.sh
+    x-cron:
+      - name: "sync certificates"
+        schedule: "15 13 3 * * *"
+        command: "/bin/ash /sync.sh"

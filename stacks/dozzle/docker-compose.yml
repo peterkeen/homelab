@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       - "DOZZLE_ENABLE_ACTIONS=true"
-      - "DOZZLE_REMOTE_AGENT=#<Host:0x0000000107fa3d60>.tailnet-a578.ts.net:7007,#<Host:0x00000001082c7aa0>.tailnet-a578.ts.net:7007,#<Host:0x00000001082c5660>.tailnet-a578.ts.net:7007,#<Host:0x0000000108b8e4e0>.tailnet-a578.ts.net:7007"
+      - "DOZZLE_REMOTE_AGENT=#<Host:0x000000010541b030>.tailnet-a578.ts.net:7007,#<Host:0x00000001080793e8>.tailnet-a578.ts.net:7007,#<Host:0x00000001080755b8>.tailnet-a578.ts.net:7007,#<Host:0x00000001080726d8>.tailnet-a578.ts.net:7007"
     x-tailscale:
       hostname: dozzle
       upstream: http://dozzle-up:8080

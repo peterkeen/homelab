@@ -1,0 +1,127 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: waterfurnace-secrets
+spec:
+  itemPath: "vaults/fmycvdzmeyvbndk7s7pjyrebtq/items/uyzxprvbtfcqfu45u2g6qt5foi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waterfurnace
+  labels:
+    app: waterfurnace
+  annotations:
+    keel.sh/policy: "major"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "0"
+    operator.1password.io/auto-restart: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: waterfurnace
+  template:
+    metadata:
+      labels:
+        app: waterfurnace
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: waterfurnace
+          image: ghcr.io/ccutrer/waterfurnace_aurora:v1.5.7
+          imagePullPolicy: "Always"
+          envFrom:
+            - secretRef:
+                name: waterfurnace-secrets
+          resources:
+            requests:
+              memory: '64Mi'
+            limits:
+              memory: '64Mi'                
+      imagePullSecrets:
+        - name: ghcr.io
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: waterfurnace-restart
+  namespace: default
+---
+# allow getting status and patching only the one deployment you want
+# to restart
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: waterfurnace-restart
+  namespace: default
+rules:
+  - apiGroups: ["apps", "extensions"]
+    resources: ["deployments"]
+    resourceNames: ["waterfurnace"]
+    verbs: ["get", "patch", "list", "watch"] # "list" and "watch" are only needed
+                                             # if you want to use `rollout status`
+---
+# bind the role to the service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: waterfurnace-restart
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: waterfurnace-restart
+subjects:
+  - kind: ServiceAccount
+    name: waterfurnace-restart
+    namespace: default
+---
+# cron to actually do the restart
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: waterfurnace-restart
+  namespace: default
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1    
+  schedule: '0 10 * * *' # cron spec of time, here, 8 o'clock
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 600 # timeout, makes most sense with
+                                 # "waiting for rollout" variant specified below
+      template:
+        spec:
+          serviceAccountName: waterfurnace-restart # name of the service
+                                                   # account configured above
+          restartPolicy: Never
+          containers:
+            - name: kubectl
+              image: registry.suse.com/suse/kubectl 
+              resources:
+                requests:
+                  memory: "64Mi"
+                limits:
+                  memory: "64Mi"
+              command:
+                - 'kubectl'
+                - 'rollout'
+                - 'restart'
+                - 'deployment/waterfurnace'
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: waterfurnace
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       waterfurnace
+  updatePolicy:
+    updateMode: "Off" 

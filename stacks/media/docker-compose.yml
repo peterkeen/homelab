@@ -92,3 +92,7 @@ services:
       paths:
         - /data/jellyseerr/db/db.backup.sqlite3
         - /data/jellyseerr/settings.json
+
+x-depends:
+  - media-volume
+  - smtp-relay

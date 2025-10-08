@@ -1,4 +1,0 @@
-git+https://github.com/peterkeen/aioesphomeserver
-colored
-git+https://github.com/peterkeen/moonraker-api
-git+https://github.com/peterkeen/neopixel_effects@fab06af

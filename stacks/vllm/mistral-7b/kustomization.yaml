@@ -1,0 +1,4 @@
+resources:
+  - secret.yaml
+  - pvc.yaml
+  - deployment.yaml

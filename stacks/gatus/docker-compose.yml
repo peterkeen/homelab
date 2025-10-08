@@ -15,3 +15,6 @@ services:
     x-web:
       hostname: gatus
       port: 8080
+
+x-depends:
+  - smtp-relay

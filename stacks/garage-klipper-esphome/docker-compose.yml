@@ -1,7 +1,0 @@
-services:
-  klipper-esphome:
-    container_name: klipper-esphome
-    build: .
-    restart: unless-stopped
-    network_mode: host
-

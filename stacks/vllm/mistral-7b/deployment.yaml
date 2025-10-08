@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mistral-7b
+  namespace: localllama
+  labels:
+    app: mistral-7b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mistral-7b
+  template:
+    metadata:
+      labels:
+        app: mistral-7b
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: nibbler
+      runtimeClassName: nvidia      
+      volumes:
+      - name: cache-volume
+        persistentVolumeClaim:
+          claimName: mistral-7b
+      # vLLM needs to access the host's shared memory for tensor parallel inference.
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "2Gi"
+      imagePullSecret:
+        - name: ghcr.io
+      containers:
+      - name: mistral-7b
+        image: ghcr.io/sasha0552/vllm:latest
+        command: ["/bin/sh", "-c"]
+        args: [
+          "vllm serve mistralai/Mistral-7B-Instruct-v0.3 --trust-remote-code --enable-chunked-prefill --max_num_batched_tokens 1024"
+        ]
+        env:
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: "all"          
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hugging-face-public-read-token
+              key: HF_TOKEN
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /root/.cache/huggingface
+          name: cache-volume
+        - name: shm
+          mountPath: /dev/shm
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 5

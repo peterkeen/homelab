@@ -26,3 +26,6 @@ services:
 
 volumes:
   sabnzbd-scratch:
+
+x-depends:
+  - media-volume

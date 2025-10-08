@@ -1,0 +1,167 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: omada-data-pvc
+spec:
+  storageClassName: longhorn  
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: omada-logs-pvc
+spec:
+  storageClassName: longhorn  
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: omada-controller
+  annotations:
+    keel.sh/policy: "major"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "1"  
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: omada-controller
+  template:
+    metadata:
+      labels:
+        app: omada-controller
+      annotations:
+        k8s.v1.cni.cncf.io/networks: |
+          [
+            {
+              "name": "macvlan-static",
+              "ips": ["10.73.95.6/24"]
+            }
+          ]
+    spec:
+      securityContext:
+        runAsUser: 508
+        runAsGroup: 508
+        runAsNonRoot: true
+        fsGroup: 508
+        fsGroupChangePolicy: "OnRootMismatch"
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: omada-controller
+        image: mbentley/omada-controller:5.15.24.19-openj9-chromium-amd64
+        imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        env:
+        - name: ROOTLESS
+          value: "true"
+        - name: MANAGE_HTTP_PORT
+          value: "80"
+        - name: MANAGE_HTTPS_PORT
+          value: "443"
+        - name: PORTAL_HTTP_PORT
+          value: "8088"
+        - name: PORTAL_HTTPS_PORT
+          value: "8843"
+        - name: PORT_APP_DISCOVERY
+          value: "27001"
+        - name: PORT_ADOPT_V1
+          value: "29812"
+        - name: PORT_UPGRADE_V1
+          value: "29813"
+        - name: PORT_MANAGER_V1
+          value: "29811"
+        - name: PORT_MANAGER_V2
+          value: "29814"
+        - name: PORT_DISCOVERY
+          value: "29810"
+        - name: PORT_TRANSFER_V2
+          value: "29815"
+        - name: PORT_RTTY
+          value: "29816"
+        - name: SHOW_SERVER_LOGS
+          value: "true"
+        - name: SHOW_MONGODB_LOGS
+          value: "false"
+        - name: SSL_CERT_NAME
+          value: tls.crt
+        - name: SSL_KEY_NAME
+          value: tls.key
+        - name: TZ
+          value: Etc/UTC
+        - name: SKIP_USERMOD
+          value: "true"
+        volumeMounts:
+        - name: omada-data
+          mountPath: /opt/tplink/EAPController/data
+        - name: omada-logs
+          mountPath: /opt/tplink/EAPController/logs
+      volumes:
+      - name: omada-data
+        persistentVolumeClaim:
+          claimName: omada-data-pvc
+      - name: omada-logs
+        persistentVolumeClaim:
+          claimName: omada-logs-pvc
+      restartPolicy: Always
+---      
+apiVersion: v1
+kind: Service
+metadata:
+  name: omada-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: omada-controller
+  ports:
+  - name: manage-http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  - name: manage-https
+    port: 443
+    targetPort: 443
+    protocol: TCP    
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: omada-private
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 3g
+    nginx.ingress.kubernetes.io/backend-protocol: https    
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - omada.keen.land
+      secretName: keenland-omada-ingress-cert
+  rules:
+    - host: omada.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: omada-svc
+                port:
+                  number: 443

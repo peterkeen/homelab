@@ -20,20 +20,20 @@ secrets.store
 ansible/files/backups/backup_hosts.sh
 dns/creds.json
 dns/local_ingress.js
-dns/public_ingress.js
-fly-proxy/proxy.conf
+docker-bake.json
 stacks/backup/backup_key
 stacks/backup/file_list.txt
 stacks/backup/run.sh
+stacks/certificate-builder/generate.sh
 stacks/dozzle/docker-compose.yml
 stacks/gatus/config/auto-hosts.yaml
 stacks/gatus/config/auto-web.yaml
-stacks/genmon/docker-compose.yml
+stacks/gatus/config/certificates.yaml
 stacks/int-proxy/proxy.conf
 stacks/local-proxy/proxy.conf
 stacks/monitoring/prometheus.yaml
+stacks/ofelia/config.ini
 stacks/parametric-zigbee/docker-compose.yml
 stacks/parametric-zwave/docker-compose.yml
-stacks/tailscale-auto/docker-compose.yml
 stacks/victoriametrics/promscrape/node-exporter-targets.json
 

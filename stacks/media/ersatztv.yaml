@@ -1,0 +1,132 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: ersatztv-configs-pvc
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ersatztv
+  labels:
+    app: ersatztv
+  annotations:
+    keel.sh/policy: "major"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "0"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ersatztv
+  template:
+    metadata:
+      labels:
+        app: ersatztv
+    spec:
+      nodeSelector:
+        topology.kubernetes.io/zone: home-1
+      volumes:
+        - name: media-nfs
+          nfs:
+            server: 10.73.95.84
+            path: /mnt/tank/media
+        - name: ersatztv-configs
+          persistentVolumeClaim:
+            claimName: ersatztv-configs-pvc
+        - name: ersatztv-transcodes
+          emptyDir:
+            sizeLimit: 64Gi
+        - name: dev
+          hostPath:
+            path: /dev
+      containers:
+        - name: ersatztv
+          image: ghcr.io/ersatztv/ersatztv:v25.4.0
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            privileged: true
+            runAsUser: 0            
+          resources:
+            requests:
+              memory: 1Gi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: media-nfs
+              mountPath: /mnt/media
+            - name: ersatztv-configs
+              mountPath: /config
+            - name: ersatztv-transcodes
+              mountPath: /transcodes
+            - name: dev
+              mountPath: /dev
+        - name: ersatztv-clean-cache
+          image: alpine:3.22
+          volumeMounts:
+            - name: ersatztv-transcodes
+              mountPath: /transcodes
+          command:
+            - /bin/ash
+            - -c
+            - |
+              while true; do
+                find /transcodes -mmin +119 -type f -exec rm -fv {} \;
+                sleep 60
+              done
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ersatztv
+spec:
+  selector:
+    app: ersatztv
+  ports:
+    - protocol: TCP
+      port: 8409
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ersatztv-private
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - ersatztv.keen.land
+      secretName: keenland-ersatztv-ingress-cert-2
+  rules:
+    - host: ersatztv.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ersatztv
+                port:
+                  number: 8409
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: ersatztv
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       ersatztv
+  updatePolicy:
+    updateMode: "Off"

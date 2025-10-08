@@ -1,0 +1,128 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sonarr-configs-pvc
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: sonarr-cluster
+spec:
+  instances: 2
+  storage:
+    storageClass: local-path
+    size: 4Gi
+  backup:
+    barmanObjectStore:
+      destinationPath: "s3://media-backups/sonarr/"
+      endpointURL: http://10.73.95.84:30157/
+      s3Credentials:
+        accessKeyId:
+          name: media-backup-secrets
+          key: AWS_ACCESS_KEY_ID
+        secretAccessKey:
+          name: media-backup-secrets
+          key: AWS_SECRET_ACCESS_KEY    
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  labels:
+    app: sonarr
+  annotations:
+    keel.sh/policy: "force"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "0"
+    keel.sh/match-tag: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      labels:
+        app: sonarr
+    spec:
+      nodeSelector:
+        topology.kubernetes.io/zone: home-1
+      volumes:
+        - name: media-nfs
+          nfs:
+            server: 10.73.95.84
+            path: /mnt/tank/media
+        - name: sonarr-configs
+          persistentVolumeClaim:
+            claimName: sonarr-configs-pvc
+      containers:
+        - name: sonarr
+          image: lscr.io/linuxserver/sonarr:latest
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              memory: 512Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: media-nfs
+              mountPath: /media
+            - name: sonarr-configs
+              mountPath: /config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr
+spec:
+  selector:
+    app: sonarr
+  ports:
+    - protocol: TCP
+      port: 8989
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sonarr-private
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - sonarr.keen.land
+      secretName: keenland-sonarr-ingress-cert
+  rules:
+    - host: sonarr.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sonarr
+                port:
+                  number: 8989
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: sonarr
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       sonarr
+  updatePolicy:
+    updateMode: "Off"
