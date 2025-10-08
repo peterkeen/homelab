@@ -21,7 +21,7 @@ task :bake => :ci do
   exec "docker buildx bake --push"
 end
 
-task :apply => ['ansible:apply', 'dns:apply', 'fly_proxy:apply']
+task :apply => ['ansible:apply', 'dns:apply']
 
 task :default do
   ns_default_taskname = Rake.application.original_dir.gsub(Dir.pwd + "/", "").gsub("/", ":") + ":default"
