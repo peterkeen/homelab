@@ -29,7 +29,6 @@ stacks/dozzle/docker-compose.yml
 stacks/gatus/config/auto-hosts.yaml
 stacks/gatus/config/auto-web.yaml
 stacks/gatus/config/certificates.yaml
-stacks/int-proxy/proxy.conf
 stacks/local-proxy/proxy.conf
 stacks/monitoring/prometheus.yaml
 stacks/ofelia/config.ini
