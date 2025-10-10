@@ -45,13 +45,6 @@
         username: peterkeen
         password: "{{ ghcr_password.stdout }}"
 
-    - name: Set up prune cron
-      ansible.builtin.cron:
-        name: "docker system prune"
-        minute: "0"
-        hour: "2"
-        job: "docker system prune -a -f"
-
   handlers:
     - name: restart docker
       ansible.builtin.service:

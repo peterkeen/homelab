@@ -7,12 +7,18 @@ require_relative '../lib/config.rb'
 ENV["HOSTNAME"] ||= "ci"
 ENV["TAILNET_IP"] = "1.2.3.4"
 
+APPLY_HOSTS = Array(ENV.fetch('APPLY_HOSTS', "").split(",").freeze)
+
 Config.instance.generate_templated_files!
 
 groups = {}
 
 Config.instance.hosts.map do |_, host|
   next if host.hostname == "__default"
+  if APPLY_HOSTS.length > 0 && !APPLY_HOSTS.include?(host.hostname)
+    LOGGER.info("Skipping #{host.hostname}")
+    next
+  end
 
   host_groups = host.groups
 

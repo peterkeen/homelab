@@ -3,8 +3,15 @@
 require_relative "../lib/config.rb"
 require 'fileutils'
 
+APPLY_HOSTS = Array(ENV.fetch('APPLY_HOSTS', "").split(",").freeze)
+
 Config.instance.hosts.each do |hostname, host|
   next if hostname == "__default"
+  if APPLY_HOSTS.length > 0 && !APPLY_HOSTS.include?(hostname)
+    LOGGER.info("Skipping #{hostname}")
+    next
+  end
+    
   LOGGER.info(hostname)
 
   ENV['HOSTNAME'] = hostname

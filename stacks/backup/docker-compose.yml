@@ -1,9 +1,0 @@
-services:
-  backup:
-    container_name: backup
-    image: alpine:3
-    command: ["/bin/ash", "sleep", "infinity"]
-    x-cron:
-      - name: "run stack backups"
-        schedule: "0 10 1 * * *"
-        command: "/bin/sh /root/app/stacks/backup/run.sh"

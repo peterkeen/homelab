@@ -8,11 +8,12 @@ services:
   #   "new" aggregators, and, if desired, also to ADSBExchange
   # - it includes mlat-client to send MLAT data to these aggregators
   # - it includes an MLAT Hub to consolidate MLAT results and make them available to the built-in map and other services
-
+    container_name: ultrafeeder
     image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder:latest
     tty: true
     restart: unless-stopped
-    network_mode: host
+    ports:
+      - 30005:30005
     device_cgroup_rules:
       - 'c 189:* rwm'
     environment:
@@ -83,7 +84,7 @@ services:
       - /data/adsb/ultrafeeder/globe_history:/var/globe_history
       - /data/adsb/ultrafeeder/graphs1090:/var/lib/collectd
       - /proc/diskstats:/proc/diskstats:ro
-      - /dev:/dev:ro
+      - /dev/bus/usb:/dev/bus/usb      
     tmpfs:
       - /run:exec,size=256M
       - /tmp:size=128M
@@ -96,8 +97,7 @@ services:
     restart: unless-stopped
     ports:
       - 30978:30978
-      - 30979:30979
-      - 8888:80
+      - 80:80
     device_cgroup_rules:
       - 'c 189:* rwm'
     environment:
@@ -109,7 +109,7 @@ services:
       - DUMP978_SDR_PPM=1
     volumes:
       - /data/adsb/dump978:/var/globe_history
-      - /dev:/dev:ro
+      - /dev/bus/usb:/dev/bus/usb
     tmpfs:
       - /run:exec,size=64M
       - /tmp:size=64M

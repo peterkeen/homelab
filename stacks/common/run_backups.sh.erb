@@ -1,6 +1,10 @@
-#!/bin/sh
+#!/bin/ash
 
-chmod 600 /root/app/stacks/backup/backup_key
+set -e
+
+[[ ! -s /common/file_list.txt ]] && exit 0
+
+chmod 600 /common/backup_key
 
 <%- this_host_services do |stack, service_name, service| -%>
 <%- next unless service.key?("x-backup") && service["x-backup"].key?("prepare") -%>
@@ -9,15 +13,15 @@ docker exec -it <%= service["container_name"] %> <%= script %>
 <%- end -%>
 <%- end -%>
 
-backup_path=/mnt/tank/backups/hosts/$(hostname -s)
+backup_path=/mnt/tank/backups/hosts/<%= this_host.hostname %>
 
-ssh -i /root/app/stacks/backup/backup_key hbackup@10.73.95.84 mkdir -p $backup_path
+ssh -i /common/backup_key -o StrictHostKeyChecking=no hbackup@10.73.95.84 mkdir -p $backup_path
 
-rsync --rsh "ssh -i /root/app/stacks/backup/backup_key" \
+rsync --rsh "ssh -i /common/backup_key -o StrictHostKeyChecking=no" \
     --verbose \
     --recursive \
     --archive \
-    --files-from=/root/app/stacks/backup/file_list.txt \
+    --files-from=/common/file_list.txt \
     / hbackup@10.73.95.84:$backup_path
 
 <%- secret = secrets.get("g6tkyx7ryhhdig3vgspawa6c2m") -%>

@@ -21,10 +21,10 @@ ansible/files/backups/backup_hosts.sh
 dns/creds.json
 dns/local_ingress.js
 docker-bake.json
-stacks/backup/backup_key
-stacks/backup/file_list.txt
-stacks/backup/run.sh
 stacks/certificate-builder/generate.sh
+stacks/common/backup_key
+stacks/common/file_list.txt
+stacks/common/run_backups.sh
 stacks/dozzle/docker-compose.yml
 stacks/gatus/config/auto-hosts.yaml
 stacks/gatus/config/auto-web.yaml

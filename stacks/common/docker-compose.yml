@@ -1,1 +1,19 @@
-services: {}
+services:
+  cron-hook:
+    container_name: backup
+    build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIGS_DIR}/common:/common
+      - /data:/data:ro
+    command: ["s6-pause"]
+    x-cron:
+      - name: "run stack backups"
+        schedule: "0 10 1 * * *"
+        command: "/bin/ash /common/run_backups.sh"
+      - name: "restart unhealthy containers"
+        schedule: "0 */5 * * * *"
+        command: "/bin/ash /common/restart-unhealthy-containers.sh"
+      - name: "docker system prune"
+        schedule: "0 0 2 * * *"
+        command: "docker system prune -a -f"

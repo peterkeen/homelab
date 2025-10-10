@@ -1,16 +1,16 @@
 services:
   smtp-relay:
     container_name: smtp-relay
-    image: djjudas21/smtp-relay:0.10.0
-    ports:
-      - "${TAILNET_IP}:2525:2525"
+    image: loganmarchione/docker-postfixrelay:1.6.2
     environment:
-      - SMTP_RELAY_HOST
-      - SMTP_RELAY_USERNAME
-      - SMTP_RELAY_PASSWORD
-      - SMTP_TLS_SECURITY_LEVEL
-      - SMTP_RELAY_MYHOSTNAME=smtp.docker.keen.land
-      - SMTP_RELAY_MYNETWORKS=172.16.0.0/12,10.73.95.0/24,100.64.0.0/10
-      - SMTP_RELAY_WRAPPERMODE=no
+      - TZ
+      - RELAY_HOST=${SMTP_RELAY_HOST}
+      - RELAY_PORT=587
+      - RELAY_USER=${SMTP_RELAY_USERNAME}
+      - RELAY_PASS=${SMTP_RELAY_PASSWORD}
+      - MYORIGIN=smtp.docker.keen.land
+      - MYNETWORKS=172.16.0.0/12,10.73.95.0/24,100.64.0.0/10
+    ports:
+      - 2525:25
     x-op-items:
       - w7m4nut5sdydxwn6jbg2m67jfa

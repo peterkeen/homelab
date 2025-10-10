@@ -2,18 +2,26 @@
   hosts: 
     - stacked
   tasks:
+    - name: Check previous config hash exists
+      stat:
+        path: /root/app/.env
+      register: config_hash_stat
+
     - name: Gather previous config hash
       shell: "test -f /root/app/.env && cat /root/app/.env | grep CONFIGS_SHA | cut -d= -f2"
       register: previous_configs_sha
+      when: config_hash_stat.stat.exists
+        
 
     - name: Gather new config hash
       shell: "cat files/build/{{ inventory_hostname }}/.env | grep CONFIGS_SHA | cut -d= -f2"
       register: new_configs_sha
       delegate_to: localhost
+      when: config_hash_stat.stat.exists
 
-    - name: Bail if configs_sha the same
-      meta: end_host
-      when: previous_configs_sha.stdout == new_configs_sha.stdout
+    # - name: Bail if configs_sha the same
+    #   meta: end_host
+    #   when: config_hash_stat.stat.exists and previous_configs_sha.stdout == new_configs_sha.stdout
 
     - name: Install rsync
       ansible.builtin.package:
@@ -24,17 +32,6 @@
       ansible.posix.synchronize:
         src: "build/{{ inventory_hostname }}/"
         dest: /root/app/
-
-    - name: Copy restart cron
-      ansible.posix.synchronize:
-        src: "build/{{inventory_hostname}}/stacks/common/restart-unhealthy-containers.sh"
-        dest: /usr/local/bin
-
-    - name: Install restart cron
-      ansible.builtin.cron:
-        name: "restart unhealthy containers"
-        minute: "*/5"
-        job: "/usr/local/bin/restart-unhealthy-containers.sh"
 
     - name: Start stack
       ansible.builtin.shell: docker compose up --detach --quiet-pull --no-color --build --remove-orphans
