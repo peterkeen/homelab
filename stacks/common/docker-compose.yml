@@ -1,7 +1,9 @@
 services:
   cron-hook:
-    container_name: backup
+    container_name: cron-hook
     build: .
+    environment:
+      - TZ
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${CONFIGS_DIR}/common:/common

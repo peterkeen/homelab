@@ -9,13 +9,12 @@ services:
     ports:
       - 25565:25565
       - "${TAILNET_IP}:25575:25575"
-      - "${TAILNET_IP}:8100:8100"
       - 19132:19132
       - 19132:19132/udp
     volumes:
-      - "/data/minecraft/lobby:/data"
+      - "/data/minecraft/abbyworld:/data"
     x-web:
-      port: 8080
+      port: 8100
     x-backup:
       paths:
         - /data/minecraft

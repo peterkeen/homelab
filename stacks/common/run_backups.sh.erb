@@ -9,7 +9,7 @@ chmod 600 /common/backup_key
 <%- this_host_services do |stack, service_name, service| -%>
 <%- next unless service.key?("x-backup") && service["x-backup"].key?("prepare") -%>
 <%- service["x-backup"]["prepare"].each do |script| -%>
-docker exec -it <%= service["container_name"] %> <%= script %>
+docker exec <%= service["container_name"] %> <%= script %>
 <%- end -%>
 <%- end -%>
 
