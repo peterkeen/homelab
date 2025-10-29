@@ -1,0 +1,24 @@
+services:
+  cron-hook:
+    container_name: cron-hook
+    image: ghcr.io/keenfamily-us/infra/stacks/cron-hook:latest
+    environment:
+      - TZ
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIGS_DIR}/:/configs
+      - /data:/data
+    command: ["s6-pause"]
+    x-cron:
+      - name: "run stack backups"
+        schedule: "0 10 1 * * *"
+        command: "/bin/ash /configs/common/run_backups.sh"
+      - name: "restart unhealthy containers"
+        schedule: "0 */5 * * * *"
+        command: "/bin/ash /configs/common/restart-unhealthy-containers.sh"
+      - name: "docker system prune"
+        schedule: "0 0 2 * * *"
+        command: "docker system prune -a -f"
+      - name: "sync certificates"
+        schedule: "15 13 3 * * *"
+        command: "/bin/ash /configs/common/sync_certificates.sh"

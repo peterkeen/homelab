@@ -5,6 +5,7 @@ class Host
   attr_reader :stack_list
   attr_reader :environment
   attr_reader :local_ip
+  attr_reader :tailnet_ip
 
   def initialize(hostname:, stacks:, environment:, local_ip:, tailnet_ip: nil)
     @hostname = hostname

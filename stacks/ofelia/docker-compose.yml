@@ -1,0 +1,13 @@
+services:
+  ofelia:
+    container_name: ofelia
+    image: mcuadros/ofelia:latest
+    environment:
+      - TZ
+      - CONFIGS_SHA
+    command: daemon --config=/config.ini
+    restart: unless-stopped
+    volumes:
+      - ${CONFIGS_DIR}/ofelia/config.ini:/config.ini
+      - /var/run/docker.sock:/var/run/docker.sock
+

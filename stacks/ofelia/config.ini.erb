@@ -1,0 +1,19 @@
+[global]
+smtp-host = smtp-relay.svc.docker.keen.land
+smtp-port = 2525
+email-to = pete@keenfamily.us
+email-from = <%= this_host.hostname %>+cron@keen.land
+
+<%- this_host.services.each do |service| -%>
+<%- service.config.fetch(:"x-cron", []).each do |cron| -%>
+[job-<%= cron.fetch(:type, "exec") %>  "<%= cron.fetch(:name) %>"]
+schedule = <%= cron.fetch(:schedule) %>
+<%- unless cron.fetch(:type, "exec") == "local" -%>
+container = <%= cron.fetch(:container_name, service.config[:container_name]) %>
+<%- end -%>
+command = <%= cron.fetch(:command) %>
+mail-only-on-error = <%= cron.fetch(:mail_only_on_error, "false") %>
+no-overlap = true
+
+<%- end -%>
+<%- end -%>

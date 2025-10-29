@@ -1,0 +1,6 @@
+<%- this_host.services.each do |service| -%>
+<%- next unless service.config.key?(:"x-backup") %>
+<%- (service.config.dig(:"x-backup", :paths) || []).each do |path| -%>
+<%= path %>
+<%- end -%>
+<%- end -%>

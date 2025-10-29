@@ -1,0 +1,37 @@
+#!/bin/ash
+
+set -e
+
+ping_gatus() {
+<%- secret = secrets.get("g6tkyx7ryhhdig3vgspawa6c2m") -%>
+<%- if secret[this_host.hostname] -%>
+  curl -XPOST -H "Authorization: Bearer <%= secret[this_host.hostname] %>" 'https://gatus.keen.land/api/v1/endpoints/host-backups_<%= this_host.hostname %>/external?success=true'
+<%- end -%>
+}
+
+if [[ ! -s /configs/common/file_list.txt ]]; then
+    ping_gatus
+    exit 0
+fi
+
+chmod 600 /configs/common/backup_key
+
+<%- this_host.services do |stack, service| -%>
+<%- next unless service.config.key?(:"x-backup") && service.config[:"x-backup"].key?(:prepare) -%>
+<%- service.config[:"x-backup"][:prepare].each do |script| -%>
+docker exec <%= service.config[:container_name] %> <%= script %>
+<%- end -%>
+<%- end -%>
+
+backup_path=/mnt/tank/backups/hosts/<%= this_host.hostname %>
+
+ssh -i /configs/common/backup_key -o StrictHostKeyChecking=no hbackup@10.73.95.84 mkdir -p $backup_path
+
+rsync --rsh "ssh -i /configs/common/backup_key -o StrictHostKeyChecking=no" \
+    --verbose \
+    --recursive \
+    --archive \
+    --files-from=/common/file_list.txt \
+    / hbackup@10.73.95.84:$backup_path
+
+ping_gatus

@@ -1,0 +1,22 @@
+services:
+  dozzle-agent:
+    container_name: dozzle-agent
+    hostname: logs
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 7007:7007
+    restart: always
+    command: ["agent"]
+    environment:
+      - "DOZZLE_HOSTNAME=${HOSTNAME}"
+      - "DOZZLE_ENABLE_ACTIONS=true"
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      start_interval: 5s
+    x-dns:
+      skip_service: true

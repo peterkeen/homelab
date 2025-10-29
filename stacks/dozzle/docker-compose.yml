@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       - "DOZZLE_ENABLE_ACTIONS=true"
-      - "DOZZLE_REMOTE_AGENT=<%= hostnames.map { |h| "#{h}.tailnet-a578.ts.net:7007" }.join(',') %>"
+      - DOZZLE_REMOTE_AGENT
     x-web:
       port: 8080
       dashboard:
