@@ -1,0 +1,19 @@
+- name: Hypervisor Stuff
+  hosts: hypervisor
+  tasks:
+    - name: Copy backup_hosts.sh
+      ansible.builtin.copy:
+        src: files/backups/backup_hosts.sh
+        dest: /mnt/tank/backups/hosts/backup_hosts.sh
+
+    - name: Copy backup_host.sh
+      ansible.builtin.copy:
+        src: files/backups/backup_host.sh
+        dest: /mnt/tank/backups/hosts/backup_host.sh
+
+    - name: Backup hosts cron
+      ansible.builtin.cron:
+        name: "backup hosts"
+        minute: 12
+        hour: 23
+        job: /mnt/tank/backups/hosts/backup_hosts.sh

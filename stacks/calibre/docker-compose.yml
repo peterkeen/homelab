@@ -1,0 +1,28 @@
+services:
+  calibre-web:
+    image: ghcr.io/crocodilestick/calibre-web-automated:latest
+    container_name: calibre-web-up
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ
+    volumes:
+      - /data/calibre:/config
+      - type: volume
+        source: media-nfs
+        target: /calibre-library
+        volume:
+          subpath: books
+      - cwa-book-ingest:/cwa-book-ingest      
+    restart: unless-stopped
+    x-web:
+      port: 8083
+      hostname: books
+      dashboard:
+        name: Calibre
+        subtitle: Book library
+        category: Media and Games
+        logo: icons/svg/calibre.svg
+    x-backup:
+      paths:
+        - /data/calibre

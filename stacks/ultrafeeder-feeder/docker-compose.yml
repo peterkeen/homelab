@@ -1,0 +1,117 @@
+services:
+  ultrafeeder:
+  # ultrafeeder combines a number of functions:
+  # - it retrieves and decodes 1090MHz Mode A/C/S data from the SDR(s) using Wiedehopf's branch of readsb
+  # - it implements a `tar1090` based map on port 80 (mapped to port 8080 on the host)
+  # - it includes graph1090 (system statistics website) on http://xxxxx/graphs1090
+  # - it sends ADSB data directly (without the need of additional containers) to the
+  #   "new" aggregators, and, if desired, also to ADSBExchange
+  # - it includes mlat-client to send MLAT data to these aggregators
+  # - it includes an MLAT Hub to consolidate MLAT results and make them available to the built-in map and other services
+    container_name: ultrafeeder
+    image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder:latest
+    tty: true
+    restart: unless-stopped
+    ports:
+      - 30005:30005
+    device_cgroup_rules:
+      - 'c 189:* rwm'
+    environment:
+      # --------------------------------------------------
+      # general parameters:
+      - LOGLEVEL=error
+      - TZ=America/Detroit
+      # --------------------------------------------------
+      # SDR related parameters:
+      - READSB_DEVICE_TYPE=rtlsdr
+      - READSB_RTLSDR_DEVICE=1090
+      - READSB_RTLSDR_PPM=0
+      #
+      # --------------------------------------------------
+      # readsb/decoder parameters:
+      - READSB_LAT=42.331307
+      - READSB_LON=-83.879102
+      - READSB_ALT=288.95m
+      - READSB_GAIN=autogain
+      - READSB_RX_LOCATION_ACCURACY=2
+      - READSB_STATS_RANGE=true
+      #
+      # --------------------------------------------------
+      # Sources and Aggregator connections:
+      # Note - remove the ones you are not using / feeding
+      # Make sure that each line ends with a semicolon ";"
+      # if you are not using dump978, feel free to remove the first line
+      # - ULTRAFEEDER_CONFIG=
+      # --------------------------------------------------
+      - UUID=63bbb008-e602-41f7-a2a6-9803671f89f1
+      - MLAT_USER=7395
+      - READSB_FORWARD_MLAT_SBS=true
+      #
+      # --------------------------------------------------
+      # TAR1090 (Map Web Page) parameters:
+      #- UPDATE_TAR1090=true
+      #- TAR1090_DEFAULTCENTERLAT=42.331307
+      #- TAR1090_DEFAULTCENTERLON=-83.879102
+      #- TAR1090_MESSAGERATEINTITLE=true
+      #- TAR1090_PAGETITLE=7395
+      #- TAR1090_PLANECOUNTINTITLE=true
+      #- TAR1090_ENABLE_AC_DB=true
+      #- TAR1090_FLIGHTAWARELINKS=true
+      #- HEYWHATSTHAT_PANORAMA_ID=N7RPCWNM
+      #- HEYWHATSTHAT_ALTS=3000,12000
+      #- TAR1090_SITESHOW=true
+      #- TAR1090_RANGE_OUTLINE_COLORED_BY_ALTITUDE=true
+      #- TAR1090_RANGE_OUTLINE_WIDTH=2.0
+      #- TAR1090_RANGERINGSDISTANCES=50,100,150,200
+      #- TAR1090_RANGERINGSCOLORS='#1A237E','#0D47A1','#42A5F5','#64B5F6'
+      #- TAR1090_USEROUTEAPI=true
+      - TAR1090_DISABLE=true
+      #
+      # --------------------------------------------------
+      # GRAPHS1090 (Decoder and System Status Web Page) parameters:
+      #- GRAPHS1090_DARKMODE=true
+      #- ENABLE_978=yes
+      #- URL_978=http://dump978-up/skyaware978
+      #
+      # --------------------------------------------------
+      # InfluxDB
+      #- INFLUXDBV2=true      
+      #- INFLUXDBV2_URL=https://influxdb.tailnet-a578.ts.net
+      #- INFLUXDBV2_BUCKET=adsb
+      #- INFLUXDBV2_ORG=keenland
+      #- INFLUXDBV2_TOKEN=${ADSB_INFLUXDB_TOKEN}
+    volumes:
+      - /data/adsb/ultrafeeder/globe_history:/var/globe_history
+      - /data/adsb/ultrafeeder/graphs1090:/var/lib/collectd
+      - /proc/diskstats:/proc/diskstats:ro
+      - /dev/bus/usb:/dev/bus/usb      
+    tmpfs:
+      - /run:exec,size=256M
+      - /tmp:size=128M
+      - /var/log:size=32M
+
+  dump978:
+    image: ghcr.io/sdr-enthusiasts/docker-dump978:latest
+    tty: true
+    container_name: dump978-up
+    restart: unless-stopped
+    ports:
+      - 30978:30978
+      - 80:80
+    device_cgroup_rules:
+      - 'c 189:* rwm'
+    environment:
+      - TZ=America/Detroit
+      - LAT=42.331307
+      - LON=-83.879102
+      - DUMP978_RTLSDR_DEVICE=978
+      - DUMP978_SDR_GAIN=autogain
+      - DUMP978_SDR_PPM=1
+    volumes:
+      - /data/adsb/dump978:/var/globe_history
+      - /dev/bus/usb:/dev/bus/usb
+    tmpfs:
+      - /run:exec,size=64M
+      - /tmp:size=64M
+      - /var/log:size=32M
+

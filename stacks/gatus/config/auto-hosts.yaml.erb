@@ -1,0 +1,38 @@
+<%-
+endpoints = []
+secret = secrets.get("g6tkyx7ryhhdig3vgspawa6c2m")
+
+hosts.each do |host|
+  next unless secret[host.hostname]
+  endpoints << {
+    "name" => host.hostname,
+    "group" => "host-backups",
+    "token" => secret[host.hostname],
+    "heartbeat" => {
+      "interval" => "24h"
+    }
+  }
+
+  endpoints << {
+    "name" => host.hostname,
+    "group" => "certificate-sync",
+    "token" => secret[host.hostname],
+    "heartbeat" => {
+      "interval" => "24h"
+    }
+  }
+
+  has_coredns = host.stacks.detect { |stack| stack.name == "coredns" }
+  if has_coredns
+    endpoints << {
+      "name" => host.hostname,
+      "group" => "unbound-blocklist-sync",
+      "token" => secret[host.hostname],
+      "heartbeat" => {
+        "interval" => "24h"
+      }
+    }
+  end
+end
+-%>
+<%= {"external-endpoints" => endpoints}.to_yaml %>

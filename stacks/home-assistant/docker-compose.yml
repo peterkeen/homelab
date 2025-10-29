@@ -1,0 +1,27 @@
+services:
+  homeassistant:
+    container_name: home-assistant
+    hostname: hass
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    environment:
+      - LANG=en_US.UTF-8
+      - LANGUAGE=en-US.UTF-8
+      - LC_ALL=en_US.UTF-8      
+    volumes:
+      - /data/home-assistant:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    restart: unless-stopped
+    network_mode: host
+    dns:
+      - 100.100.100.100
+    x-web:
+      upstream: http://10.73.95.4:8123
+      dashboard:
+        name: Home Assistant
+        category: Home Stuff
+        logo: icons/svg/home-assistant.svg
+        sort_order: -1
+    x-backup:
+      paths:
+        - /data/home-assistant/backups

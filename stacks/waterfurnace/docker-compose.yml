@@ -1,0 +1,16 @@
+services:
+  waterfurnace:
+    container_name: waterfurnace
+    image: ghcr.io/peterkeen/waterfurnace_aurora:main
+    network_mode: host
+    environment:
+      - "TTY=tcp://10.73.95.93:8234"
+      - "MQTT=mqtt://lrrr-docker.tailnet-a578.ts.net:1883"
+    restart: unless-stopped
+    volumes:
+      - ${CONFIGS_DIR}/waterfurnace/healthcheck.rb:/healthcheck.rb
+    healthcheck:
+      test: ["CMD", "/healthcheck.rb"]
+      interval: 1m
+      timeout: 10s
+      retries: 0

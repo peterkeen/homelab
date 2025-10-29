@@ -1,0 +1,18 @@
+storage:
+  path: /data/data.db
+  type: sqlite
+  caching: true
+
+alerting:
+  email:
+    from: "gatus@keen.land"
+    host: "smtp-relay.svc.docker.keen.land"
+    port: 2525
+    to: "pete@keenfamily.us"
+    client:
+      insecure: false
+    default-alert:
+      description: "health check failed"
+      send-on-resolved: true
+      failure-threshold: 2
+      success-threshold: 2

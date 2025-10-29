@@ -1,0 +1,32 @@
+x-common-zigbee: &common-zigbee
+  image: ghcr.io/koenkk/zigbee2mqtt:2
+  restart: always
+  stop_signal: SIGINT
+  environment:
+    - TZ
+
+services:
+  zigbee-house:
+    <<: *common-zigbee
+    container_name: zigbee-house
+    hostname: zigbee-house
+    ports:
+      - '${TAILNET_IP}:8080:8080'
+    volumes:
+      - /data/zigbee/house:/app/data
+    x-backup:
+      paths:
+        - /data/zigbee/house
+
+  zigbee-office:
+    <<: *common-zigbee
+    container_name: zigbee-office
+    hostname: zigbee-office
+    ports:
+      - '${TAILNET_IP}:8081:8080'
+    volumes:
+      - /data/zigbee/office:/app/data
+    x-backup:
+      paths:
+        - /data/zigbee/office      
+        

@@ -1,0 +1,22 @@
+.:53 {
+  header {
+    response set ra
+  }
+
+  cache
+
+  forward tailnet-a578.ts.net 100.100.100.100
+
+  forward . <%= this_host.local_ip %>:5335
+
+  errors
+}
+
+keen.land:53 {
+  header {
+    response set ra aa
+    response clear rd
+  }
+
+  file /root/keen.land.zone
+}

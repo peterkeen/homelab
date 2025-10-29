@@ -1,0 +1,21 @@
+services:
+  renovate:
+    container_name: renovate
+    hostname: renovate
+    image: renovate/renovate:latest
+    volumes:
+      - $CONFIGS_DIR/renovate/config.js:/config.js
+    environment:
+      - TZ
+      - CONFIGS_SHA
+      - RENOVATE_TOKEN
+      - RENOVATE_GITHUB_COM_TOKEN
+      - RENOVATE_CONFIG_FILE=/config.js
+      - LOG_LEVEL=debug
+    x-op-items:
+      - iyzeguqdrbenjlf5gn5wzdtyhi
+    x-cron:
+      - name: "run renovate"
+        schedule: "@hourly"
+        type: local
+        command: docker start renovate

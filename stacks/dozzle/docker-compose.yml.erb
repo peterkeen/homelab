@@ -1,0 +1,16 @@
+services:
+  dozzle:
+    container_name: dozzle-up
+    hostname: dozzle
+    image: amir20/dozzle:latest
+    restart: unless-stopped
+    environment:
+      - "DOZZLE_ENABLE_ACTIONS=true"
+      - "DOZZLE_REMOTE_AGENT=<%= hostnames.map { |h| "#{h}.tailnet-a578.ts.net:7007" }.join(',') %>"
+    x-web:
+      port: 8080
+      dashboard:
+        name: Dozzle
+        subtitle: Application logs
+        category: Network Services
+        icon: fa-solid fa-robot

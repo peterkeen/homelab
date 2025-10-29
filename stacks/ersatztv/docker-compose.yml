@@ -1,0 +1,26 @@
+services:
+  ersatztv:
+    container_name: ersatztv-up
+    hostname: ersatztv
+    image: ghcr.io/ersatztv/ersatztv:v25.7.1
+    user: 1000:1000
+    group_add:
+      - "27"
+    volumes:
+      - media-nfs:/mnt/media:ro
+      - /data/ersatztv:/config
+      - /scratch/ersatztv:/transcode
+      - ${CONFIGS_DIR}/ersatztv/clean_cache.sh:/clean_cache.sh
+    restart: unless-stopped
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/${CARD_NAME:-card0}:/dev/dri/${CARD_NAME:-card0}
+    x-web:
+      port: 8409
+    x-cron:
+      - name: "clean ersatztv cache"
+        schedule: "0 */15 * * * *"
+        command: "/clean_cache.sh"
+    x-backup:
+      paths:
+        - /data/ersatztv

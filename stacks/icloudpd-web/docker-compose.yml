@@ -1,0 +1,27 @@
+services:
+  icloudpd-web:
+    image: spicadust/icloudpd-web:latest
+    container_name: icloudpd-web
+    hostname: icloudpd
+    user: 101000:101000
+    volumes:
+      - /data/icloudpd-web:/config
+      - photos-nfs:/app/downloads
+    environment:
+      SECRET_HASH_PATH: /config/secret_hash
+      COOKIE_DIRECTORY: /config/cookies
+      TOML_PATH: /config/policies.toml
+      APPRISE_CONFIG_PATH: /config/apprise.yaml      
+    x-web:
+      port: 5000
+    x-backup:
+      paths:
+        - /data/icloudpd-web
+
+volumes:
+  photos-nfs:
+    driver: local
+    driver_opts:
+      type: nfs
+      device: ":/mnt/tank/photos"
+      o: "addr=10.73.95.84,rw,nfsvers=4,async,nolock"

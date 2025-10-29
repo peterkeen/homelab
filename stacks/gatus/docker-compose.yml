@@ -1,0 +1,22 @@
+services:
+  gatus:
+    container_name: gatus-up
+    image: twinproduction/gatus:latest
+    environment:
+      - GATUS_CONFIG_PATH=/config
+      - CONFIGS_SHA
+    volumes:
+      - ${CONFIGS_DIR}/gatus/config:/config
+      - /data/gatus:/data/
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=8080"
+      - "tsbridge.service.name=gatus"
+    x-web:
+      hostname: gatus
+      port: 8080
+      dashboard:
+        name: Gatus
+        subtitle: Service monitoring
+        category: Network Services
+        logo: icons/svg/gatus.svg

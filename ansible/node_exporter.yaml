@@ -1,0 +1,21 @@
+- name: node-exporter
+  hosts: all
+  tasks:
+    - name: Install node-exporter
+      ansible.builtin.package:
+        name: prometheus-node-exporter
+        state: latest
+
+    - name: restart node-exporter debian
+      when: ansible_distribution == "Debian"
+      ansible.builtin.service:
+        name: prometheus-node-exporter
+        state: restarted
+        enabled: yes
+
+    - name: restart node-exporter alpine
+      when: ansible_distribution == "Alpine"
+      ansible.builtin.service:
+        name: node-exporter
+        state: restarted
+        enabled: yes        

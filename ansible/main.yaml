@@ -1,0 +1,26 @@
+- name: Import Ping
+  ansible.builtin.import_playbook: ping.yaml
+
+- name: Import Docker
+  ansible.builtin.import_playbook: docker.yaml
+
+- name: Import CoreDNS
+  ansible.builtin.import_playbook: coredns.yaml
+
+- name: Import Chrony
+  ansible.builtin.import_playbook: chrony.yaml
+
+- name: Import firewall
+  ansible.builtin.import_playbook: firewall.yaml
+
+- name: Import serials
+  ansible.builtin.import_playbook: serials.yaml
+
+- name: Import stacks
+  ansible.builtin.import_playbook: stacks.yaml
+
+- name: Import hypervisor
+  ansible.builtin.import_playbook: hypervisor.yaml
+
+- name: Import node_exporter
+  ansible.builtin.import_playbook: node_exporter.yaml

@@ -1,0 +1,235 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any styles
+ * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+ * file per style scope.
+ *
+
+
+ */
+
+@import url(https://fonts.googleapis.com/css?family=Lato:300,400);
+
+body {
+  font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  font-size: 2em;
+  line-height: 1.65em;
+}
+
+h2 {
+  text-align: center;
+  font-weight: 300;
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pricetag {
+  font-size: 1.5em;
+  font-style: italic;
+  font-weight: bold;
+}
+
+
+.prices ul li{
+  font-size: 0.75em;
+}
+
+.mmp-icon {
+  display: inline-block;
+  width:1.25em;
+  text-align:center;
+  margin-right: 0.5em;
+  color: #777;
+}
+
+.guarantee {
+  margin-top: 1.5em;
+}
+
+#packages {
+  margin-bottom: 0.5em;
+}
+
+.subhead {
+  margin-bottom: 2em;
+}
+
+.read-book {
+  color: white;
+}
+
+.navbar-transparent {
+  background: rgba(0,0,0,0);
+}
+
+.masthead {
+  letter-spacing: 0.5em;
+  font-variant: small-caps;
+  font-family: 'Lato', sans-serif;
+  color: white;
+  margin-left: 1.15em !important;
+}
+
+a.masthead:hover,a.masthead:active {
+  color: white;
+}
+
+.login {
+  color: white;
+  margin-right: 6.25em;
+}
+
+.headshot {
+  width: 1.5em;
+  margin-right: 0.5em;
+}
+
+.pay-button-container {
+  margin-top: 1.5em;
+}
+
+.package-col-middle {
+  border-right: 1px #ccc solid;
+  border-left: 1px #ccc solid;
+}
+
+strike {
+  color: #888
+}
+
+h3 {
+  margin-top: 3em;
+  margin-bottom: 1em;
+}
+
+.source-button {
+  margin-top: 3em;
+}
+
+.btn-xlg {
+  font-size: 1.5em;
+}
+
+footer {
+  margin-top: 3em;
+  font-size: 0.75em;
+}
+
+.feature {
+  text-align: center;
+}
+
+.payola-checkout-button-text, .payola-checkout-button-spinner {
+  color: white !important;
+}
+
+.feature i, .feature span {
+  color: #5bc0de;
+}
+
+.pro {
+  background-color: #5bc0de;
+  color: white;
+}
+
+.pro i {
+  color: white;
+}
+
+.payola-checkout-button {
+  text-align: center;
+}
+
+.tall {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+
+.buywell {
+  margin-bottom: 5em;
+  margin-left: 2em;
+}
+
+.head-nav li {
+  display: inline;
+  font-size: 90%;
+  list-style-type: none;
+  padding-right: 1em;
+}
+
+.head-nav {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5em;
+  margin-bottom: 0;
+}
+
+.card-number {
+  background-image: url(/images/card.png);
+  background-repeat: no-repeat;
+  background-size: 30px;
+  background-position: right 10px center;
+}
+
+ul.dotted {
+  list-style-type: disc;
+  padding-left: 1em;
+  margin-left: 1em;
+}
+
+blockquote {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+hr.separator {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+p.description {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+div.blogpost p {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  line-height: 1.8em;
+}
+
+div.blogpost code {
+  font-size: 75%;
+}
+
+div.blogpost pre code {
+  font-size: 110%;
+}
+
+div.blogpost .date {
+  font-size: 70%;
+  margin: 0;
+  font-color: #999;
+  text-align: center;
+}
+
+div.blogpost h2.header {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.head-nav a.active {
+  color: #aaa;
+}

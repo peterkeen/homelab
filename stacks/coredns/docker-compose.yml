@@ -1,0 +1,36 @@
+services:
+  coredns:
+    container_name: coredns
+    hostname: coredns
+    image: coredns/coredns
+    environment:
+      - CONFIGS_SHA
+    volumes:
+      - ${CONFIGS_DIR}/coredns/:/root/
+    ports:
+      - 53:53
+      - 53:53/udp
+    restart: unless-stopped
+    command: ["-conf", "/root/Corefile"]
+
+  unbound:
+    container_name: unbound
+    hostname: unbound
+    image: madnuttah/unbound:latest
+    restart: unless-stopped
+    ports:
+      - 5335:5335
+      - 5335:5335/udp
+    volumes:
+      - /data/unbound:/usr/local/unbound/conf.d
+    healthcheck:
+      test: /usr/local/unbound/sbin/healthcheck.sh
+      interval: 60s
+      retries: 5
+      start_period: 15s
+      timeout: 30s
+    x-cron:
+      - name: "fetch oisd blocklist"
+        schedule: "0 15 4 * * *"
+        command: "/bin/ash /configs/unbound/fetch_oisd_block_list.sh"
+        container_name: cron-hook

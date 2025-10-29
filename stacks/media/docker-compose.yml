@@ -1,0 +1,118 @@
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr-up
+    hostname: sonarr
+    volumes:
+      - ${CONFIG}/sonarr:/config
+      - media-nfs:/media
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit
+    restart: always
+    x-web:
+      port: 8989
+      dashboard:
+        name: Sonarr
+        subtitle: Download TV Shows
+        category: Media and Games
+    x-backup:
+      paths:
+        - /data/sonarr/Backups
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr-up
+    hostname: radarr
+    volumes:
+      - ${CONFIG}/radarr:/config
+      - media-nfs:/media
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit
+    restart: always
+    x-web:
+      port: 7878
+      dashboard:
+        name: Radarr
+        subtitle: Download Movies
+        category: Media and Games
+    x-backup:
+      paths:
+        - /data/radarr/Backups      
+
+  prowlarr:
+    image: ghcr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr-up
+    hostname: prowlarr
+    volumes:
+      - /data/prowlarr:/config
+      - media-nfs:/media
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit
+    restart: always
+    x-web:
+      port: 9696
+      dashboard:
+        name: Prowlarr
+        subtitle: Manage Usenet Indexers
+        category: Media and Games
+    x-backup:
+      paths:
+        - /data/prowlarr/Backups
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr-up
+    hostname: bazarr
+    volumes:
+      - /data/bazarr:/config
+      - media-nfs:/media
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Detroit
+    restart: always
+    x-web:
+      port: 6767
+      dashboard:
+        name: Bazarr
+        subtitle: Manage automatic subtitles
+        category: Media and Games
+    x-backup:
+      paths:
+        - /data/bazarr/backup
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr-up
+    hostname: jellyseerr
+    user: 1000:1000
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=America/Detroit
+    volumes:
+      - /data/jellyseerr:/app/config
+      - ${CONFIGS_DIR}/media/backup-jellyseerr.js:/backup-jellyseerr.js
+    restart: always
+    x-web:
+      port: 5055
+      dashboard:
+        name: Jellyseerr
+        subtitle: Request new media
+        category: Media and Games
+        sort_order: 1
+    x-backup:
+      prepare:
+        - rm -f /app/config/db/db.backup.sqlite3
+        - node /backup-jellyseerr.js
+      paths:
+        - /data/jellyseerr/db/db.backup.sqlite3
+        - /data/jellyseerr/settings.json
+
+x-depends:
+  - media-volume

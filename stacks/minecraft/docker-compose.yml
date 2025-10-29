@@ -1,0 +1,40 @@
+---
+services:
+  minecraft-abbyworld:
+    container_name: minecraft
+    hostname: minecraft
+    image: ghcr.io/itzg/minecraft-server:latest
+    restart: unless-stopped
+    user: 1000:1000
+    ports:
+      - 25565:25565
+      - "${TAILNET_IP}:25575:25575"
+      - 19132:19132
+      - 19132:19132/udp
+    volumes:
+      - "/data/minecraft/abbyworld:/data"
+    x-web:
+      port: 8100
+    x-backup:
+      paths:
+        - /data/minecraft
+    environment:
+      TZ: America/Detroit
+      TYPE: PAPER
+      EULA: 'true'
+      MODE: creative
+      DIFFICULTY: peaceful
+      RCON_PASSWORD: "${RCON_PASSWORD}"
+      MEMORY: 8G
+      ENABLE_AUTOPAUSE: "TRUE"
+      OVERRIDE_SERVER_PROPERTIES: "TRUE"
+      MAX_TICK_TIME: "-1"
+      JVM_DD_OPTS: "disable.watchdog:true"
+      # OPS: |2
+      #             .zr4il
+      #             zr4il
+      VERSION: 1.21.8
+      MODRINTH_FORCE_SYNCHRONIZE: "true"
+      MODRINTH_PROJECTS: |-
+        geyser:beta
+        bluemap:beta

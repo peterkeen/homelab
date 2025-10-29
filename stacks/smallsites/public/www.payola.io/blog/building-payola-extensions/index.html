@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Payola - Stripe Payments for Rails Apps</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" />
+  <link href="https://www.payola.io/blog/index.xml" rel="alternate" type="application/atom+xml" />
+  <link href="/stylesheets/application.css" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+   <![endif]-->
+    <style type="text/css">
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight .cm {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .cp {
+  color: #999999;
+  font-weight: bold;
+}
+.highlight .c1 {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .cs {
+  color: #999999;
+  font-weight: bold;
+  font-style: italic;
+}
+.highlight .c, .highlight .cd {
+  color: #999988;
+  font-style: italic;
+}
+.highlight .err {
+  color: #a61717;
+  background-color: #e3d2d2;
+}
+.highlight .gd {
+  color: #000000;
+  background-color: #ffdddd;
+}
+.highlight .ge {
+  color: #000000;
+  font-style: italic;
+}
+.highlight .gr {
+  color: #aa0000;
+}
+.highlight .gh {
+  color: #999999;
+}
+.highlight .gi {
+  color: #000000;
+  background-color: #ddffdd;
+}
+.highlight .go {
+  color: #888888;
+}
+.highlight .gp {
+  color: #555555;
+}
+.highlight .gs {
+  font-weight: bold;
+}
+.highlight .gu {
+  color: #aaaaaa;
+}
+.highlight .gt {
+  color: #aa0000;
+}
+.highlight .kc {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kd {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kn {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kp {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kr {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .kt {
+  color: #445588;
+  font-weight: bold;
+}
+.highlight .k, .highlight .kv {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .mf {
+  color: #009999;
+}
+.highlight .mh {
+  color: #009999;
+}
+.highlight .il {
+  color: #009999;
+}
+.highlight .mi {
+  color: #009999;
+}
+.highlight .mo {
+  color: #009999;
+}
+.highlight .m, .highlight .mb, .highlight .mx {
+  color: #009999;
+}
+.highlight .sb {
+  color: #d14;
+}
+.highlight .sc {
+  color: #d14;
+}
+.highlight .sd {
+  color: #d14;
+}
+.highlight .s2 {
+  color: #d14;
+}
+.highlight .se {
+  color: #d14;
+}
+.highlight .sh {
+  color: #d14;
+}
+.highlight .si {
+  color: #d14;
+}
+.highlight .sx {
+  color: #d14;
+}
+.highlight .sr {
+  color: #009926;
+}
+.highlight .s1 {
+  color: #d14;
+}
+.highlight .ss {
+  color: #990073;
+}
+.highlight .s {
+  color: #d14;
+}
+.highlight .na {
+  color: #008080;
+}
+.highlight .bp {
+  color: #999999;
+}
+.highlight .nb {
+  color: #0086B3;
+}
+.highlight .nc {
+  color: #445588;
+  font-weight: bold;
+}
+.highlight .no {
+  color: #008080;
+}
+.highlight .nd {
+  color: #3c5d5d;
+  font-weight: bold;
+}
+.highlight .ni {
+  color: #800080;
+}
+.highlight .ne {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nf {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nl {
+  color: #990000;
+  font-weight: bold;
+}
+.highlight .nn {
+  color: #555555;
+}
+.highlight .nt {
+  color: #000080;
+}
+.highlight .vc {
+  color: #008080;
+}
+.highlight .vg {
+  color: #008080;
+}
+.highlight .vi {
+  color: #008080;
+}
+.highlight .nv {
+  color: #008080;
+}
+.highlight .ow {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .o {
+  color: #000000;
+  font-weight: bold;
+}
+.highlight .w {
+  color: #bbbbbb;
+}
+.highlight {
+  background-color: #f8f8f8;
+}
+    </style>
+</head>
+<body>
+  <div class="jumbotron header">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h1>Payola</h1>
+          <p>Stripe payments for your Rails app</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <ul class="head-nav">
+            <li><a class="" href="/">Home</a></li>
+            <li><a href="/blog">Blog</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h1 class="blogpost-title">Building Payola Extensions</h1>
+  <div class="blogpost">
+    <p class="text-center"><small>11 Nov 2014</p>
+    <p>A few weeks ago I <a href="/introducing-payola">introduced Payola</a>, a drop-in Rails engine for setting up Stripe billing. Since that time, it&rsquo;s gained over 400 stars on GitHub and the gem has been downloaded almost 2000 times. The most requested feature, subscripton payments, is well on it&rsquo;s way to being completed.</p>
+
+<p>Payola is more than just a checkout button. It has hooks at various points in the payment flow that let you take action and tie Payola into your application to do things like manipulate the sale object before the charge happens or override the low-level arguments that Payola sends to Stripe. It also has a rich set of notifications when payments complete, fail, or are refunded. In this post, we&rsquo;re going to build a simple extension that sends push notifications when someone buys a product.</p>
+
+<p></p>
+
+<p>There are various third party services that provide push notifications but today we&rsquo;re going to use <a href="https://pushover.net">Pushover</a>, an inexpensive cross-platform personal-use notification system. It&rsquo;s not for big broadcast groups or marketing like Urban Airship or Parse. Instad, Pushover is specifically for our use case: letting your application talk to the developer via push notifications.</p>
+
+<p><strong>Note:</strong> This article assumes that you&rsquo;ve set up Payola in your application already. If you haven&rsquo;t, check out <a href="https://github.com/peterkeen/payola">the Payola docs</a> for getting started instructions.</p>
+
+<h2>Install Pushover</h2>
+
+<p>We&rsquo;re going to use <a href="https://github.com/bemurphy/rushover">Rushover</a> to integrate with Pushover. It&rsquo;s simple to use and has no big external requirements. Add it to your <code>Gemfile</code>:</p>
+
+<pre><code class="ruby">gem &#39;rushover&#39;
+</code></pre>
+
+<p>and run <code>bundle install</code>.</p>
+
+<p>You&rsquo;ll need to <a href="https://pushover.net/login">register for an account</a> and install the app on your device. It&rsquo;s free to try for five days, and then you&rsquo;ll need to purchase a licence for $4.99.</p>
+
+<h2>The Hook</h2>
+
+<p>The specific Payola hook we&rsquo;re going to use is an event named <code>payola.sale.finished</code>. Payola fires this event when the sale is complete at Stripe. Internally Payola listens to this event to do things like send automatic emails.</p>
+
+<p>Let&rsquo;s set up the listener in <code>config/initialzers/payola.rb</code>:</p>
+
+<pre><code class="ruby">Payola.configure do |config|
+  config.subscribe &#39;payola.sale.finished&#39;, lambda do |sale|
+    Payola.queue!(PushoverCallback, sale.guid)
+  end
+end
+</code></pre>
+
+<p>This takes advantage of Payola&rsquo;s built-in job queuing system which integrates with whatever system you have on hand, defaulting to <code>ActiveJob</code>&rsquo;s inline system if it&rsquo;s available. If you want, you could use your queueing system directly.</p>
+
+<h2>The Callback</h2>
+
+<p>The code to talk to Pushover is pretty simple. Let&rsquo;s create a file at <code>app/services/pushover_callback.rb</code>:</p>
+
+<pre><code class="ruby">class PushoverCallback
+  def self.call(guid)
+    sale = Payola::Sale.find_by(guid: guid)
+    price = sprintf(&quot;%0.2f&quot;, sale.amount / 100.0)
+
+    client = Rushover::Client.new(ENV[&#39;PUSHOVER_API_TOKEN&#39;])
+
+    client.notify(
+      ENV[&#39;PUSHOVER_USER_TOKEN&#39;],
+      &quot;#{sale.email} just bought #{sale.product.name} for #{price}&quot;,
+      device: ENV[&#39;PUSHOVER_DEVICE&#39;],
+      sound: &#39;cashregister&#39;
+    )
+  end
+end
+</code></pre>
+
+<p>From the top, we look up the sale in the database and format the price as something useful. Then, we create a client and call the <code>notify</code> method on it. This tells Pushover to send the given message to the user identified by the token. The <code>device</code> argument tells Pushover to only send the notification to that specific device and is optional. The other argument, <code>sound</code>, lets you pick from a <a href="https://pushover.net/api#sounds">range of pre-defined options</a>. I think the sound an old-school cash register makes is perfectly appropriate, but maybe an alien alarm makes more sense to you.</p>
+
+<hr>
+
+<p><strong>P.S.</strong>: Payola Pro has pre-built integrations like the example above for Mailchimp and Mixpanel, with many more on the way. It also brings support for Stripe Connect marketplaces, a commercial-friendly license, and priority email support. <strong><a href="https://www.payola.io/pro">Check it out!</a></strong></p>
+
+  </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center">
+    &copy Cora Street Press LLC. Built by <a href="https://www.petekeen.net/">Pete Keen</a>.
+  </footer>
+  <script src="/javascripts/application.js" type="text/javascript"></script>
+</body>
+</html>

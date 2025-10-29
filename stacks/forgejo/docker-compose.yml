@@ -1,0 +1,20 @@
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:12
+    container_name: forgejo
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: unless-stopped
+    ports:
+      - '2222:22'
+    volumes:
+      - /data/forgejo:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    x-web:
+      hostname: git
+      port: 3000
+    x-backup:
+      paths:
+        - /data/forgejo

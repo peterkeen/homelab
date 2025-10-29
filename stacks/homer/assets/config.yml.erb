@@ -1,0 +1,66 @@
+<%-
+config = {
+  title: "App Dashboard",
+  subtitle: "Homer",
+  header: false,
+  columns: "auto",
+  services: [],
+}
+
+categories = {
+  "Home Stuff" => {
+    icon: "fa-solid fa-house",
+    items: [
+      {
+        name: "UniFi Protect",
+        subtitle: "Security cameras",
+        url: "https://protect.keen.land",
+        logo: "assets/unifi-protect-logo-small.svg",
+        sort_order: 1,
+      },
+      {
+        name: "House Manual",
+        subtitle: "System docs for house",
+        url: "https://github.com/keenfamily-us/house",
+        icon: "fa-solid fa-house",
+        sort_order: 2,
+      },
+    ]
+  },
+  "Media and Games" => {
+    icon: "far fa-tv",
+    items: [],
+  },
+  "Network Services" => {
+    icon: "fa-solid fa-wifi",
+    items: []
+  },
+}
+
+all_web_configs do |host, stack, service, web_conf|
+  next unless web_conf.has_key?(:dashboard)
+
+  item = {
+    url: "https://#{web_conf[:fqdn]}", 
+    sort_order: 100
+  }.merge(web_conf[:dashboard])
+
+  unless item.has_key?(:logo) || item.has_key?(:icon)
+    item[:logo] = "icons/svg/#{service.name}.svg"
+  end
+
+  category = item.delete(:category)
+  raise "Unknown dashboard category for service #{service.name}" unless category
+  categories[category][:items] << item
+end
+
+categories.each do |name, category|
+  category[:items] = category[:items]
+    .sort_by { |i| [i[:sort_order], i[:name]] }
+    .map { |i| i.delete(:sort_order); i }
+
+  config[:services] << category.merge({name: name})
+end
+
+-%>
+<%= dump_yaml_without_symbols(config) %>

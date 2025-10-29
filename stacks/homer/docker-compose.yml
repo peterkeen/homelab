@@ -1,0 +1,18 @@
+services:
+  homer:
+    container_name: homer-up
+    hostname: homer
+    image: b4bz/homer:v25.10.1
+    restart: unless-stopped
+    environment:
+      - INIT_ASSETS=0
+      - CONFIGS_SHA
+    volumes:
+      - ${CONFIGS_DIR}/homer/assets:/www/assets
+      - type: image
+        source: ghcr.io/keenfamily-us/infra/icons:latest
+        target: /www/icons
+        read_only: true
+    x-web:
+      port: 8080
+      fqdn: keen.land

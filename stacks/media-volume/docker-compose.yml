@@ -1,0 +1,14 @@
+volumes:
+  media-nfs:
+    driver: local
+    driver_opts:
+      type: nfs
+      device: ":${NFS_SERVER_MEDIA_PATH:-/mnt/tank/media}"
+      o: "addr=${NFS_SERVER_IP:-10.73.95.84},rw,nfsvers=4,async,nolock"
+
+  cwa-book-ingest:
+    driver: local
+    driver_opts:
+      type: nfs
+      device: ":/mnt/tank/cwa-book-ingest"
+      o: "addr=10.73.95.84,rw,nfsvers=4,async,nolock"

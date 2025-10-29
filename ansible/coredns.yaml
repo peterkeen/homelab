@@ -1,0 +1,9 @@
+- name: CoreDNS
+  hosts: stacked
+  tasks:
+    - name: Install CoreDNS
+      when: ansible_distribution == 'Alpine'
+      ansible.builtin.package:
+        name: coredns
+        state: absent
+

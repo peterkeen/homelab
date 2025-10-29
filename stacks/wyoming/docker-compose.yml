@@ -1,0 +1,35 @@
+services:
+  whisper:
+    container_name: whisper
+    image: lscr.io/linuxserver/faster-whisper:latest
+    environment:
+      - WHISPER_MODEL=distil-small.en
+      - WHISPER_LANG=en
+    volumes:
+      - /data/whisper:/config
+    restart: unless-stopped
+    ports:
+      - "10300:10300"
+
+  piper:
+    container_name: piper
+    image: rhasspy/wyoming-piper:latest
+    volumes:
+      - /data/piper:/data
+    restart: unless-stopped
+    command: ["--voice", "en_US-lessac-medium", "--streaming"]
+    ports:
+      - "10200:10200"
+
+  speech-to-phrase:
+    container_name: speech-to-phrase
+    image: rhasspy/wyoming-speech-to-phrase
+    volumes:
+      - /data/speech-to-phrase/models:/models
+      - /data/speech-to-phrase/train:/train
+    ports:
+      - "10500:10300"
+    command: ["--hass-websocket-uri", "ws://hass.keen.land/api/websocket", "--hass-token", "${HASS_API_TOKEN}", "--retrain-on-start"]
+    restart: unless-stopped
+    x-op-items:
+      - qhk73pwsgh3qkjjktfawy7f5le

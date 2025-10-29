@@ -1,0 +1,34 @@
+{
+  "group": {
+    "default": {
+      "targets": [
+        "cron-hook",
+        "adsb-bubble"
+      ]
+    }
+  },
+
+  "target": {
+    "cron-hook": {
+      "dockerfile": "Dockerfile",
+      "context": "./stacks/common",
+      "tags": [
+        "ghcr.io/keenfamily-us/infra/stacks/cron-hook:latest"
+      ],
+      "platforms": [
+        "linux/arm64",
+        "linux/amd64"
+      ]
+    },
+    "adsb-bubble": {
+      "dockerfile": "Dockerfile",
+      "context": "./stacks/adsb-bubble",
+      "tags": [
+        "ghcr.io/keenfamily-us/infra/stacks/adsb-bubble:latest"
+      ],
+      "platforms": [
+        "linux/amd64"
+      ]
+    }
+  }
+}

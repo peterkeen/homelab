@@ -1,0 +1,42 @@
+sources:
+  adsb:
+    type: http_client
+    endpoint: https://ultrafeeder.tailnet-a578.ts.net/data/aircraft.json
+    scrape_interval_secs: 1
+    decoding:
+      codec: json
+    framing:
+      method: bytes
+
+transforms:
+  extract_aircraft:
+    type: remap
+    inputs:
+      - adsb
+    source: |-
+      aircraft = .aircraft
+      now = from_unix_timestamp!(to_int!(.now))
+      . = []
+
+      for_each(array!(aircraft)) -> |_index, value| {
+        value.db = "adsb"
+        value.desc = value.desc || ""
+        value.timestamp = now
+        . = push(., value)
+      }
+
+sinks:
+  vlogs:
+    inputs:
+      - extract_aircraft
+    type: elasticsearch
+    endpoints:
+      - https://victorialogs.tailnet-a578.ts.net/insert/elasticsearch/
+    api_version: v8
+    compression: gzip
+    healthcheck:
+      enabled: false
+    query:
+      _msg_field: desc
+      _time_field: timestamp
+      _stream_fields: db,hex

@@ -1,0 +1,25 @@
+services:
+  local-proxy:
+    container_name: local-proxy
+    image: nginx:1.29.2
+    environment:
+      - CONFIGS_SHA    
+    volumes:
+      - ${CONFIGS_DIR}/local-proxy/00_logging.conf:/etc/nginx/conf.d/00_logging.conf
+      - ${CONFIGS_DIR}/local-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
+      - ${CONFIGS_DIR}/local-proxy/common.conf:/etc/nginx/snippets/common.conf
+      - ${CONFIGS_DIR}/local-proxy/dhparam:/etc/nginx/dhparam
+      - ${CONFIGS_DIR}/local-proxy/00-calculate-configs-sha.sh:/docker-entrypoint.d/00-calculate-configs-sha.sh
+      - ${CONFIGS_DIR}/local-proxy/reload-on-configs-change.sh:/reload-on-configs-change.sh
+      - /data/certificates/certificates:/etc/letsencrypt/certificates:ro
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    x-dns:
+      skip_service: true      
+    x-cron:
+      - name: "reload nginx on configs change"
+        schedule: "0 */10 * * * *"        
+        mail_only_on_error: true
+        command: "/bin/bash /reload-on-configs-change.sh"

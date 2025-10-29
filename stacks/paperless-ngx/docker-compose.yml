@@ -1,0 +1,56 @@
+services:
+  paperless-ngx-broker:
+    hostname: paperless-ngx-broker
+    container_name: paperless-ngx-broker
+    image: redis:7
+    restart: unless-stopped
+    user: 1000:1000
+    volumes:
+      - /data/paperless-ngx/redis:/data
+
+  paperless-ngx-webserver:
+    user: 1000:1000
+    container_name: paperless-ngx-webserver
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - paperless-ngx-broker
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "-S", "--max-time", "2", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - /data/paperless-ngx/app-data:/usr/src/paperless/data
+      - documents-nfs:/usr/src/paperless/media
+      - /data/paperless-ngx/export:/usr/src/paperless/export
+      - /data/paperless-ngx/consume:/usr/src/paperless/consume
+    environment:
+      - "PAPERLESS_REDIS=redis://paperless-ngx-broker:6379"
+      - "PAPERLESS_TIME_ZONE=America/Detroit"
+      - "PAPERLESS_URL=https://docs.keen.land"
+      - "PAPERLESS_ALLOWED_HOSTS=docs.keen.land,paperless.tailnet-a578.ts.net,localhost:8000"
+      - "PAPERLESS_CSRF_TRUSTED_ORIGINS=https://docs.keen.land"
+      - "PAPERLESS_OCR_USER_ARGS='{\"invalidate_digital_signatures\": true}"
+      - "DEBUG=True"
+    x-web:
+      hostname: docs
+      port: 8000
+      dashboard:
+        name: Paperless-NGX
+        subtitle: Repository for important documents
+        category: Home Stuff
+        logo: icons/svg/paperless-ngx.svg
+        sort_order: 2
+    x-backup:
+      paths:
+        - /data/paperless-ngx/app-data
+
+volumes:
+  documents-nfs:
+    driver: local
+    driver_opts:
+      type: nfs
+      device: ":/mnt/tank/documents"
+      o: "addr=${NFS_SERVER_IP:-10.73.95.84},rw,nfsvers=4,async,nolock"
+      

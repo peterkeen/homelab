@@ -1,0 +1,89 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: open-webui-pvc
+  namespace: localllama
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: open-webui
+  namespace: localllama  
+  labels:
+    app: open-webui
+  annotations:
+    keel.sh/policy: "major"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 24h"
+    keel.sh/approvals: "0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-webui
+  template:
+    metadata:
+      labels:
+        app: open-webui
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: nibbler
+      runtimeClassName: nvidia
+      volumes:
+        - name: open-webui-data
+          persistentVolumeClaim:
+            claimName: open-webui-pvc
+      imagePullSecrets:
+        - name: ghcr.io
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:v0.6.18
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: open-webui-data
+              mountPath: /app/backend/data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-webui
+  namespace: localllama  
+spec:
+  selector:
+    app: open-webui
+  ports:
+    - protocol: TCP
+      port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: open-webui-private
+  namespace: localllama  
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - open-webui.keen.land
+      secretName: keenland-open-webui-ingress-cert
+  rules:
+    - host: open-webui.keen.land
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: open-webui
+                port:
+                  number: 8080

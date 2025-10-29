@@ -1,0 +1,29 @@
+services:
+  genmon:
+    container_name: genmon-up
+    hostname: genmon
+    image: "ghcr.io/peterkeen/genmon-docker:main"
+    volumes:
+      - '/data/genmon:/etc/genmon'
+      - '/data/genmon/log:/var/log'
+    restart: unless-stopped
+    x-web:
+      hostname: genmon
+      port: 8000
+      dashboard:
+        name: Genmon
+        subtitle: Generator Monitor
+        category: Home Stuff
+        icon: fa-solid fa-plug-circle-bolt
+    x-backup:
+      paths:
+        - /data/genmon
+
+  genmon-proxy:
+    container_name: genmon-proxy
+    hostname: genmon-proxy
+    image: "ghcr.io/peterkeen/genmon-proxy:main"
+    restart: unless-stopped
+    command: ["/app/proxy", "--upstream", "http://genmon:8000"]
+    x-web:
+      port: 80

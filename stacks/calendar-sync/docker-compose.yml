@@ -1,0 +1,13 @@
+services:
+  calendar-sync:
+    image: ghcr.io/keenfamily-us/infra/stacks/calendar-sync:latest
+    environment:
+      - CALENDAR_MAGIC_STRING
+      - CALENDAR_NAME
+      - CALENDAR_TIME_ZONE
+      - CALENDAR_SUMMARY
+    volumes:
+      - /data/calendar-sync:/data
+    restart: unless-stopped      
+    x-op-items:
+      - ch43e2fglfkz5x2if6fg25jwye

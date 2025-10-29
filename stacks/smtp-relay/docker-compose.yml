@@ -1,0 +1,17 @@
+services:
+  smtp-relay:
+    container_name: smtp-relay
+    image: loganmarchione/docker-postfixrelay:1.6.2
+    environment:
+      - TZ
+      - CONFIGS_SHA
+      - RELAY_HOST
+      - RELAY_USER
+      - RELAY_PASS
+      - RELAY_PORT=587
+      - MYORIGIN=smtp.docker.keen.land
+      - MYNETWORKS=172.16.0.0/12,10.73.95.0/24,100.64.0.0/10
+    ports:
+      - "2525:25"
+    x-op-items:
+      - w7m4nut5sdydxwn6jbg2m67jfa

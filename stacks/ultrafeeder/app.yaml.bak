@@ -1,0 +1,121 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: ultrafeeder-secrets
+spec:
+  itemPath: "vaults/fmycvdzmeyvbndk7s7pjyrebtq/items/j2bixjtfunmasv2wwoimmesleq"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: ultrafeeder-globe-history-pvc
+spec:
+  storageClassName: freenas-nfs-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: ultrafeeder-graphs1090-pvc
+spec:
+  storageClassName: freenas-nfs-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ultrafeeder-env
+  labels:
+    app: ultrafeeder
+data:
+  LOGLEVEL: error
+  TZ: America/Detroit
+  READSB_LAT: 42.331307
+  READSB_LON: -83.879102
+  READSB_ALT: 288.95m
+  ULTRAFEEDER_CONFIG: |
+    adsb,100.125.250.26,30978,uat_in;
+    adsb,100.125.250.26,30005,beast_in;
+    adsb,in.adsb.lol,30004,beast_reduce_plus_out;
+    mlat,in.adsb.lol,31090,39001;
+  MLAT_USER: 7395
+  READSB_FORWARD_MLAT_SBS: true
+  UPDATE_TAR1090: true
+  TAR1090_DEFAULTCENTERLAT: 42.331307
+  TAR1090_DEFAULTCENTERLON: -83.879102
+  TAR1090_MESSAGERATEINTITLE: true
+  TAR1090_PAGETITLE: 7395
+  TAR1090_PLANECOUNTINTITLE: true
+  TAR1090_ENABLE_AC_DB: true
+  TAR1090_FLIGHTAWARELINKS: true
+  HEYWHATSTHAT_PANORAMA_ID: N7RPCWNM
+  HEYWHATSTHAT_ALTS: "3000,12000"
+  TAR1090_SITESHOW: true
+  TAR1090_RANGE_OUTLINE_COLORED_BY_ALTITUDE: true
+  TAR1090_RANGE_OUTLINE_WIDTH: 2.0
+  TAR1090_RANGERINGSDISTANCES: "50,100,150,200"
+  TAR1090_RANGERINGSCOLORS: '#1A237E','#0D47A1','#42A5F5','#64B5F6'
+  TAR1090_USEROUTEAPI: true
+  ENABLE_978: yes
+  URL_978: http://100.125.250.26:8888/skyaware978
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ultrafeeder
+  labels:
+    app: ultrafeeder
+  annotations:
+    keel.sh/policy: "force"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 1m"
+    keel.sh/approvals: "0"
+    operator.1password.io/auto-restart: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ultrafeeder
+  template:
+    metadata:
+      labels:
+        app: ultrafeeder
+    spec:
+      volumes:
+        - name: secrets
+          secret:
+            secretName: adsb-bubble-secrets
+        - name: ultrafeeder-globe-history
+          persistentVolumeClaim:
+            claimName: ultrafeeder-globe-history-pvc
+        - name: ultrafeeder-graphs1090
+          persistentVolumeClaim:
+            claimName: ultrafeeder-graphs1090-pvc
+      imagePullSecrets:
+        - name: ghcr.io
+      containers:
+        - name: ultrafeeder
+          image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder:telegraf
+          imagePullPolicy: "Always"
+          env:
+            - name: UUID
+              valueFrom:
+                secretsRef:
+                  name: ultrafeeder-secrets
+                  key: FEEDER_UUID
+          envFrom:
+            - configMapRef:
+                name: ultrafeeder-env
+          volumeMounts:
+            - name: ultrafeeder-globe-history
+              mountPath: /var/globe_history
+            - name: ultrafeeder-graphs1090
+              mountPath: /var/lib/collectd

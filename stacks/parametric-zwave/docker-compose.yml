@@ -1,0 +1,60 @@
+x-common-zwave: &common-zwave
+  image: ghcr.io/zwave-js/zwave-js-ui:11.3.0
+  restart: always
+  stop_signal: SIGINT
+  environment:
+    - ZWAVEJS_EXTERNAL_CONFIG=/usr/src/app/store/.config-db
+    - CONFIGS_SHA
+
+services:
+  zwave-house:
+    <<: *common-zwave
+    container_name: zwave-house
+    hostname: zwave-house
+    ports:
+      - ${TAILNET_IP}:8091:8091
+      - ${TAILNET_IP}:3000:3000
+    volumes:
+      - /data/zwave/house:/usr/src/app/store
+    x-backup:
+      paths:
+        - /data/zwave/house
+
+  zwave-shed:
+    <<: *common-zwave  
+    container_name: zwave-shed
+    hostname: zwave-shed
+    ports:
+      - ${TAILNET_IP}:8092:8091
+      - ${TAILNET_IP}:3001:3000
+    volumes:
+      - /data/zwave/shed:/usr/src/app/store
+    x-backup:
+      paths:
+        - /data/zwave/shed        
+
+  zwave-office:
+    <<: *common-zwave
+    container_name: zwave-office
+    hostname: zwave-office
+    ports:
+      - ${TAILNET_IP}:8093:8091
+      - ${TAILNET_IP}:3002:3000
+    volumes:
+      - /data/zwave/office:/usr/src/app/store
+    x-backup:
+      paths:
+        - /data/zwave/office
+
+  zwave-garage:
+    <<: *common-zwave  
+    container_name: zwave-garage
+    hostname: zwave-garage
+    ports:
+      - ${TAILNET_IP}:8094:8091
+      - ${TAILNET_IP}:3003:3000
+    volumes:
+      - /data/zwave/garage:/usr/src/app/store
+    x-backup:
+      paths:
+        - /data/zwave/garage                
