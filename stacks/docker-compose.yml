@@ -1,9 +1,0 @@
-services:
-  adsb-bubble:
-    container_name: adsb-bubble-up
-    image: ghcr.io/keenfamily-us/infra/stacks/adsb-bubble:latest
-    restart: unless-stopped
-    environment:
-      - HASS_API_KEY
-    x-op-items:
-      - 33cvpfteyuy7mjcprlqsiejeeq
