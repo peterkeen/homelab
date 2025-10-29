@@ -6,6 +6,7 @@ require 'tempfile'
 require 'pstore'
 require 'time'
 require 'shellwords'
+require 'json'
 
 class Secrets
   include Singleton
@@ -13,6 +14,12 @@ class Secrets
   class Item
     def initialize(raw)
       @raw = raw
+      map_fields(include_notes: true) do |field|
+        if field["type"] == "SSHKEY"
+          field["ssh_formats"]["openssh"].delete("value")
+        end
+        field.delete("value")
+      end
     end
 
     def vars
@@ -37,7 +44,11 @@ class Secrets
 
       map_fields do |field|
         field_id = field["id"]
-        [field["label"], "op://#{vault}/#{item_id}/#{field_id}"]
+        ref = "op://#{vault}/#{item_id}/#{field_id}"
+        if field["type"] == "SSHKEY"
+          ref = "#{ref}?ssh-format=openssh"
+        end
+        [field["label"], ref]
       end.to_h
     end
 
@@ -49,9 +60,9 @@ class Secrets
       DateTime.parse(@raw["updated_at"])
     end
 
-    def map_fields(&block)
+    def map_fields(include_notes: false, &block)
       @raw["fields"].filter_map do |field|
-        next if field["label"] == "notesPlain"
+        next if field["label"] == "notesPlain" unless include_notes
         yield field
       end
     end
