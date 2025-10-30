@@ -38,18 +38,7 @@ class Composer
         end
       end
 
-      stack.services.each do |service|
-        service.config.fetch(:"x-op-items", []).each do |item|
-          if item.is_a?(String)
-            secret = context.secrets.get(item)
-            env = env.merge(secret.obfuscated_refs)
-            env["OP_ITEM_#{item}_MTIME"] = secret.updated_at.to_time.to_i
-          else
-            ref = item[:ref].split("/").first
-            env["OP_ITEM_#{ref}_MTIME"] = context.secrets.get(ref).updated_at.to_time.to_i
-          end
-        end
-      end
+      env.merge!(context.hooks.build_stack_env(context, stack))
 
       File.open(env_path, "w+") do |f|
         env.each do |key, val|
@@ -94,13 +83,12 @@ class Composer
   end
 
   def apply_compose!
-    interpolated = compose_stage_one
-    injected = op_inject(interpolated)
+    interpolated = context.hooks.process_interpolated_compose(context, compose_stage_one)
 
     rsync_files!
-    upload_secrets_files!
+    context.hooks.pre_deploy(context)
 
-    compose_stage_two(injected)
+    compose_stage_two(interpolated)
   end
 
   def compose_stage_zero
@@ -171,33 +159,6 @@ class Composer
         p.communicate interpolated
       end
     end
-  end
-
-  def upload_secrets_files!
-    context.this_host.services.each do |service|
-      service.config.fetch(:"x-op-items", []).each do |item|
-        next if item.is_a?(String)
-
-        ref = "op://fmycvdzmeyvbndk7s7pjyrebtq/" + item.fetch(:ref)
-        path = item.fetch(:remote_path)
-        contents = Subprocess.check_output(["op", "read", ref])
-
-        args = ["ssh", "root@#{context.this_host.hostname}", "cat > #{path}"]
-
-        Subprocess.check_call(args, stdin: Subprocess::PIPE) do |p|
-          p.communicate contents
-        end
-      end
-    end
-  end
-
-  def op_inject(input)
-    args = ["op", "inject"]
-    output = nil
-    Subprocess.check_call(args, stdout: Subprocess::PIPE, stdin: Subprocess::PIPE) do |p|
-      output, _ = p.communicate input
-    end
-    output
   end
 
   def host_root

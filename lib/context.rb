@@ -42,10 +42,6 @@ class Context
     hosts_file.root_path
   end
 
-  def secrets
-    Secrets.instance
-  end
-
   def all_host_services
     hosts.each do |host|
       host.services.each do |service|

@@ -14,14 +14,43 @@ class Hooks
   end
 
   def build_overrides_for_stack(stack)
-    overrides = {}
+    {}.tap do |overrides|
+      for_each_hook do |hook|
+        if hook.method_defined?(:build_overrides_for_stack)
+          overrides.deep_merge! Class.new.extend(hook).build_overrides_for_stack(stack)
+        end
+      end
+    end
+  end
+
+  def build_stack_env(context, stack)
+    {}.tap do |env|
+      for_each_hook do |hook|
+        if hook.method_defined?(:build_stack_env)
+          env.merge! Class.new.extend(hook).build_stack_env(context, stack)
+        end
+      end
+    end
+  end
+
+  def pre_deploy(context)
     for_each_hook do |hook|
-      if hook.method_defined?(:build_overrides_for_stack)
-        overrides.deep_merge! Class.new.extend(hook).build_overrides_for_stack(stack)
+      if hook.method_defined?(:pre_deploy)
+        Class.new.extend(hook).pre_deploy(context)
+      end
+    end
+  end
+
+  def process_interpolated_compose(context, interpolated)
+    interpolated = interpolated.dup
+
+    for_each_hook do |hook|
+      if hook.method_defined?(:process_interpolated_compose)
+        interpolated = Class.new.extend(hook).process_interpolated_compose(context, interpolated)
       end
     end
 
-    overrides
+    interpolated
   end
 
   def for_each_hook(&block)
