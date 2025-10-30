@@ -8,17 +8,7 @@ Each host has an entry in `hosts.yml` that describes:
 
 - the stacks it should be running
 - any environment variables that should be set (copied to a `.env` file)
-- optionally, one or more ansible groups that the host should belong to
-
-In addition to docker, hosts have various other things running. For example, all of them
-run CoreDNS on the host to proxy DNS to my NextDNS instance, along with forwarding queries for
-my tailnet hosts to the MagicDNS resolver IP (MagicDNS taking over DNS on some hosts isn't really tenable).
-
-This is what the other stuff does:
-
-- `stacks/` contains the docker compose stacks
-- `lib/` is where the code that interprets `hosts.yml` and drives the system lives
-- `ansible/` contains playbooks for setting up hosts. This is mostly legacy stuff.
+- the local IP that we should use for DNS
 
 ## How it works
 
@@ -31,13 +21,13 @@ For each host, `composer.rb` does the following:
 
 1. Copies stacks into a host-specific build directory
 2. Renders any templated files that it finds (i.e. files ending in `.erb`)
-3. Generates a `.env` file for the host as well as one for each stack
+3. Generates a `.env` file for the host as well as one for each stack, invoking hooks when needed
 4. Generates a "stage zero" Docker compose file listing out all of the stacks as `include`s
-5. Generates a "stage one" Docker compose file by running stage zero through `docker compose config`
+5. Generates a `compose.override.yml` file that by default just sets up network aliases. Hooks can add to overrides.
+5. Generates a "stage one" Docker compose file by running stage zero through `docker compose config`. Hooks can modify the "stage one" docker compose.
 6. `rsync`s stacks (minus `docker-compose.yml`, `.env`, and any `.erb` files) to the remote host
-7. Uploads secrets files (if requested)
-8. Generates a "stage two" Docker compose file by running stage one through `op inject`
-9. Sets `DOCKER_HOST=ssh://root@remote-host` and then runs `docker compose up` with the stage two compose file
+7. Invokes any hooks that want to do something prior to deploy (i.e. upload files from the secrets store)
+9. Sets `DOCKER_HOST=ssh://root@remote-host` and then runs `docker compose up` with the stage one compose file
 
 The various compose files and secrets are only ever held in memory, they are never written to disk.
 
@@ -54,12 +44,14 @@ I have several compose extensions that I use pretty frequently:
 
 By convention, my stacks put data in `/data/<stackname>` and I try to have them run as user `1000:1000` as much as possible.
 
-### Networking
+## Networking
 
-Each internally facing host that runs web applications runs the stack `local-proxy`. This stack has an automatically generated nginx config that:
+Each internally facing host that runs web applications (as determined by the presence of the `x-web` extension) runs the stack `local-proxy`. This stack has an automatically generated nginx config that:
 
 1. Terminates HTTPS with a wildcard keen.land certificate
 2. Forwards requests to a container running on the host.
+
+The `web_conf` hook handles setting up a network configuration for each web service on the `local-web` network with an alias of `service_name.stack_name.local-web.internal`. 
 
 Local DNS is handled by CoreDNS and Unbound running on two hosts. Omada is configured to proxy all DNS traffic to those two machines. The CoreDNS configuration builds a hosts file for keen.land and serves that directly, and Unbound serves as a recursor and blocklist handler.
 
@@ -67,9 +59,9 @@ We currently use the [OISD](https://oisd.nl) "Big" blocklist.
 
 Other DNS records are handled with dnscontrol in the `dns/` directory.
 
-### Secrets
+## Secrets
 
-Secrets are stored in a hard-coded 1Password vault as secure notes. Each note has one or more plain text or password fields representing environment variables, where the field name is the variable name and the value is the variable value.
+The `one_password` hook handles setting up secrets. Secrets are stored in a hard-coded 1Password vault as secure notes. Each note has one or more plain text or password fields representing environment variables, where the field name is the variable name and the value is the variable value.
 
 Secrets are made available to stacks via the `x-op-item` compose extension, which consists of an array of 1Password item UUIDs in the hard-coded secrets vault. When generating the deployable package for each server the system will merge all of the items for every service together in list order and write their obfuscated references to a `.env` file alongside the stack's compose file.
 
@@ -100,7 +92,7 @@ Prepare scripts are run inside the container prior to rsync and are expected to 
 
 Backups run nightly.
 
-### Cron
+## Cron
 
 Services can optionally declare `x-cron`, which is a list of cron definitions fed to [`ofelia`](https://github.com/mcuadros/ofelia). Crons run in the context of the container that they are defined within. Example:
 
