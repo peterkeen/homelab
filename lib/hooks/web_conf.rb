@@ -1,7 +1,15 @@
 module WebConfHook
   def build_overrides_for_stack(stack)
+    return {} unless stack.services.any? do |service|
+      service.config.key?(:"x-web")
+    end
+
     overrides = {
-      "services" => {},
+      "services" => {
+        "local-proxy" => {
+          "networks" => {}
+        }
+      },
       "networks" => {},
     }
 
@@ -9,15 +17,19 @@ module WebConfHook
       next if ["host", "none"].include?(service.config[:network_mode])
       next unless service.config[:"x-web"]
 
+      overrides["networks"]["local-web-#{service.name}"] = {}
+
       overrides["services"][service.name.to_s] = {
         "networks" => {
-          "local-web" => {
+          "local-web-#{service.name}" => {
             "aliases" => [
               "#{service.name}.#{stack.name}.local-web.internal"
             ]
           }
         }
       }
+
+      overrides["services"]["local-proxy"]["networks"]["local-web-#{service.name}"] = {}
     end
 
     overrides
@@ -26,17 +38,17 @@ module WebConfHook
   module ContextHelpers
     def web_config_for_service(service)
       return unless service.config.key?(:"x-web")
-  
+
       conf = service.config.fetch(:"x-web").dup
-  
+
       conf[:hostname] ||= service.config[:hostname]
       conf[:fqdn] ||= "#{conf[:hostname]}.keen.land"
-  
+
       if conf[:port].nil? && conf[:upstream].nil?
         raise "Need port for service #{name} in #{stack.name}, can't determine default"
       end
       conf[:upstream] ||= "http://#{service.name}.#{service.stack.name}.local-web.internal:#{conf[:port]}"
-  
+
       @web_conf = conf
     end
 

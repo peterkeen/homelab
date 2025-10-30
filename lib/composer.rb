@@ -60,21 +60,26 @@ class Composer
     }
 
     context.this_host.stacks.each do |stack|
+      overrides["networks"][stack.name.to_s] ||= {}
+
       stack.services.each do |service|
         next if ["host", "none"].include?(service.config[:network_mode])
 
-        overrides["services"][service.name.to_s] = {
+        overrides["services"][service.name.to_s] ||= {}
+
+        overrides["services"][service.name.to_s].deep_merge({
           "networks" => {
-            "default" => {
+            stack.name.to_s => {
               "aliases" => [
-                "#{service.name}.svc.docker.internal"
+                "#{service.name}.#{stack.name}.docker.internal"
               ]
             },
           }
-        }
+        })
       end
 
-      overrides.deep_merge!(context.hooks.build_overrides_for_stack(stack))
+      stack_overrides = context.hooks.build_overrides_for_stack(stack)
+      overrides = overrides.deep_merge(stack_overrides)
     end
 
     File.open(File.join(host_root, OVERRIDE_FILE_NAME), "w+") do |f|

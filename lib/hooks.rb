@@ -14,13 +14,16 @@ class Hooks
   end
 
   def build_overrides_for_stack(stack)
-    {}.tap do |overrides|
-      for_each_hook do |hook|
-        if hook.method_defined?(:build_overrides_for_stack)
-          overrides.deep_merge! Class.new.extend(hook).build_overrides_for_stack(stack)
-        end
+    overrides = {}
+
+    for_each_hook do |hook|
+      if hook.method_defined?(:build_overrides_for_stack)
+        hook_overrides = Class.new.extend(hook).build_overrides_for_stack(stack)
+        overrides = overrides.deep_merge hook_overrides
       end
     end
+
+    overrides
   end
 
   def build_stack_env(context, stack)

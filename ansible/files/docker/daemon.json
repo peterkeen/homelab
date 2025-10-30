@@ -4,5 +4,11 @@
     "max-size": "20m",
     "max-file": "6",
     "compress": "true"
-  }
+  },
+  "default-address-pools": [
+    {
+      "base": "10.244.0.0/16",
+      "size": 28
+    }
+  ]
 }

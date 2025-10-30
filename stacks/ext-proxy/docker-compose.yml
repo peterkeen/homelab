@@ -18,6 +18,10 @@ services:
       - ${CONFIGS_DIR}/ext-proxy/reload-on-configs-change.sh:/reload-on-configs-change.sh      
       - /data/certificates/certificates:/etc/letsencrypt/certificates:ro      
     restart: unless-stopped
+    networks:
+      smallsites: {}
+      vmsave: {}
+      pkdn: {}
     x-dns:
       skip_service: true    
     x-cron:

@@ -16,8 +16,6 @@ services:
     ports:
       - 80:80
       - 443:443
-    networks:
-      - local-web
     x-dns:
       skip_service: true      
     x-cron:
@@ -25,6 +23,3 @@ services:
         schedule: "0 */10 * * * *"        
         mail_only_on_error: true
         command: "/bin/bash /reload-on-configs-change.sh"
-
-networks:
-  local-web:
