@@ -25,16 +25,24 @@ Really I just wanted `T::Struct` to parse `hosts.yml`, there aren't any `sig`s a
 
 ## How it works
 
-`Rakefile` contains a `build` target that:
+`Rakefile` contains an `apply` target that:
 
 1. Loads `hosts.yml`
 2. Gathers secrets from 1Password using the `op` command line tool
-3. Renders any templated files that it finds (i.e. files ending in `.erb`)
-4. Re-loads `hosts.yml`
-5. Iterates over each host in the config and builds a directory to be rsync'd to the host
 
-The `ansible` target runs all of the playbooks (via `playbooks/main.yaml`).
-It can also be told to run a single playbook.
+For each host, `composer.rb` does the following:
+
+1. Copies stacks into a host-specific build directory
+2. Renders any templated files that it finds (i.e. files ending in `.erb`)
+3. Generates a `.env` file for the host as well as one for each stack
+4. Generates a "stage zero" Docker compose file listing out all of the stacks as `include`s
+5. Generates a "stage one" Docker compose file by running stage zero through `docker compose config`
+6. `rsync`s stacks (minus `docker-compose.yml`, `.env`, and any `.erb` files) to the remote host
+7. Uploads secrets files (if requested)
+8. Generates a "stage two" Docker compose file by running stage one through `op inject`
+9. Sets `DOCKER_HOST=ssh://root@remote-host` and then runs `docker compose up` with the stage two compose file
+
+The various compose files and secrets are only ever held in memory, they are never written to disk.
 
 The only prerequisites for a host is to be on my tailnet.
 
@@ -67,7 +75,15 @@ Other DNS records are handled with dnscontrol in the `dns/` directory.
 
 Secrets are stored in a hard-coded 1Password vault as secure notes. Each note has one or more plain text or password fields representing environment variables, where the field name is the variable name and the value is the variable value.
 
-Secrets are made available to stacks via the `x-op-item` compose extension, which consists of an array of 1Password item UUIDs in the hard-coded secrets vault. When generating the deployable package for each server the system will merge all of the items for every service together in list order and write the resulting environment variables to a `.env` file alongside the stack's compose file.
+Secrets are made available to stacks via the `x-op-item` compose extension, which consists of an array of 1Password item UUIDs in the hard-coded secrets vault. When generating the deployable package for each server the system will merge all of the items for every service together in list order and write their obfuscated references to a `.env` file alongside the stack's compose file.
+
+In addition, `x-op-item` can be used to write a specific field from a 1Password item to a file on the remote machine with this syntax:
+
+```
+x-op-items:
+  - ref: someitemuuid/field_name
+    remote_path: /some/path/on/remote/host
+```
 
 ## Backups
 
@@ -86,16 +102,7 @@ Paths defined in `paths` will be syned with `rsync --relative --dirs --archive -
 
 Prepare scripts are run inside the container prior to rsync and are expected to write to a path defined in `paths`. Output and exit stats are ignored.
 
-Cron on the host runs backups nightly.
-
-### Dependencies
-
-Stacks can optionally declare a `x-depends` top-level attribute. This consists of a list of other stacks that must be present for this stack to function correctly. The dependency tree is recursively resolved at build time. Example:
-
-```
-x-depends:
-  - certificate-client
-```
+Backups run nightly.
 
 ### Cron
 
