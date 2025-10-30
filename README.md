@@ -46,12 +46,14 @@ By convention, my stacks put data in `/data/<stackname>` and I try to have them 
 
 ## Networking
 
-Each internally facing host that runs web applications (as determined by the presence of the `x-web` extension) runs the stack `local-proxy`. This stack has an automatically generated nginx config that:
+The docker daemon on every host is set up with `10.244.0.0/16` as the default pool and creates `/28` networks. Each stack gets it's own isolated network so nothing is on the default network created by compose.
+
+Each internally facing host that runs web applications runs the stack `local-proxy`. This stack has an automatically generated nginx config that:
 
 1. Terminates HTTPS with a wildcard keen.land certificate
 2. Forwards requests to a container running on the host.
 
-The `web_conf` hook handles setting up a network configuration for each web service on the `local-web` network with an alias of `service_name.stack_name.local-web.internal`. 
+The `web_conf` hook handles setting up a network configuration for each web service. Every service gets it's own network shared between just that container and the proxy. The service gets assigned the alias `service_name.stack_name.local-web.internal`.
 
 Local DNS is handled by CoreDNS and Unbound running on two hosts. Omada is configured to proxy all DNS traffic to those two machines. The CoreDNS configuration builds a hosts file for keen.land and serves that directly, and Unbound serves as a recursor and blocklist handler.
 
