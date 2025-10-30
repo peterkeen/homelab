@@ -18,10 +18,7 @@ This is what the other stuff does:
 
 - `stacks/` contains the docker compose stacks
 - `lib/` is where the code that interprets `hosts.yml` and drives the system lives
-- `ansible/` contains the ansible playbooks that, among other things, deploys the stacks to the hosts
-
-The code in `lib` is lightly typed with Sorbet.
-Really I just wanted `T::Struct` to parse `hosts.yml`, there aren't any `sig`s and I don't bother with `srb`.
+- `ansible/` contains playbooks for setting up hosts. This is mostly legacy stuff.
 
 ## How it works
 
@@ -53,7 +50,6 @@ I have several compose extensions that I use pretty frequently:
 - `x-web` sets up a reverse proxy entry in the `local-proxy` config
 - `x-op-item` feeds secrets to services
 - `x-backup` backs up parts of the data directory
-- `x-depends` expresses stack-level dependencies
 - `x-cron` see 'Cron' below
 
 By convention, my stacks put data in `/data/<stackname>` and I try to have them run as user `1000:1000` as much as possible.
@@ -87,7 +83,7 @@ x-op-items:
 
 ## Backups
 
-Backups are very simple. Each service can define a `x-backup` key that looks like this:
+Each service can define a `x-backup` key that looks like this:
 
 ```
 x-backup:
