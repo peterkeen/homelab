@@ -1,7 +1,6 @@
 require_relative './stack'
 
 class Host
-  attr_reader :hostname
   attr_reader :stack_list
   attr_reader :local_ip
   attr_reader :tailnet_ip
@@ -29,7 +28,11 @@ class Host
   end
 
   def normalized_hostname
-    hostname.to_s.tr("-", "_")
+    hostname.tr("-", "_")
+  end
+
+  def hostname
+    @hostname.to_s
   end
 
   def environment

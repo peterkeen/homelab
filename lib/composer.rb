@@ -2,6 +2,7 @@ require 'subprocess'
 require_relative './ds_logger'
 
 class Composer
+  OVERRIDE_FILE_NAME = "compose.override.yaml"
   attr_reader :context
   attr_reader :build_root
 
@@ -14,6 +15,7 @@ class Composer
     LOGGER.info("Deploying #{context.this_host.hostname}")
     build_host_env_file
     build_stack_env_files
+    build_override_file
 
     apply_compose!
   end
@@ -62,6 +64,35 @@ class Composer
     end
   end
 
+  def build_override_file
+    overrides = {
+      "services" => {},
+      "networks" => {},
+    }
+
+    context.this_host.stacks.each do |stack|
+      stack.services.each do |service|
+        next if ["host", "none"].include?(service.config[:network_mode])
+
+        overrides["services"][service.name.to_s] = {
+          "networks" => {
+            "default" => {
+              "aliases" => [
+                "#{service.name}.svc.docker.internal"
+              ]
+            },
+          }
+        }
+      end
+
+      overrides.deep_merge!(context.hooks.build_overrides_for_stack(stack))
+    end
+
+    File.open(File.join(host_root, OVERRIDE_FILE_NAME), "w+") do |f|
+      f.write(overrides.to_yaml)
+    end
+  end
+
   def apply_compose!
     interpolated = compose_stage_one
     injected = op_inject(interpolated)
@@ -86,6 +117,7 @@ class Composer
       "compose",
       "--project-name=app",
       "-f", "-",
+      "-f", "#{host_root}/#{OVERRIDE_FILE_NAME}",
       "config",
       "--no-path-resolution",
     ].flatten

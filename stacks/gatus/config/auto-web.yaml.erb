@@ -3,7 +3,7 @@ endpoints = []
 
 all_host_services do |host, stack, service|
   endpoint = service.config.fetch(:"x-gatus", {})    
-  web_conf = service.web_config
+  web_conf = web_config_for_service(service)
 
   next unless endpoint.length > 0 || web_conf
 

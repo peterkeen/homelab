@@ -2,8 +2,9 @@ services:
   ollama:
     container_name: ollama
     image: ollama/ollama
-    ports:
-      - "11434:11434"
     volumes:
       - /data/ollama:/root/.ollama
     restart: unless-stopped
+    x-web:
+      port: 11434
+      hostname: ollama

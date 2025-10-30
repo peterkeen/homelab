@@ -11,15 +11,23 @@ class Context
 
   attr_reader :hosts_file
   attr_reader :hostname
+  attr_reader :hooks
 
-  def initialize(hosts_file:, hostname:)
+  def initialize(hosts_file:, hostname:, hooks:)
     @hosts_file = hosts_file
     @hostname = hostname
+    @hooks = hooks
+
+    hooks.for_each_hook do |hook|
+      if hook.const_defined?(:ContextHelpers)
+        self.extend(hook.const_get(:ContextHelpers))
+      end
+    end
   end
 
   def this_host
     raise "Cannot access this_host when in global context" if hostname == GLOBAL_CONTEXT_HOSTNAME
-    hosts_file.hosts[hostname.to_s]
+    hosts_file.hosts[hostname]
   end
 
   def hosts
@@ -34,24 +42,8 @@ class Context
     hosts_file.root_path
   end
 
-  def get_binding
-    binding
-  end
-
   def secrets
     Secrets.instance
-  end
-
-  def all_web_configs(&block)
-    seen_fqdns = Set.new
-    all_host_services do |host, stack, service|
-      web_conf = service.web_config
-      next unless web_conf
-
-      seen_fqdns.add?(web_conf[:fqdn]) or raise "Duplicate fqdn for service #{service.name}: #{web_conf[:fqdn]}"
-
-      yield host, stack, service, web_conf
-    end
   end
 
   def all_host_services
@@ -62,16 +54,13 @@ class Context
     end
   end
 
-  def this_host_web_configs
-    all_web_configs do |host, stack, service, web_conf|
-      next unless host == this_host
-      yield stack, service, web_conf
-    end
-  end
-
   def dump_yaml_without_symbols(obj, io = nil, **options)
     visitor = SymbolToStringYamlTreeVisitor.create(**options)
     visitor << obj
     visitor.tree.yaml(io, **options)
+  end
+
+  def get_binding
+    binding
   end
 end
