@@ -3,17 +3,17 @@
 set -e
 
 ping_gatus() {
-if [[ ! -z "$GATUS_AUTH_TOKEN" ]]; then
-    curl -XPOST -H "Authorization: Bearer ${GATUS_AUTH_TOKEN}" "https://gatus.keen.land/api/v1/endpoints/host-backups_${HOSTNAME}/external?success=true"
-fi
+    if [[ ! -z "$GATUS_AUTH_TOKEN" ]]; then
+        curl -XPOST -H "Authorization: Bearer ${GATUS_AUTH_TOKEN}" "https://gatus.keen.land/api/v1/endpoints/host-backups_${HOSTNAME}/external?success=true"
+    fi
+}
 
 if [[ ! -s /configs/common/file_list.txt ]]; then
     ping_gatus
     exit 0
 fi
 
-echo $BACKUP_KEY > /tmp/backup_key
-chmod 600 /tmp/backup_key
+chmod 600 /configs/common/backup_key
 
 <%- this_host.services do |stack, service| -%>
 <%- next unless service.config.key?(:"x-backup") && service.config[:"x-backup"].key?(:prepare) -%>
@@ -24,9 +24,9 @@ docker exec <%= service.config[:container_name] %> <%= script %>
 
 backup_path=/mnt/tank/backups/hosts/<%= this_host.hostname %>
 
-ssh -i /tmp/backup_key -o StrictHostKeyChecking=no hbackup@10.73.95.84 mkdir -p $backup_path
+ssh -i /configs/common/backup_key -o StrictHostKeyChecking=no hbackup@10.73.95.84 mkdir -p $backup_path
 
-rsync --rsh "ssh -i /tmp/backup_key -o StrictHostKeyChecking=no" \
+rsync --rsh "ssh -i /configs/common/backup_key -o StrictHostKeyChecking=no" \
     --verbose \
     --recursive \
     --archive \

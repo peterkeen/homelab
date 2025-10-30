@@ -2,10 +2,9 @@
 
 set -e
 
-echo $BACKUP_KEY > /tmp/backup_key
-chmod 600 /tmp/backup_key
+chmod 600 /configs/common/backup_key
 
-rsync -e "ssh -i /tmp/backup_key -o StrictHostKeyChecking=no" -rav hbackup@10.73.95.84:/mnt/tank/backups/hosts/lrrr-docker/data/certificates/ /data/certificates
+rsync -e "ssh -i /configs/common/backup_key -o StrictHostKeyChecking=no" -rav hbackup@10.73.95.84:/mnt/tank/backups/hosts/lrrr-docker/data/certificates/ /data/certificates
 
 chown -R root:root /data/certificates
 chmod 644 /data/certificates/certificates/*

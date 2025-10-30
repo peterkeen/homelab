@@ -34,12 +34,12 @@ class Host
 
   def environment
     extra_vars = {
-      'HOSTNAME' => context.this_host.hostname.to_s,
-      'LOCAL_IP' => context.this_host.local_ip,
-      'TAILNET_IP' => context.this_host.tailnet_ip,
-      'GATUS_API_TOKEN' => "op://fmycvdzmeyvbndk7s7pjyrebtq/g6tkyx7ryhhdig3vgspawa6c2m/#{context.this_host.normalized_hostname}",
+      'HOSTNAME' => hostname.to_s,
+      'LOCAL_IP' => local_ip,
+      'TAILNET_IP' => tailnet_ip,
+      'GATUS_API_TOKEN' => "op://fmycvdzmeyvbndk7s7pjyrebtq/g6tkyx7ryhhdig3vgspawa6c2m/GATUS_API_TOKEN_#{normalized_hostname}",
     }
 
-    Array(environment) + extra_vars.map { |k,v| "#{k}=#{v}" }
+    Array(@environment) + extra_vars.map { |k,v| "#{k}=#{v}" }
   end
 end
