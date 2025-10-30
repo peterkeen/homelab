@@ -12,7 +12,8 @@ if [[ ! -s /configs/common/file_list.txt ]]; then
     exit 0
 fi
 
-chmod 600 /configs/common/backup_key
+echo $BACKUP_KEY > /tmp/backup_key
+chmod 600 /tmp/backup_key
 
 <%- this_host.services do |stack, service| -%>
 <%- next unless service.config.key?(:"x-backup") && service.config[:"x-backup"].key?(:prepare) -%>
@@ -23,9 +24,9 @@ docker exec <%= service.config[:container_name] %> <%= script %>
 
 backup_path=/mnt/tank/backups/hosts/<%= this_host.hostname %>
 
-ssh -i /configs/common/backup_key -o StrictHostKeyChecking=no hbackup@10.73.95.84 mkdir -p $backup_path
+ssh -i /tmp/backup_key -o StrictHostKeyChecking=no hbackup@10.73.95.84 mkdir -p $backup_path
 
-rsync --rsh "ssh -i /configs/common/backup_key -o StrictHostKeyChecking=no" \
+rsync --rsh "ssh -i /tmp/backup_key -o StrictHostKeyChecking=no" \
     --verbose \
     --recursive \
     --archive \

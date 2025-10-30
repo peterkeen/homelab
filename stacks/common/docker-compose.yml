@@ -5,6 +5,7 @@ services:
     environment:
       - TZ
       - GATUS_API_TOKEN
+      - BACKUP_KEY="op://fmycvdzmeyvbndk7s7pjyrebtq/7b67mcfokriwonunwdxcx636i4/private_key?ssh-format=openssh"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${CONFIGS_DIR}/:/configs
