@@ -39,7 +39,12 @@ class Composer
       stack.services.each do |service|
         service.config.fetch(:"x-op-items", []).each do |item|
           if item.is_a?(String)
-            env = env.merge(context.secrets.get(item).obfuscated_refs)
+            secret = context.secrets.get(item)
+            env = env.merge(secret.obfuscated_refs)
+            env["OP_ITEM_#{item}_MTIME"] = secret.updated_at.to_time.to_i
+          else
+            ref = item[:ref].split("/").first
+            env["OP_ITEM_#{ref}_MTIME"] = context.secrets.get(ref).updated_at.to_time.to_i
           end
         end
       end
@@ -48,6 +53,11 @@ class Composer
         env.each do |key, val|
           f.puts("#{key}=#{val}")
         end
+      end
+
+      stack_configs_sha = compute_configs_sha(stack)
+      File.open(env_path, "a+") do |f|
+        f.puts("CONFIGS_SHA=#{stack_configs_sha}")
       end
     end
   end
@@ -60,7 +70,6 @@ class Composer
     upload_secrets_files!
 
     compose_stage_two(injected)
-
   end
 
   def compose_stage_zero
@@ -108,7 +117,6 @@ class Composer
   end
 
   def compose_stage_two(interpolated)
-    ENV['CONFIGS_SHA'] = compute_configs_sha
     ENV['DOCKER_HOST'] = "ssh://root@#{context.this_host.hostname}"
 
     args = [
@@ -138,7 +146,7 @@ class Composer
       service.config.fetch(:"x-op-items", []).each do |item|
         next if item.is_a?(String)
 
-        ref = "op://" + item.fetch(:ref)
+        ref = "op://fmycvdzmeyvbndk7s7pjyrebtq/" + item.fetch(:ref)
         path = item.fetch(:remote_path)
         contents = Subprocess.check_output(["op", "read", ref])
 
@@ -168,8 +176,8 @@ class Composer
     File.join(host_root, "stacks", stack.name)
   end
 
-  def compute_configs_sha
-    `gtar --sort=name --owner=root:0 --group=root:0 --mtime='UTC 2022-01-01' -C / -cf - #{host_root}/stacks #{host_root}/.env | sha256sum | cut -d' ' -f1`
+  def compute_configs_sha(stack)
+    `gtar --sort=name --owner=root:0 --group=root:0 --mtime='UTC 2022-01-01' -C / -cf - #{host_root}/stacks/#{stack.name} #{host_root}/.env 2>/dev/null | sha256sum | cut -d' ' -f1`
   end
 
 end

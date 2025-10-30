@@ -135,7 +135,7 @@ class Secrets
   end
 
   def fetch_items_list
-    raw = Subprocess.check_output(Shellwords.split("op item list --format json --categories 'Secure Note,Server' --vault #{VAULT_UUID}"))
+    raw = Subprocess.check_output(Shellwords.split("op item list --format json --categories 'Secure Note,Server,SSH Key' --vault #{VAULT_UUID}"))
     JSON.parse(raw)
   end
 

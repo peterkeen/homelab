@@ -6,6 +6,7 @@ services:
     environment:
       - "TTY=tcp://10.73.95.93:8234"
       - "MQTT=mqtt://lrrr-docker.tailnet-a578.ts.net:1883"
+      - CONFIGS_SHA
     restart: unless-stopped
     volumes:
       - ${CONFIGS_DIR}/waterfurnace/healthcheck.rb:/healthcheck.rb

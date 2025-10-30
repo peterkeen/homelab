@@ -95,6 +95,7 @@ services:
     environment:
       - LOG_LEVEL=debug
       - TZ=America/Detroit
+      - CONFIGS_SHA
     volumes:
       - /data/jellyseerr:/app/config
       - ${CONFIGS_DIR}/media/backup-jellyseerr.js:/backup-jellyseerr.js

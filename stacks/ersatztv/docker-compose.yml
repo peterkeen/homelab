@@ -6,6 +6,8 @@ services:
     user: 1000:1000
     group_add:
       - "27"
+    environment:
+      - CONFIGS_SHA
     volumes:
       - media-nfs:/mnt/media:ro
       - /data/ersatztv:/config

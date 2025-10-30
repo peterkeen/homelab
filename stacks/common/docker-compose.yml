@@ -3,8 +3,9 @@ services:
     container_name: cron-hook
     image: ghcr.io/keenfamily-us/infra/stacks/cron-hook:latest
     environment:
-      TZ:
-      GATUS_API_TOKEN:
+      - TZ
+      - GATUS_API_TOKEN
+      - CONFIGS_SHA
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${CONFIGS_DIR}/:/configs
@@ -24,5 +25,5 @@ services:
         schedule: "15 13 3 * * *"
         command: "/bin/ash /configs/common/sync_certificates.sh"
     x-op-items:
-      - ref: "fmycvdzmeyvbndk7s7pjyrebtq/7b67mcfokriwonunwdxcx636i4/private_key?ssh-format=openssh"
+      - ref: "7b67mcfokriwonunwdxcx636i4/private_key?ssh-format=openssh"
         remote_path: /root/app/stacks/common/backup_key
