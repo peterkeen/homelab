@@ -11,3 +11,7 @@ services:
     restart: unless-stopped      
     x-op-items:
       - ch43e2fglfkz5x2if6fg25jwye
+      - ref: ch43e2fglfkz5x2if6fg25jwye/token.json
+        remote_path: /data/calendar-sync/token.json
+      - ref: ch43e2fglfkz5x2if6fg25jwye/credentials.json
+        remote_path: /data/calendar-sync/credentials.json
