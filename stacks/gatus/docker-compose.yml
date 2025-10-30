@@ -12,6 +12,8 @@ services:
       - "tsbridge.enabled=true"
       - "tsbridge.service.port=8080"
       - "tsbridge.service.name=gatus"
+    x-op-items:
+      - g6tkyx7ryhhdig3vgspawa6c2m
     x-web:
       hostname: gatus
       port: 8080

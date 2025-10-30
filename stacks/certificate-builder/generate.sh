@@ -11,4 +11,4 @@ done
 
 set -e
 
-wget -O - --post-data "" --header "Authorization: Bearer <%= secrets.get("g6tkyx7ryhhdig3vgspawa6c2m")["lrrr-docker"] %>" 'https://gatus.keen.land/api/v1/endpoints/infra_certificate-builder/external?success=true'
+wget -O - --post-data "" --header "Authorization: Bearer $GATUS_API_TOKEN" 'https://gatus.keen.land/api/v1/endpoints/infra_certificate-builder/external?success=true'

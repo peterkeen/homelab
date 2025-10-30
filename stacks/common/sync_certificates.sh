@@ -9,7 +9,6 @@ chmod 644 /data/certificates/certificates/*
 
 tar -C / -cf - /data/certificates/certificates/ | sha256sum | cut -d' ' -f1 > /data/certificates/certs.sum
 
-<%- secret = secrets.get("g6tkyx7ryhhdig3vgspawa6c2m") -%>
-<%- if secret[this_host.hostname] -%>
-curl -XPOST -H "Authorization: Bearer <%= secret[this_host.hostname] %>" 'https://gatus.keen.land/api/v1/endpoints/certificate-sync_<%= this_host.hostname %>/external?success=true'
-<%- end -%>
+if [[ ! -z "$GATUS_AUTH_TOKEN" ]]; then
+    curl -XPOST -H "Authorization: Bearer ${GATUS_AUTH_TOKEN}" "https://gatus.keen.land/api/v1/endpoints/certificate_sync_${HOSTNAME}/external?success=true"
+fi

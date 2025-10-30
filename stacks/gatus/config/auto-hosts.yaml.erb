@@ -1,13 +1,11 @@
 <%-
 endpoints = []
-secret = secrets.get("g6tkyx7ryhhdig3vgspawa6c2m")
 
 hosts.each do |host|
-  next unless secret[host.hostname]
   endpoints << {
     "name" => host.hostname,
     "group" => "host-backups",
-    "token" => secret[host.hostname],
+    "token" => "$GATUS_API_TOKEN_#{host.normalized_hostname}",
     "heartbeat" => {
       "interval" => "24h"
     }
@@ -16,7 +14,7 @@ hosts.each do |host|
   endpoints << {
     "name" => host.hostname,
     "group" => "certificate-sync",
-    "token" => secret[host.hostname],
+    "token" => "$GATUS_API_TOKEN_#{host.normalized_hostname}",
     "heartbeat" => {
       "interval" => "24h"
     }
@@ -27,7 +25,7 @@ hosts.each do |host|
     endpoints << {
       "name" => host.hostname,
       "group" => "unbound-blocklist-sync",
-      "token" => secret[host.hostname],
+      "token" => "$GATUS_API_TOKEN_#{host.normalized_hostname}",
       "heartbeat" => {
         "interval" => "24h"
       }

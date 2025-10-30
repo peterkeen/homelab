@@ -7,6 +7,7 @@ services:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_REGION=us-east-1
+      - GATUS_API_TOKEN
     volumes:
       - /data/certificates:/certificates
       - ${CONFIGS_DIR}/certificate-builder/generate.sh:/generate.sh
@@ -24,4 +25,3 @@ services:
     x-backup:
       paths:
         - /data/certificates
-      

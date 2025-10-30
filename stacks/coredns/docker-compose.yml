@@ -21,6 +21,8 @@ services:
     ports:
       - 5335:5335
       - 5335:5335/udp
+    environment:
+      - GATUS_API_TOKEN
     volumes:
       - /data/unbound:/usr/local/unbound/conf.d
     healthcheck:

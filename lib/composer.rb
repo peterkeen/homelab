@@ -59,6 +59,7 @@ class Composer
 
   def compose_stage_one
     ENV['HOSTNAME'] = context.this_host.hostname.to_s
+    ENV['NORMALIZED_HOSTNAME'] = context.this_host.normalized_hostname
     ENV['LOCAL_IP'] = context.this_host.local_ip
     ENV['TAILNET_IP'] = context.this_host.tailnet_ip
 

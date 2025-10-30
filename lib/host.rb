@@ -3,7 +3,6 @@ require_relative './stack'
 class Host
   attr_reader :hostname
   attr_reader :stack_list
-  attr_reader :environment
   attr_reader :local_ip
   attr_reader :tailnet_ip
 
@@ -27,5 +26,20 @@ class Host
         service
       end
     end
+  end
+
+  def normalized_hostname
+    hostname.to_s.tr("-", "_")
+  end
+
+  def environment
+    extra_vars = {
+      'HOSTNAME' => context.this_host.hostname.to_s,
+      'LOCAL_IP' => context.this_host.local_ip,
+      'TAILNET_IP' => context.this_host.tailnet_ip,
+      'GATUS_API_TOKEN' => "op://fmycvdzmeyvbndk7s7pjyrebtq/g6tkyx7ryhhdig3vgspawa6c2m/#{context.this_host.normalized_hostname}",
+    }
+
+    Array(environment) + extra_vars.map { |k,v| "#{k}=#{v}" }
   end
 end
