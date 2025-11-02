@@ -3,7 +3,6 @@ services:
     image: ghcr.io/peterkeen/site:main
     container_name: pkdn-up
     restart: unless-stopped
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.name=pkdn"
-      - "tsbridge.service.port=80"
+    x-web:
+      port: 80
+      fqdn: www.petekeen.net

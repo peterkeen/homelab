@@ -4,14 +4,14 @@ x-common-zigbee: &common-zigbee
   stop_signal: SIGINT
   environment:
     - TZ
+  x-web:
+    port: 8080
 
 services:
   zigbee-house:
     <<: *common-zigbee
     container_name: zigbee-house
     hostname: zigbee-house
-    ports:
-      - '${TAILNET_IP}:8080:8080'
     volumes:
       - /data/zigbee/house:/app/data
     x-backup:
@@ -22,11 +22,8 @@ services:
     <<: *common-zigbee
     container_name: zigbee-office
     hostname: zigbee-office
-    ports:
-      - '${TAILNET_IP}:8081:8080'
     volumes:
       - /data/zigbee/office:/app/data
     x-backup:
       paths:
         - /data/zigbee/office      
-        

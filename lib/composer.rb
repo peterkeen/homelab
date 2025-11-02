@@ -90,6 +90,11 @@ class Composer
   def apply_compose!
     interpolated = context.hooks.process_interpolated_compose(context, compose_stage_one)
 
+    if ENV['SKIP_APPLY']
+      puts interpolated
+      return
+    end
+
     rsync_files!
     context.hooks.pre_deploy(context)
 

@@ -44,12 +44,41 @@ module WebConfHook
       conf[:hostname] ||= service.config[:hostname]
       conf[:fqdn] ||= "#{conf[:hostname]}.keen.land"
 
-      if conf[:port].nil? && conf[:upstream].nil?
-        raise "Need port for service #{name} in #{stack.name}, can't determine default"
+      if conf[:routes].nil?
+        conf[:routes] = [{port: conf[:port], upstream: conf[:upstream], path: "/"}]
       end
-      conf[:upstream] ||= "http://#{service.name}.#{service.stack.name}.local-web.internal:#{conf[:port]}"
+
+      conf[:routes] = conf[:routes].map { |r| route_with_defaults(r, service) }
 
       @web_conf = conf
+    end
+
+    def route_with_defaults(src_route, service)
+      route = src_route.dup
+
+      route[:path] ||= "/"
+
+      if route[:port].nil? && route[:upstream].nil?
+        raise "Need port for route #{route[:path]} in service #{service.name} in #{service.stack.name}, can't determine defaults"
+      end
+
+      if route[:websockets].nil?
+        route[:websockets] = true
+      end
+
+      if route[:cache].nil?
+        route[:cache] = true
+      end
+
+      route[:upstream] ||= "http://#{service.name}.#{service.stack.name}.local-web.internal:#{route[:port]}"
+      route
+    end
+
+    def cert_domain_for_fqdn(fqdn:)
+      parts = fqdn.split(/\./)
+      parts.shift if parts[0] == "www" || fqdn =~ /\.keen.land\z/
+
+      parts.join('.')
     end
 
     def all_web_configs(&block)
@@ -63,6 +92,20 @@ module WebConfHook
 
         yield host, stack, service, web_conf
       end
+    end
+
+    def this_host_certs
+      certs = {}
+
+      this_host_web_configs do |stack, service, web_conf|
+        ([web_conf[:fqdn]] + web_conf.fetch(:alternate_hostnames, [])).each do |hostname|
+          certname = cert_domain_for_fqdn(fqdn: hostname)
+          certs[certname] ||= Set.new
+          certs[certname].add hostname
+        end
+      end
+
+      certs
     end
 
     def this_host_web_configs
