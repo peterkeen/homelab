@@ -78,7 +78,7 @@ class Composer
         })
       end
 
-      stack_overrides = context.hooks.build_overrides_for_stack(stack)
+      stack_overrides = context.hooks.build_overrides_for_stack(context, stack)
       overrides = overrides.deep_merge(stack_overrides)
     end
 

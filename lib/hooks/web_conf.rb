@@ -1,8 +1,10 @@
 module WebConfHook
-  def build_overrides_for_stack(stack)
+  def build_overrides_for_stack(context, stack)
     return {} unless stack.services.any? do |service|
       service.config.key?(:"x-web")
     end
+
+    return {} unless context.this_host.stack_list.include?('local-proxy')
 
     overrides = {
       "services" => {
