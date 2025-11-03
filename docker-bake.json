@@ -3,7 +3,8 @@
     "default": {
       "targets": [
         "cron-hook",
-        "adsb-bubble"
+        "adsb-bubble",
+        "ezshare-go"
       ]
     }
   },
@@ -29,6 +30,16 @@
       "platforms": [
         "linux/amd64"
       ]
-    }
+    },
+    "ezshare-go": {
+      "dockerfile": "Dockerfile",
+      "context": "./stacks/ezshare-go",
+      "tags": [
+        "ghcr.io/keenfamily-us/infra/stacks/ezshare-go:latest"
+      ],
+      "platforms": [
+        "linux/amd64"
+      ]
+    }    
   }
 }

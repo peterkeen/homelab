@@ -122,10 +122,11 @@ func processListing(localPath string, href string) {
 
 func main() {
 	log.Printf("Startup!")
+	processListing(".", "dir?dir=A:")
 	for range time.Tick(time.Minute * 60) {
 		go func() {
 			log.Printf("Scanning...")
-			processListing(".", "dir?dir=A:")
+			processListing(".", "dir?dir=A:")			
 		}()
 	}
 }
