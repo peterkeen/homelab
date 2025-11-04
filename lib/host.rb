@@ -4,13 +4,15 @@ class Host
   attr_reader :stack_list
   attr_reader :local_ip
   attr_reader :tailnet_ip
+  attr_reader :groups
 
-  def initialize(hostname:, stacks:, environment:, local_ip:, tailnet_ip: nil)
+  def initialize(hostname:, stacks:, environment:, local_ip:, tailnet_ip: nil, groups: [])
     @hostname = hostname
     @stack_list = stacks
     @environment = environment
     @local_ip = local_ip
     @tailnet_ip = tailnet_ip
+    @groups = groups
   end
 
   def stacks

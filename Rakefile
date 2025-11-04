@@ -16,8 +16,9 @@ task :bake do
   sh "docker buildx bake --push"
 end
 
-task :apply => :bake do
-  Runner.new.run
+task :apply, [:groups] => :bake do |task, args|
+  groups = Array(args[:groups]) + args.extras
+  Runner.new(groups: groups).run
 end
 
 task :apply_one, [:hostname] do |task, args|
