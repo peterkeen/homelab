@@ -1,0 +1,8 @@
+services:
+  ezshare-proxy:
+    container_name: ezshare-proxy
+    image: nginx:1.29
+    network_mode: host
+    volumes:
+      - ${CONFIGS_DIR}/ezshare-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
+    restart: unless-stopped
