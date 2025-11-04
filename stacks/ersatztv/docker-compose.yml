@@ -2,7 +2,7 @@ services:
   ersatztv:
     container_name: ersatztv-up
     hostname: ersatztv
-    image: ghcr.io/ersatztv/ersatztv:v25.7.1
+    image: ghcr.io/ersatztv/ersatztv:v25.8.0
     user: 1000:1000
     group_add:
       - "27"
