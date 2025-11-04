@@ -1,7 +1,7 @@
 services:
   local-proxy:
     container_name: local-proxy
-    image: nginx:1.29.2
+    image: nginx:1.29.3
     environment:
       - CONFIGS_SHA    
     volumes:
