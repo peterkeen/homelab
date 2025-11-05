@@ -27,3 +27,10 @@ services:
     x-op-items:
       - ref: "7b67mcfokriwonunwdxcx636i4/private_key?ssh-format=openssh"
         remote_path: /root/app/stacks/common/backup_key
+
+x-bake-target:
+  tags:
+    - "ghcr.io/keenfamily-us/infra/stacks/cron-hook:latest"
+  platforms:
+    - "linux/amd64"
+    - "linux/arm64/v8"

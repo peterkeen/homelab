@@ -1,4 +1,5 @@
 require './lib/runner.rb'
+require './lib/baker.rb'
 
 Dir.glob('*/**/*.rake') do |f|
   ns = File.dirname(f.to_s).gsub('/', ':')
@@ -13,7 +14,7 @@ task :clean => 'ansible:clean' do
 end
 
 task :bake do
-  sh "docker buildx bake --push"
+  Baker.new.run
 end
 
 task :apply, [:groups] => :bake do |task, args|
