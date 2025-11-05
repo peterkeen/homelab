@@ -4,7 +4,8 @@
       "targets": [
         "cron-hook",
         "adsb-bubble",
-        "ezshare-go"
+        "ezshare-go",
+        "calendar-sync"
       ]
     }
   },
@@ -36,6 +37,16 @@
       "context": "./stacks/ezshare-go",
       "tags": [
         "ghcr.io/keenfamily-us/infra/stacks/ezshare-go:latest"
+      ],
+      "platforms": [
+        "linux/amd64"
+      ]
+    },
+    "calendar-sync": {
+      "dockerfile": "Dockerfile",
+      "context": "./stacks/calendar-sync",
+      "tags": [
+        "ghcr.io/keenfamily-us/infra/stacks/calendar-sync:latest"
       ],
       "platforms": [
         "linux/amd64"
