@@ -1,5 +1,4 @@
 require 'subprocess'
-require 'tmpdir'
 
 require_relative './hosts_file'
 require_relative './hooks'
@@ -53,30 +52,22 @@ class Baker
       target: targets
     }
 
-    Dir.mktmpdir do |dir|
-      File.open(File.join(dir, "docker-bake.json"), "w+") do |f|
-        f.write(JSON.pretty_generate(bake_config))
-      end
+    bakefile_path = File.join(context.root_path, "build", "docker-bake.json")
 
-      Dir.chdir(context.root_path) do
-        args = [
-          "docker",
-          "buildx",
-          "bake",
-          "--file", File.join(dir, "docker-bake.json"),
-          "--push"
-        ]
-
-        Subprocess.check_call(args)
-      end
-    end
-
-    File.open(File.join(context.root_path, "docker-bake.json"), "w+") do |f|
+    File.open(bakefile_path, "w+") do |f|
       f.write(JSON.pretty_generate(bake_config))
     end
 
     Dir.chdir(context.root_path) do
-      Subprocess.check_call(["docker", "buildx", "bake", "--push"])
+      args = [
+        "docker",
+        "buildx",
+        "bake",
+        "--file", bakefile_path,
+        "--push"
+      ]
+
+      Subprocess.check_call(args)
     end
   end
 end
