@@ -1,16 +1,19 @@
 services:
   calendar-sync:
+    container_name: calendar-sync
     image: ghcr.io/keenfamily-us/infra/stacks/calendar-sync:latest
-    environment:
-      - CALENDAR_MAGIC_STRING
-      - CALENDAR_NAME
-      - CALENDAR_TIME_ZONE
-      - CALENDAR_SUMMARY
     volumes:
       - /data/calendar-sync:/data
-    restart: unless-stopped      
+    environment:
+      - DATA_DIR=/data
+    x-cron:
+      - name: "run calendar sync"
+        schedule: "@hourly"
+        type: local
+        command: docker start calendar-sync
     x-op-items:
-      - ch43e2fglfkz5x2if6fg25jwye
+      - ref: ch43e2fglfkz5x2if6fg25jwye/config.yaml
+        remote_path: /data/calendar-sync/config.yaml
       - ref: ch43e2fglfkz5x2if6fg25jwye/token.json
         remote_path: /data/calendar-sync/token.json
       - ref: ch43e2fglfkz5x2if6fg25jwye/credentials.json

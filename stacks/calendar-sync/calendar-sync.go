@@ -11,19 +11,32 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"path/filepath"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
+	"gopkg.in/yaml.v3"
 )
+
+type CalendarSyncConfigEntry struct {
+	MagicString string `yaml:"magicString"`
+	Name        string `yaml:"name"`
+	TimeZone    string `yaml:"timeZone"`
+	Summary     string `yaml:"summary"`
+}
+
+type CalendarSyncConfig struct {
+	Entries []CalendarSyncConfigEntry `yaml:"entries"`
+}
 
 // Retrieve a token, saves the token, then returns the generated client.
 func getClient(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
-	tokFile := "/data/token.json"
+	tokFile := filepath.Join(os.Getenv("DATA_DIR"), "token.json")
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
 		tok = getTokenFromWeb(config)
@@ -73,8 +86,26 @@ func saveToken(path string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func deleteEventsFromPrimary(srv *calendar.Service) {
-	magic_string := os.Getenv("CALENDAR_MAGIC_STRING")
+func dateTimeDiff(a *calendar.EventDateTime, b *calendar.EventDateTime) time.Duration {
+	parsedA := parseDateTime(a)
+	parsedB := parseDateTime(b)
+
+	return parsedB.Sub(parsedA)
+}
+
+func parseDateTime(a *calendar.EventDateTime) time.Time {
+	var parsed time.Time
+
+	if a.DateTime == "" {
+		parsed, _ = time.Parse(time.DateOnly, a.Date)
+	} else {
+		parsed, _ = time.Parse(time.RFC3339, a.DateTime)
+	}
+	return parsed
+}
+
+func deleteEventsFromPrimary(entry CalendarSyncConfigEntry, srv *calendar.Service) {
+	magic_string := entry.MagicString
 
 	t := time.Now().Format(time.RFC3339)
 	end_t := time.Now().AddDate(0, 0, 20).Format(time.RFC3339)
@@ -94,11 +125,13 @@ func deleteEventsFromPrimary(srv *calendar.Service) {
 	}
 }
 
-func createEventsFromSource(srv *calendar.Service) {
-	calendar_name := os.Getenv("CALENDAR_NAME")
-	tz := os.Getenv("CALENDAR_TIME_ZONE")
-	magic_string := os.Getenv("CALENDAR_MAGIC_STRING")
-	summary := os.Getenv("CALENDAR_SUMMARY")
+func createEventsFromSource(entry CalendarSyncConfigEntry, srv *calendar.Service) {
+	calendar_name := entry.Name
+	tz := entry.TimeZone
+	magic_string := entry.MagicString
+	summary := entry.Summary
+
+	maxDuration, _ := time.ParseDuration("3h")
 
 	t := time.Now().Format(time.RFC3339)
 	end_t := time.Now().AddDate(0, 0, 20).Format(time.RFC3339)
@@ -115,6 +148,7 @@ func createEventsFromSource(srv *calendar.Service) {
 			end_t, _ := time.Parse(time.RFC3339, item.End.DateTime)
 
 			if end_t.Minute() % 10 == 7 {
+				log.Printf("Ignored event, skipping")
 				continue
 			}
 
@@ -126,11 +160,22 @@ func createEventsFromSource(srv *calendar.Service) {
 				new_end = calendar.EventDateTime{Date: item.End.Date, TimeZone: tz}
 			}
 
+			eventDuration := dateTimeDiff(&new_start, &new_end)
+			log.Printf("duration: %v, maxDuration: %v", eventDuration, maxDuration)
+
+			if eventDuration > maxDuration {
+				log.Printf("Longer than maxDuration, skipping")
+				continue
+			}
+
+			reminders := calendar.EventReminders{UseDefault: false}
+
 			new_item := calendar.Event{
 				Start: &new_start,
 				End: &new_end,
 				Description: magic_string,
 				Summary: summary,
+				Reminders: &reminders,
 			}
 
 			_, err := srv.Events.Insert("primary", &new_item).Do()
@@ -143,8 +188,19 @@ func createEventsFromSource(srv *calendar.Service) {
 
 func main() {
 	ctx := context.Background()
+	log.Print("Loading config")
+	f, err := os.ReadFile(filepath.Join(os.Getenv("DATA_DIR"), "config.yaml"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var calendarConfig CalendarSyncConfig
+	if err := yaml.Unmarshal(f, &calendarConfig); err != nil {
+		log.Fatal(err)
+	}
+
 	log.Print("Attempting to connect to Google Calendar.....\n")
-	b, err := os.ReadFile("/data/credentials.json")
+	b, err := os.ReadFile(filepath.Join(os.Getenv("DATA_DIR"), "credentials.json"))
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
@@ -162,13 +218,11 @@ func main() {
 	}
 
 	log.Print("Connected to Google Calendar!\n")
-	log.Print("calendar-sync started up\n")
 
-	for range time.Tick(time.Minute * 60) {
-		go func() {
-			log.Print("Syncing events")
-			deleteEventsFromPrimary(srv)
-			createEventsFromSource(srv)
-		}()
+	for _, entry := range calendarConfig.Entries {
+		log.Printf("Syncing events from %s", entry.Name)
+
+		deleteEventsFromPrimary(entry, srv)
+		createEventsFromSource(entry, srv)
 	}
 }
