@@ -15,7 +15,7 @@ class Runner
   attr_reader :groups
   attr_reader :hooks
 
-  def initialize(hostname: nil, groups: nil)
+  def initialize(hostname: nil, groups: [])
     @hostname = hostname
     groups = ["development"] if groups.length == 0
     @groups = groups

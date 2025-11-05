@@ -149,23 +149,47 @@ class Composer
   def compose_stage_two(interpolated)
     ENV['DOCKER_HOST'] = "ssh://root@#{context.this_host.hostname}"
 
-    args = [
+    compose_pull(interpolated)
+    compose_up(interpolated)
+  end
+
+  def compose_pull(interpolated)
+    compose_cmd(
+      interpolated,
+      [
+        "pull",
+        "--ignore-pull-failures",
+        "--include-deps",
+        "--policy", "always"
+      ]
+    )
+  end
+
+  def compose_up(interpolated)
+    compose_cmd(
+      interpolated,
+      [
+        "up",
+        "--detach",
+        "--quiet-build",
+        "--no-color",
+        "--build",
+        "--timestamps",
+        "--remove-orphans",
+      ]
+    )
+  end
+
+  def compose_cmd(interpolated, args)
+    full_args = [
       "docker",
       "compose",
       "--project-name=app",
       "-f", "-",
-      "up",
-      "--detach",
-      "--quiet-pull",
-      "--quiet-build",
-      "--no-color",
-      "--build",
-      "--timestamps",
-      "--remove-orphans",
-    ]
+    ] + args
 
     Dir.chdir(host_root) do
-      Subprocess.check_call(args, stdin: Subprocess::PIPE) do |p|
+      Subprocess.check_call(full_args, stdin: Subprocess::PIPE) do |p|
         p.communicate interpolated
       end
     end
