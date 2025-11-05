@@ -25,8 +25,6 @@ class Runner
   end
 
   def run
-    FileUtils.rm_rf(build_root)
-
     hostnames = if hostname
       [hostname]
     else

@@ -9,8 +9,9 @@ Dir.glob('*/**/*.rake') do |f|
   end
 end
 
-task :clean => 'ansible:clean' do
-  sh "git clean -xf"
+task :clean do
+  hf = HostsFile.new
+  FileUtils.rm_rf(hf.build_root)
 end
 
 task :bake do
