@@ -1,5 +1,5 @@
 x-common-zwave: &common-zwave
-  image: ghcr.io/zwave-js/zwave-js-ui:11.3.0
+  image: ghcr.io/zwave-js/zwave-js-ui:11.6.1
   restart: always
   stop_signal: SIGINT
   environment:
