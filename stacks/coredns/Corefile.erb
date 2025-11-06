@@ -1,6 +1,15 @@
 .:53 {
+  reload 10s
+
+  log
+
   header {
     response set ra
+  }
+
+  auto {
+    directory /root (.*)\.zone$ {1}
+    reload 10s
   }
 
   cache
@@ -10,17 +19,4 @@
   forward . <%= this_host.local_ip %>:5335
 
   errors
-}
-
-keen.land:53 {
-  header {
-    response set ra aa
-    response clear rd
-  }
-
-  file /root/keen.land.zone
-}
-
-ezshare.card:53 {
-  hosts /root/ezshare.card.hosts
 }

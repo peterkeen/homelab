@@ -1,0 +1,19 @@
+<%-
+nameservers = []
+all_host_services do |host, stack, service|
+  if service.name == :coredns
+    nameservers << host
+  end
+end
+-%>
+ezshare.card. IN SOA <%= nameservers.first.hostname %>.keen.land. admin.keen.land. (
+    <%= Time.now.to_i %> ; serial
+    21600 ; refresh after 6 hours
+    900 ; retry after 15 minutes
+    1800 ; expire after 30 minutes
+    30 ; minimum ttl 30 seconds
+)
+<%- nameservers.each do |host| %>
+ezshare.card. 30 IN NS <%= host.hostname %>.keen.land.
+<%- end -%>
+ezshare.card. 30 IN CNAME ezshare-proxy.ts.docker.keen.land.

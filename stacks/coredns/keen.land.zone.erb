@@ -21,9 +21,10 @@ all_host_services do |host, stack, service|
   if service.name == :coredns
     nameservers << host
   end
-  
-  next unless service.config.key?(:ports)
+
   next if service.config.dig(:"x-dns", :skip_service)
+
+  next unless service.config.key?(:ports) || service.config[:network_mode] == "host"
 
   hostnames_by_ip[host.local_ip] << "#{service.name}.svc.docker.keen.land"
   hostnames_by_ip[host.tailnet_ip] << "#{service.name}.ts.docker.keen.land"
