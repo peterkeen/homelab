@@ -3,8 +3,6 @@ services:
     container_name: coredns
     hostname: coredns
     image: coredns/coredns
-    environment:
-      - CONFIGS_SHA
     volumes:
       - ${CONFIGS_DIR}/coredns/:/root/
     ports:
