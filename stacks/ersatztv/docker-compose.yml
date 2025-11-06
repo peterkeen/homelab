@@ -22,7 +22,7 @@ services:
     x-cron:
       - name: "clean ersatztv cache"
         schedule: "0 */15 * * * *"
-        command: "/clean_cache.sh"
+        command: "sh /clean_cache.sh"
     x-backup:
       paths:
         - /data/ersatztv
