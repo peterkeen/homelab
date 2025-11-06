@@ -10,7 +10,7 @@ services:
       - RELAY_PASS
       - RELAY_PORT=587
       - MYORIGIN=smtp.docker.keen.land
-      - MYNETWORKS=172.16.0.0/12,10.73.95.0/24,100.64.0.0/10
+      - MYNETWORKS=172.16.0.0/12,10.73.95.0/24,100.64.0.0/10,10.244.0.0/16
     ports:
       - "2525:25"
     x-op-items:
