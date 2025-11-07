@@ -1,0 +1,15 @@
+name: Deploy
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: docker
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@v5
+      - uses: https://github.com/ruby/setup-ruby@v1
