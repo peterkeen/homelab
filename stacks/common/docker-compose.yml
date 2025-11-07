@@ -31,6 +31,7 @@ services:
 x-bake-target:
   tags:
     - "ghcr.io/keenfamily-us/infra/stacks/cron-hook:latest"
+    - "git.keen.land/packages/stacks/cron-hook:latest"
   platforms:
     - "linux/amd64"
     - "linux/arm64/v8"

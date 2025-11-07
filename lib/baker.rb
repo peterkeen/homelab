@@ -34,6 +34,7 @@ class Baker
         context: stack.path,
         tags: [
           "ghcr.io/keenfamily-us/infra/stacks/#{stack.name}:latest",
+          "git.keen.land/packages/stacks/#{stack.name}:latest",
         ],
         platforms: [
           "linux/amd64",
