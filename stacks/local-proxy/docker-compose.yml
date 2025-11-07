@@ -7,7 +7,6 @@ services:
     volumes:
       - ${CONFIGS_DIR}/local-proxy/00_logging.conf:/etc/nginx/conf.d/00_logging.conf
       - ${CONFIGS_DIR}/local-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
-      - ${CONFIGS_DIR}/local-proxy/common.conf:/etc/nginx/snippets/common.conf
       - ${CONFIGS_DIR}/local-proxy/dhparam:/etc/nginx/dhparam
       - ${CONFIGS_DIR}/local-proxy/00-calculate-configs-sha.sh:/docker-entrypoint.d/00-calculate-configs-sha.sh
       - ${CONFIGS_DIR}/local-proxy/reload-on-configs-change.sh:/reload-on-configs-change.sh

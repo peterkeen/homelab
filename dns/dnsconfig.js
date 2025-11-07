@@ -158,20 +158,11 @@ D("pkn.me", REG_CSP_R53
 
 D("keen.land", REG_CSP_R53
   , DnsProvider(DSP_CSP_R53)
-  , DefaultTTL(30)  
+  , DefaultTTL(30)
   , CNAME('pm-bounces', 'pm.mtasv.net.')
   , FORWARDEMAIL("keen.land", "I1IEohSKaQ")
   , TXT('20211126004422pm._domainkey', 'k=rsa;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCT0mQS8NXz+lpm9x+LDHGqm/Mhb/eLFsmuzxdYmzFOQgTaB9qBqKWb7+SNghH4J4id4i5MjfBXwj0EwVYD5IMBlnGtNYWuJlHf2E8EdjkQfee17bCYdhifoo91VCNOvqil9abzib551Jluqk251SHJTESV+qaOygLARWPeOsDFKQIDAQAB')
-  , A("omada", "10.73.95.4")
-  , A("protect", "10.73.95.42")
-  , A("infra-git", "10.73.95.46")
-  , A("zwave-shed", "10.73.95.4")
-  , A("zwave-office", "10.73.95.4")
-  , A("zwave-house", "10.73.95.4")
-  , A("zwave-garage", "10.73.95.4")
-  , A("zigbee-house", "10.73.95.4")
-  , A("zigbee-office", "10.73.95.4")
-  , A("@", "10.73.95.4")
+  , EXT_PROXY_ADDR('git')
 )
 
 D("emilykeen.net", REG_CSP_R53

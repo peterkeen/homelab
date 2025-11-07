@@ -1,9 +1,9 @@
 require 'json'
 
-task :preview => :ci do
+task :preview do
   sh "cd dns && op run --env-file=.env -- dnscontrol preview"
 end
 
-task :apply => :ci do
+task :apply do
   sh "cd dns && op run --env-file=.env -- dnscontrol push"
 end

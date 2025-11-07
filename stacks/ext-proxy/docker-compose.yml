@@ -1,6 +1,7 @@
 services:
   ext-proxy:
     container_name: ext-proxy
+    hostname: ext-proxy
     image: nginx:stable
     environment:
       - CONFIGS_SHA
@@ -9,7 +10,6 @@ services:
       - 443:443
     volumes:
       - ${CONFIGS_DIR}/ext-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
-      - ${CONFIGS_DIR}/ext-proxy/common.conf:/etc/nginx/snippets/common.conf
       - ${CONFIGS_DIR}/ext-proxy/00-remove-default.sh:/docker-entrypoint.d/00-remove-default.sh
       - ${CONFIGS_DIR}/ext-proxy/00-calculate-configs-sha.sh:/docker-entrypoint.d/00-calculate-configs-sha.sh      
       - ${CONFIGS_DIR}/ext-proxy/00_logging.conf:/etc/nginx/conf.d/00_logging.conf
@@ -22,6 +22,7 @@ services:
       smallsites: {}
       vmsave: {}
       pkdn: {}
+      ext-proxy: {}
     x-dns:
       skip_service: true    
     x-cron:
@@ -30,3 +31,25 @@ services:
         mail_only_on_error: true
         command: "/bin/bash /reload-on-configs-change.sh"    
 
+  anubis:
+    image: ghcr.io/techarohq/anubis:latest
+    hostname: anubis
+    environment:
+      BIND: ":8080"
+      DIFFICULTY: "4"
+      METRICS_BIND: ":9090"
+      SERVE_ROBOTS_TXT: "true"
+      TARGET: "http://ext-proxy:8888"
+      OG_PASSTHROUGH: "true"
+      OG_EXPIRY_TIME: "24h"
+    healthcheck:
+      test: ["CMD", "anubis", "--healthcheck"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 500ms
+    networks:
+      ext-proxy: {}
+
+networks:
+  ext-proxy: {}
