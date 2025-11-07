@@ -10,8 +10,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 	"path/filepath"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -147,7 +147,7 @@ func createEventsFromSource(entry CalendarSyncConfigEntry, srv *calendar.Service
 		for _, item := range events.Items {
 			end_t, _ := time.Parse(time.RFC3339, item.End.DateTime)
 
-			if end_t.Minute() % 10 == 7 {
+			if end_t.Minute()%10 == 7 {
 				log.Printf("Ignored event, skipping")
 				continue
 			}
@@ -171,11 +171,11 @@ func createEventsFromSource(entry CalendarSyncConfigEntry, srv *calendar.Service
 			reminders := calendar.EventReminders{UseDefault: false}
 
 			new_item := calendar.Event{
-				Start: &new_start,
-				End: &new_end,
+				Start:       &new_start,
+				End:         &new_end,
 				Description: magic_string,
-				Summary: summary,
-				Reminders: &reminders,
+				Summary:     summary,
+				Reminders:   &reminders,
 			}
 
 			_, err := srv.Events.Insert("primary", &new_item).Do()
