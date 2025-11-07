@@ -13,3 +13,6 @@ jobs:
     steps:
       - uses: https://data.forgejo.org/actions/checkout@v5
       - uses: https://github.com/ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+          bundler-cache: true
