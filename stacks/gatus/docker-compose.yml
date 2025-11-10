@@ -5,6 +5,7 @@ services:
     environment:
       - GATUS_CONFIG_PATH=/config
       - CONFIGS_SHA
+      - GATUS_API_TOKEN_hermes
       - GATUS_API_TOKEN_hypnotoad_docker
       - GATUS_API_TOKEN_lrrr_docker
       - GATUS_API_TOKEN_nibbler_docker_test

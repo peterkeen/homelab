@@ -57,6 +57,8 @@ services:
     restart: always
     x-web:
       port: 9696
+      cache: false
+      ssl_server_name: false
       dashboard:
         name: Prowlarr
         subtitle: Manage Usenet Indexers

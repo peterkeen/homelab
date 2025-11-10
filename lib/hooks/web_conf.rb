@@ -38,31 +38,46 @@ module WebConfHook
   end
 
   module ContextHelpers
-    def web_config_for_service(service)
+    def web_configs_for_service(service)
       return unless service.config.key?(:"x-web")
 
-      conf = service.config.fetch(:"x-web").dup
+      confs = service.config.fetch(:"x-web").dup
 
-      conf[:hostname] ||= service.config[:hostname]
-      conf[:fqdn] ||= "#{conf[:hostname]}.keen.land"
-
-      if conf[:routes].nil?
-        conf[:routes] = [{port: conf[:port], upstream: conf[:upstream], path: "/"}]
+      if confs.is_a?(Hash)
+        confs = [confs]
       end
 
-      conf[:routes] = conf[:routes].map { |r| route_with_defaults(r, service) }
+      confs.map do |conf|
+        conf[:hostname] ||= service.config[:hostname]
+        conf[:fqdn] ||= "#{conf[:hostname]}.keen.land"
+        conf[:alternate_hostnames] ||= []
 
-      @web_conf = conf
+        if conf[:routes].nil?
+          conf[:routes] = [
+            {
+              port: conf[:port], 
+              upstream: conf[:upstream], 
+              path: "/", 
+              cache: conf[:cache],
+              ssl_server_name: conf[:ssl_server_name],
+            }
+          ]
+        end
+
+        conf[:routes] = conf[:routes].map { |r| route_with_defaults(r, service) }
+
+        conf
+      end
     end
 
     def route_with_defaults(src_route, service)
       route = src_route.dup
 
-      route[:path] ||= "/"
-
       if route[:port].nil? && route[:upstream].nil?
         raise "Need port for route #{route[:path]} in service #{service.name} in #{service.stack.name}, can't determine defaults"
       end
+
+      route[:path] ||= "/"
 
       if route[:websockets].nil?
         route[:websockets] = true
@@ -70,6 +85,10 @@ module WebConfHook
 
       if route[:cache].nil?
         route[:cache] = true
+      end
+
+      if route[:ssl_server_name].nil?
+        route[:ssl_server_name] = true
       end
 
       route[:upstream] ||= "http://#{service.name}.#{service.stack.name}.local-web.internal:#{route[:port]}"
@@ -84,15 +103,14 @@ module WebConfHook
     end
 
     def all_web_configs(&block)
-      seen_fqdns = Set.new
       all_host_services do |host, stack, service|
-        web_conf = web_config_for_service(service)
+        web_confs = web_configs_for_service(service)
 
-        next unless web_conf
+        next unless web_confs
 
-        seen_fqdns.add?(web_conf[:fqdn]) or raise "Duplicate fqdn for service #{service.name}: #{web_conf[:fqdn]}"
-
-        yield host, stack, service, web_conf
+        web_confs.each do |conf|
+          yield host, stack, service, conf
+        end
       end
     end
 
@@ -100,7 +118,7 @@ module WebConfHook
       certs = {}
 
       this_host_web_configs do |stack, service, web_conf|
-        ([web_conf[:fqdn]] + web_conf.fetch(:alternate_hostnames, [])).each do |hostname|
+        ([web_conf[:fqdn]] + web_conf[:alternate_hostnames]).each do |hostname|
           certname = cert_domain_for_fqdn(fqdn: hostname)
           certs[certname] ||= Set.new
           certs[certname].add hostname

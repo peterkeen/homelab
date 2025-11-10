@@ -45,13 +45,17 @@ server {
   listen 80 default_server;
   listen [::]:80 default_server;
 
+  server_name _;
+
   access_log /dev/stdout json_combined;
   error_log /dev/stdout info;
 
+  root /usr/share/nginx/html;
+
+  add_header X-WTF https-redirect;
   if ($new_host != "") {
     rewrite ^(.*)$ $new_host$request_uri;
   }
-
 
   location / {
     return 301 https://$host$request_uri;
@@ -59,6 +63,7 @@ server {
 }
 
 <%- this_host_certs.each do |certname, hostnames| -%>
+<%- hostnames.each do |hostname| -%>
 # https termination
 server {
   listen 443 ssl;
@@ -66,10 +71,14 @@ server {
 
   resolver 127.0.0.11;
 
-  server_name <%= hostnames.join(" ") %>;
+  add_header X-WTF https-termination;
+
+  server_name <%= hostname %>;
 
   access_log /dev/stdout json_combined;
   error_log /dev/stdout info;
+
+  root /usr/share/nginx/html;
 
   server_tokens off;
 
@@ -99,10 +108,6 @@ server {
     rewrite ^(.*)$ $new_host$request_uri;
   }
 
-  if ($proxy_backend = "") {
-    return 404 "not found";
-  }
-
   location / {
     proxy_http_version 1.1;
 
@@ -127,9 +132,10 @@ server {
     proxy_buffer_size 1024k;
     proxy_busy_buffers_size 1024k;
 
-    proxy_pass $proxy_backend;
+    proxy_pass http://127.0.0.1:8888;
   }
 }
+<%- end -%>
 <%- end -%>
 
 <% this_host_web_configs do |stack, service, conf| %>
@@ -143,6 +149,17 @@ server {
 
   client_max_body_size 1024M;
 
+  add_header X-WTF <%= service.name %>;
+
+  access_log /dev/stdout json_combined;
+  error_log /dev/stdout info;
+
+  root /usr/share/nginx/html;
+
+  if ($new_host != "") {
+    rewrite ^(.*)$ $new_host$request_uri;
+  }
+
   <%- conf[:routes].each do |route| -%>
   location <%= route[:path] %> {
     proxy_http_version 1.1;
@@ -151,9 +168,17 @@ server {
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection $connection_upgrade;
 
+    proxy_set_header Host <%= conf[:fqdn] %>;
+
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+    proxy_set_header X-Scheme $http_x_schemes;  
+
     proxy_buffering on;
 
+    <%- if route[:ssl_server_name] -%>
     proxy_ssl_server_name on;
+    <%- end -%>
     proxy_ssl_verify off;
 
     <%- if route[:cache] -%>

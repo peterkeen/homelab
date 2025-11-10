@@ -3,3 +3,16 @@ services:
     image: ghcr.io/keenfamily-us/infra/stacks/smallsites:latest
     container_name: smallsites-up
     restart: unless-stopped
+    x-web:
+      - fqdn: www.corastreetpress.com
+        port: 80
+        alternate_hostnames:
+          - corastreetpress.com
+      - fqdn: www.okapi.io
+        port: 80
+        alternate_hostnames:
+          - okapi.io
+      - fqdn: www.payola.io
+        port: 80
+        alternate_hostnames:
+          - payola.io

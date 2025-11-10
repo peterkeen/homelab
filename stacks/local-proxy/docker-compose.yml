@@ -6,6 +6,7 @@ services:
       - CONFIGS_SHA    
     volumes:
       - ${CONFIGS_DIR}/local-proxy/00_logging.conf:/etc/nginx/conf.d/00_logging.conf
+      - ${CONFIGS_DIR}/local-proxy/00-remove-default.sh:/docker-entrypoint.d/00-remove-default.sh      
       - ${CONFIGS_DIR}/local-proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
       - ${CONFIGS_DIR}/local-proxy/dhparam:/etc/nginx/dhparam
       - ${CONFIGS_DIR}/local-proxy/00-calculate-configs-sha.sh:/docker-entrypoint.d/00-calculate-configs-sha.sh
