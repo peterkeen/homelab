@@ -4,17 +4,17 @@ services:
     container_name: pkdn-up
     restart: unless-stopped
     x-web:
-      port: 80
-      fqdn: www.petekeen.net
-      alternate_hostnames:
-        - petekeen.net
-        - www.pkn.me
-        - pkn.me
-        - www.petekeen.org
-        - petekeen.org
-        - www.petekeen.com
-        - petekeen.com
-        - www.bugsplat.info
-        - bugsplat.info
-        - www.peterkeen.com
-        - peterkeen.com
+      - port: 80
+        fqdn: www.petekeen.net
+        alternate_hostnames:
+          - petekeen.net
+          - www.pkn.me
+          - pkn.me
+          - www.petekeen.org
+          - petekeen.org
+          - www.petekeen.com
+          - petekeen.com
+          - www.bugsplat.info
+          - bugsplat.info
+          - www.peterkeen.com
+          - peterkeen.com

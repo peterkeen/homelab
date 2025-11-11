@@ -4,11 +4,11 @@ module WebConfHook
       service.config.key?(:"x-web")
     end
 
-    return {} unless context.this_host.stack_list.include?('local-proxy')
+    return {} unless context.this_host.stack_list.include?('caddy')
 
     overrides = {
       "services" => {
-        "local-proxy" => {
+        "caddy" => {
           "networks" => {}
         }
       },
@@ -31,7 +31,7 @@ module WebConfHook
         }
       }
 
-      overrides["services"]["local-proxy"]["networks"]["local-web-#{service.name}"] = {}
+      overrides["services"]["caddy"]["networks"]["local-web-#{service.name}"] = {}
     end
 
     overrides
@@ -41,7 +41,7 @@ module WebConfHook
     def web_configs_for_service(service)
       return unless service.config.key?(:"x-web")
 
-      confs = service.config.fetch(:"x-web").dup
+      confs = Marshal.load(Marshal.dump(service.config.fetch(:"x-web")))
 
       if confs.is_a?(Hash)
         confs = [confs]
@@ -60,6 +60,7 @@ module WebConfHook
               path: "/", 
               cache: conf[:cache],
               ssl_server_name: conf[:ssl_server_name],
+              redirect: conf[:redirect],
             }
           ]
         end
@@ -73,7 +74,7 @@ module WebConfHook
     def route_with_defaults(src_route, service)
       route = src_route.dup
 
-      if route[:port].nil? && route[:upstream].nil?
+      if route[:port].nil? && route[:upstream].nil? && route[:redirect].nil?
         raise "Need port for route #{route[:path]} in service #{service.name} in #{service.stack.name}, can't determine defaults"
       end
 
@@ -91,7 +92,14 @@ module WebConfHook
         route[:ssl_server_name] = true
       end
 
-      route[:upstream] ||= "http://#{service.name}.#{service.stack.name}.local-web.internal:#{route[:port]}"
+      if route[:alternate_hostnames].nil?
+        route[:alternate_hostnames] = []
+      end
+
+      if route[:redirect].nil?
+        route[:upstream] ||= "http://#{service.name}.#{service.stack.name}.local-web.internal:#{route[:port]}"
+      end
+
       route
     end
 
@@ -121,7 +129,7 @@ module WebConfHook
         ([web_conf[:fqdn]] + web_conf[:alternate_hostnames]).each do |hostname|
           certname = cert_domain_for_fqdn(fqdn: hostname)
           certs[certname] ||= Set.new
-          certs[certname].add hostname
+          certs[certname].add certname
         end
       end
 

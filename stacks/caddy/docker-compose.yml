@@ -1,0 +1,41 @@
+services:
+  caddy:
+    container_name: caddy
+    hostname: caddy
+    image: caddy:2
+    restart: unless-stopped
+    volumes:
+      - ${CONFIGS_DIR}/caddy/config.json:/etc/caddy/config.json
+      - ${DATA_DIR}/certificates/certificates:/etc/letsencrypt/certificates:ro
+      - ${DATA_DIR}/caddy/data:/data
+      - ${DATA_DIR}/caddy/config:/config
+      - ${DATA_DIR}/caddy/sockets:/sockets
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    command: ["caddy", "run", "--config", "/etc/caddy/config.json", "--watch"]
+    x-dns:
+      skip_service: true
+    networks: []
+
+  anubis:
+    image: ghcr.io/techarohq/anubis:latest
+    environment:
+      BIND: "/sockets/anubis.sock"
+      BIND_NETWORK: "unix"
+      DIFFICULTY: "4"
+      METRICS_BIND: ":9090"
+      SERVE_ROBOTS_TXT: "true"
+      TARGET: "unix:///sockets/caddy.sock"
+      OG_PASSTHROUGH: "true"
+      OG_EXPIRY_TIME: "24h"
+    healthcheck:
+      test: ["CMD", "anubis", "--healthcheck"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 500ms
+    volumes:
+      - ${DATA_DIR}/caddy/sockets:/sockets      
+

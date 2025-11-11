@@ -67,7 +67,6 @@ class Baker
         "--file", bakefile_path,
         "--push"
       ]
-      pp(args:)
 
       Subprocess.check_call(args)
     end

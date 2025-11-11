@@ -64,8 +64,9 @@ services:
       vmsave-db:
         condition: service_started
     x-op-items: *common-secrets
-    x-gatus:
-      url: https://vmsave.petekeen.net
+    x-web:
+      - port: 8086
+        fqdn: vmsave.petekeen.net
 
   vmsave-worker:
     container_name: vmsave-worker

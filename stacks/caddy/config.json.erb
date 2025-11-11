@@ -1,0 +1,110 @@
+<%-
+stage_one = {
+  listen: [
+    ":80"
+  ],
+  routes: []
+}
+
+stage_two = {
+  listen: [
+    "unix//sockets/caddy.sock"
+  ],
+  automatic_https: {
+    disable: true
+  },
+  routes: []
+}
+
+this_host_web_configs do |stack, service, web_conf|
+  web_conf[:routes].each do |route|
+    if route[:redirect] != nil
+      stage_one[:routes] << {
+        match: [
+          {
+            host: [web_conf[:fqdn]],
+          },
+        ],
+        handle: [
+          {
+            handler: "static_response",
+            status_code: 302,
+            headers: {
+              "Location": [route[:redirect]]
+            }
+          }
+        ]
+      }
+      next
+    end
+
+    stage_one_upstream = route[:anubis] ? "unix//sockets/anubis.sock" : "unix//sockets/caddy.sock"
+
+    stage_one[:routes] << {
+      match: [
+        {
+          host: [web_conf[:fqdn]],
+          path: ["#{route[:path]}*"]
+        }
+      ],
+      handle: [
+        {
+          handler: "reverse_proxy",
+          upstreams: [
+            { dial: stage_one_upstream }
+          ]
+        }
+      ]
+    }
+
+    stage_two[:routes] << {
+      match: [
+        {
+          host: [web_conf[:fqdn]],
+          path: ["#{route[:path]}*"]
+        }
+      ],
+      handle: [
+        {
+          handler: "reverse_proxy",
+          upstreams: [
+            { dial: route[:upstream] }
+          ]
+        }
+      ]
+    }
+  end
+  web_conf[:alternate_hostnames].each do |hostname|
+    stage_one[:routes] << {
+      match: [
+        {
+          host: [hostname],
+        },
+      ],
+      handle: [
+        {
+          handler: "static_response",
+          status_code: 302,
+          headers: {
+            "Location": [
+              "https://#{web_conf[:fqdn]}"
+            ]
+          }
+        }
+      ]
+    }
+  end
+end
+
+@config = {
+  apps: {
+    http: {
+      servers: {
+        stage_one: stage_one,
+        stage_two: stage_two
+      }
+    }
+  }
+}
+-%>
+<%= JSON.pretty_generate(@config) %>
