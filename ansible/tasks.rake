@@ -9,3 +9,4 @@ task :apply, [:playbook] => [:build, :build_inventory] do |task, args|
     sh "ansible-playbook -i ./files/build/inventory.json #{playbooks}"
   end
 end
+

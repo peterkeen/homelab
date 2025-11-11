@@ -4,17 +4,19 @@ services:
     hostname: caddy
     image: caddy:2
     restart: unless-stopped
+    environment:
+      - CONFIGS_SHA
     volumes:
       - ${CONFIGS_DIR}/caddy/config.json:/etc/caddy/config.json
-      - ${DATA_DIR}/certificates/certificates:/etc/letsencrypt/certificates:ro
-      - ${DATA_DIR}/caddy/data:/data
-      - ${DATA_DIR}/caddy/config:/config
-      - ${DATA_DIR}/caddy/sockets:/sockets
+      - ${CONFIG}/certificates/certificates:/etc/letsencrypt/certificates:ro
+      - ${CONFIG}/caddy/data:/data
+      - ${CONFIG}/caddy/config:/config
+      - ${CONFIG}/caddy/sockets:/sockets
     ports:
       - 80:80
       - 443:443
       - 443:443/udp
-    command: ["caddy", "run", "--config", "/etc/caddy/config.json", "--watch"]
+    command: ["caddy", "run", "--config", "/etc/caddy/config.json"]
     x-dns:
       skip_service: true
     networks: []
@@ -37,5 +39,5 @@ services:
       retries: 5
       start_period: 500ms
     volumes:
-      - ${DATA_DIR}/caddy/sockets:/sockets      
+      - ${CONFIG}/caddy/sockets:/sockets      
 

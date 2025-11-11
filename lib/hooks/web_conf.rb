@@ -129,7 +129,7 @@ module WebConfHook
         ([web_conf[:fqdn]] + web_conf[:alternate_hostnames]).each do |hostname|
           certname = cert_domain_for_fqdn(fqdn: hostname)
           certs[certname] ||= Set.new
-          certs[certname].add certname
+          certs[certname].add hostname
         end
       end
 

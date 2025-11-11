@@ -1,8 +1,14 @@
 <%-
+require 'uri'
+
 stage_one = {
   listen: [
-    ":80"
+    ":80",
+    ":443",
   ],
+  automatic_https: {
+    disable_certificates: true
+  },
   routes: []
 }
 
@@ -57,6 +63,9 @@ this_host_web_configs do |stack, service, web_conf|
       ]
     }
 
+    upstream_host = URI(route[:upstream]).hostname
+    upstream_port = URI(route[:upstream]).port.to_s
+
     stage_two[:routes] << {
       match: [
         {
@@ -67,9 +76,14 @@ this_host_web_configs do |stack, service, web_conf|
       handle: [
         {
           handler: "reverse_proxy",
-          upstreams: [
-            { dial: route[:upstream] }
-          ]
+          dynamic_upstreams: {
+            source: "a",
+            resolver: {
+              addresses: ["127.0.0.11"],
+            },
+            name: upstream_host,
+            port: upstream_port
+          }
         }
       ]
     }
@@ -96,12 +110,24 @@ this_host_web_configs do |stack, service, web_conf|
   end
 end
 
+certificates = this_host_certs.keys.map do |certname|
+  {
+    certificate: "/etc/letsencrypt/certificates/#{certname}.crt",
+    key: "/etc/letsencrypt/certificates/#{certname}.key"
+  }
+end
+
 @config = {
   apps: {
     http: {
       servers: {
         stage_one: stage_one,
         stage_two: stage_two
+      }
+    },
+    tls: {
+      certificates: {
+        load_files: certificates
       }
     }
   }
