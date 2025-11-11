@@ -4,11 +4,19 @@ module WebConfHook
       service.config.key?(:"x-web")
     end
 
-    return {} unless context.this_host.stack_list.include?('caddy')
+    local_proxy = context.this_host.stack_list & ["caddy", "local-proxy"]
+
+    if local_proxy.length > 1
+      raise "Can only have one local proxy defined, got: #{local_proxy}"
+    end
+
+    local_proxy = local_proxy.first
+
+    return {} unless local_proxy
 
     overrides = {
       "services" => {
-        "caddy" => {
+        local_proxy => {
           "networks" => {}
         }
       },
@@ -31,7 +39,7 @@ module WebConfHook
         }
       }
 
-      overrides["services"]["caddy"]["networks"]["local-web-#{service.name}"] = {}
+      overrides["services"][local_proxy]["networks"]["local-web-#{service.name}"] = {}
     end
 
     overrides
