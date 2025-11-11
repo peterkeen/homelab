@@ -9,6 +9,7 @@ stage_one = {
   automatic_https: {
     disable_certificates: true
   },
+  logs: {},
   routes: []
 }
 
@@ -22,7 +23,9 @@ stage_two = {
   routes: []
 }
 
-this_host_web_configs do |stack, service, web_conf|
+all_web_configs do |host, stack, service, web_conf|
+  next unless host == this_host || web_conf[:public_ingress]
+
   web_conf[:routes].each do |route|
     if route[:redirect] != nil
       stage_one[:routes] << {
@@ -63,8 +66,26 @@ this_host_web_configs do |stack, service, web_conf|
       ]
     }
 
-    upstream_host = URI(route[:upstream]).hostname
-    upstream_port = URI(route[:upstream]).port.to_s
+    upstream = host == this_host ? URI(route[:upstream]) : URI("https://#{host.hostname}.tailnet-a578.ts.net:443")
+
+    stage_two_handler = {
+      handler: "reverse_proxy",
+      transport: {
+        protocol: "http",
+        resolver: {
+          addresses: ["127.0.0.11"]
+        }
+      },
+      upstreams: [
+        { dial: "#{upstream.hostname}:#{upstream.port}" }
+      ]
+    }
+
+    if upstream.scheme == "https"
+      stage_two_handler[:transport][:tls] = {
+        server_name: web_conf[:fqdn]
+      }
+    end
 
     stage_two[:routes] << {
       match: [
@@ -73,19 +94,7 @@ this_host_web_configs do |stack, service, web_conf|
           path: ["#{route[:path]}*"]
         }
       ],
-      handle: [
-        {
-          handler: "reverse_proxy",
-          dynamic_upstreams: {
-            source: "a",
-            resolver: {
-              addresses: ["127.0.0.11"],
-            },
-            name: upstream_host,
-            port: upstream_port
-          }
-        }
-      ]
+      handle: [ stage_two_handler ]
     }
   end
   web_conf[:alternate_hostnames].each do |hostname|
@@ -110,7 +119,7 @@ this_host_web_configs do |stack, service, web_conf|
   end
 end
 
-certificates = this_host_certs.keys.map do |certname|
+certificates = all_host_certs.keys.map do |certname|
   {
     certificate: "/etc/letsencrypt/certificates/#{certname}.crt",
     key: "/etc/letsencrypt/certificates/#{certname}.key"

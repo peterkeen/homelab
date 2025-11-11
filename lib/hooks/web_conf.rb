@@ -55,9 +55,9 @@ module WebConfHook
         if conf[:routes].nil?
           conf[:routes] = [
             {
-              port: conf[:port], 
-              upstream: conf[:upstream], 
-              path: "/", 
+              port: conf[:port],
+              upstream: conf[:upstream],
+              path: "/",
               cache: conf[:cache],
               ssl_server_name: conf[:ssl_server_name],
               redirect: conf[:redirect],
@@ -105,7 +105,7 @@ module WebConfHook
 
     def cert_domain_for_fqdn(fqdn:)
       parts = fqdn.split(/\./)
-      parts.shift if parts[0] == "www" || fqdn =~ /\.keen.land\z/
+      parts.shift if parts[0] == "www" || fqdn =~ /\.keen.land\z/ || fqdn == "vmsave.petekeen.net"
 
       parts.join('.')
     end
@@ -126,6 +126,20 @@ module WebConfHook
       certs = {}
 
       this_host_web_configs do |stack, service, web_conf|
+        ([web_conf[:fqdn]] + web_conf[:alternate_hostnames]).each do |hostname|
+          certname = cert_domain_for_fqdn(fqdn: hostname)
+          certs[certname] ||= Set.new
+          certs[certname].add hostname
+        end
+      end
+
+      certs
+    end
+
+    def all_host_certs
+      certs = {}
+
+      all_web_configs do |host, stack, service, web_conf|
         ([web_conf[:fqdn]] + web_conf[:alternate_hostnames]).each do |hostname|
           certname = cert_domain_for_fqdn(fqdn: hostname)
           certs[certname] ||= Set.new

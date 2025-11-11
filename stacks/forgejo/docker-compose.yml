@@ -15,6 +15,7 @@ services:
     x-web:
       hostname: git
       port: 3000
+      public_ingress: true
     x-backup:
       paths:
         - /data/forgejo
