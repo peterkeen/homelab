@@ -21,6 +21,10 @@ class Host
     end
   end
 
+  def has_stack?(stack_name)
+    stack_list.include?(stack_name)
+  end
+
   def services
     @services ||= stacks.flat_map do |stack|
       stack.services.map do |service|

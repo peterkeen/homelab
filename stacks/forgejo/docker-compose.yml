@@ -16,6 +16,7 @@ services:
       hostname: git
       port: 3000
       public_ingress: true
+      anubis: true
     x-backup:
       paths:
         - /data/forgejo

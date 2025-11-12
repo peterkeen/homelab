@@ -47,7 +47,10 @@ all_web_configs do |host, stack, service, web_conf|
       next
     end
 
-    stage_one_upstream = route[:anubis] ? "unix//sockets/anubis.sock" : "unix//sockets/caddy.sock"
+    stage_one_upstream = "unix//sockets/caddy.sock"
+    if web_conf[:anubis] && !this_host.has_stack?(stack.name)
+      stage_one_upstream = "unix//sockets/anubis.sock"
+    end
 
     stage_one[:routes] << {
       match: [
