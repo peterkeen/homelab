@@ -4,6 +4,8 @@ services:
     restart: unless-stopped
     x-dns:
       skip_service: true
+    x-gatus:
+      enabled: false
     x-web:
       - fqdn: unifi.keen.land
         upstream: https://10.73.95.7:8443

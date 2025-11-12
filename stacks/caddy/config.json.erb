@@ -88,6 +88,9 @@ all_web_configs do |host, stack, service, web_conf|
       stage_two_handler[:transport][:tls] = {
         server_name: web_conf[:fqdn]
       }
+      if web_conf[:insecure_skip_verify]
+        stage_two_handler[:transport][:tls][:insecure_skip_verify] = true
+      end
     end
 
     stage_two[:routes] << {

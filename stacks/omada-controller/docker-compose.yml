@@ -35,6 +35,7 @@ services:
     restart: always
     x-web:
       upstream: https://10.73.95.4:8043
+      insecure_skip_verify: true
       dashboard:
         name: TP-Link Omada
         subtitle: Wi-Fi and network switches

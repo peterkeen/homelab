@@ -59,8 +59,11 @@ class Baker
       f.write(JSON.pretty_generate(bake_config))
     end
 
+    LOGGER.info("Docker buildx requires sudo to push to git.keen.land on macOS for whatever damn reason.")
+
     Dir.chdir(context.root_path) do
       args = [
+        "sudo",
         "docker",
         "buildx",
         "bake",

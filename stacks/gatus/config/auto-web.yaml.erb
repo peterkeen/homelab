@@ -6,7 +6,9 @@ all_web_configs do |host, stack, service, web_conf|
 
   next unless endpoint.length > 0 || web_conf
 
-  endpoint[:name] ||= service.name
+  next if endpoint[:enabled] == false
+
+  endpoint[:name] ||= web_conf[:name] || service.name
   endpoint[:url] ||= "https://" + web_conf[:fqdn]
   endpoint[:interval] ||= "5m"
   endpoint[:conditions] ||= ["[STATUS] == 200"]

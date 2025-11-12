@@ -5,14 +5,17 @@ services:
     restart: unless-stopped
     x-web:
       - fqdn: www.corastreetpress.com
+        name: smallsites-corastreetpress
         port: 80
         alternate_hostnames:
           - corastreetpress.com
       - fqdn: www.okapi.io
+        name: smallsites-okapi
         port: 80
         alternate_hostnames:
           - okapi.io
       - fqdn: www.payola.io
+        name: smallsites-payola
         port: 80
         alternate_hostnames:
           - payola.io

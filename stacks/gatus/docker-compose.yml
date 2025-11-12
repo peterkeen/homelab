@@ -7,8 +7,8 @@ services:
       - CONFIGS_SHA
       - GATUS_API_TOKEN_hermes
       - GATUS_API_TOKEN_hypnotoad_docker
+      - GATUS_API_TOKEN_hypnotoad_docker_test
       - GATUS_API_TOKEN_lrrr_docker
-      - GATUS_API_TOKEN_nibbler_docker_test
       - GATUS_API_TOKEN_ord2
       - GATUS_API_TOKEN_rpi
       - GATUS_API_TOKEN_shed
