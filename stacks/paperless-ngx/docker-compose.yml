@@ -2,7 +2,7 @@ services:
   paperless-ngx-broker:
     hostname: paperless-ngx-broker
     container_name: paperless-ngx-broker
-    image: redis:7
+    image: redis:8
     restart: unless-stopped
     user: 1000:1000
     volumes:
