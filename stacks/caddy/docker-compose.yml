@@ -1,0 +1,22 @@
+services:
+  caddy:
+    container_name: caddy
+    hostname: caddy
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      - CONFIGS_SHA
+    volumes:
+      - ${CONFIGS_DIR}/caddy/config.json:/etc/caddy/config.json
+      - ${CONFIG}/certificates/certificates:/etc/letsencrypt/certificates:ro
+      - ${CONFIG}/caddy/data:/data
+      - ${CONFIG}/caddy/config:/config
+      - ${CONFIG}/run/sockets:/sockets
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    command: ["caddy", "run", "--config", "/etc/caddy/config.json"]
+    x-dns:
+      skip_service: true
+    networks: []

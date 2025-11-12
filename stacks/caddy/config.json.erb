@@ -1,0 +1,148 @@
+<%-
+require 'uri'
+
+stage_one = {
+  listen: [
+    ":80",
+    ":443",
+  ],
+  automatic_https: {
+    disable_certificates: true
+  },
+  logs: {},
+  routes: []
+}
+
+stage_two = {
+  listen: [
+    "unix//sockets/caddy.sock"
+  ],
+  automatic_https: {
+    disable: true
+  },
+  routes: []
+}
+
+all_web_configs do |host, stack, service, web_conf|
+  next unless host == this_host || web_conf[:public_ingress]
+
+  web_conf[:routes].each do |route|
+    if route[:redirect] != nil
+      stage_one[:routes] << {
+        match: [
+          {
+            host: [web_conf[:fqdn]],
+          },
+        ],
+        handle: [
+          {
+            handler: "static_response",
+            status_code: 302,
+            headers: {
+              "Location": [route[:redirect]]
+            }
+          }
+        ]
+      }
+      next
+    end
+
+    stage_one_upstream = "unix//sockets/caddy.sock"
+    if web_conf[:anubis] && !this_host.has_stack?(stack.name)
+      stage_one_upstream = "unix//sockets/anubis.sock"
+    end
+
+    stage_one[:routes] << {
+      match: [
+        {
+          host: [web_conf[:fqdn]],
+          path: ["#{route[:path]}*"]
+        }
+      ],
+      handle: [
+        {
+          handler: "reverse_proxy",
+          upstreams: [
+            { dial: stage_one_upstream }
+          ]
+        }
+      ]
+    }
+
+    upstream = host == this_host ? URI(route[:upstream]) : URI("https://#{host.hostname}.tailnet-a578.ts.net:443")
+
+    stage_two_handler = {
+      handler: "reverse_proxy",
+      transport: {
+        protocol: "http",
+        resolver: {
+          addresses: ["127.0.0.11"]
+        }
+      },
+      upstreams: [
+        { dial: "#{upstream.hostname}:#{upstream.port}" }
+      ]
+    }
+
+    if upstream.scheme == "https"
+      stage_two_handler[:transport][:tls] = {
+        server_name: web_conf[:fqdn]
+      }
+    end
+
+    stage_two[:routes] << {
+      match: [
+        {
+          host: [web_conf[:fqdn]],
+          path: ["#{route[:path]}*"]
+        }
+      ],
+      handle: [ stage_two_handler ]
+    }
+  end
+  web_conf[:alternate_hostnames].each do |hostname|
+    stage_one[:routes] << {
+      match: [
+        {
+          host: [hostname],
+        },
+      ],
+      handle: [
+        {
+          handler: "static_response",
+          status_code: 302,
+          headers: {
+            "Location": [
+              "https://#{web_conf[:fqdn]}"
+            ]
+          }
+        }
+      ]
+    }
+  end
+end
+
+certificates = all_host_certs.keys.map do |certname|
+  {
+    certificate: "/etc/letsencrypt/certificates/#{certname}.crt",
+    key: "/etc/letsencrypt/certificates/#{certname}.key"
+  }
+end
+
+@config = {
+  apps: {
+    http: {
+      servers: {
+        stage_one: stage_one,
+        stage_two: stage_two
+      }
+    },
+    tls: {
+      certificates: {
+        load_files: certificates
+      }
+    }
+  }
+}
+-%>
+<%= JSON.pretty_generate(@config) %>

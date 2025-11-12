@@ -1,0 +1,13 @@
+services:
+  ext-proxies:
+    image: public.ecr.aws/eks-distro/kubernetes/pause:v1.34.1-eks-1-34-9
+    restart: unless-stopped
+    x-dns:
+      skip_service: true
+    x-web:
+      - fqdn: gulfse.cx
+        redirect: https://bsky.app/profile/rogueprintco.bsky.social/post/3li2dzvrnvs22
+        alternate_hostnames:
+          - www.gulfse.cx
+          - golfse.cx
+          - www.golfse.cx
