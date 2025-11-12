@@ -1,14 +1,13 @@
 <%-
 endpoints = []
 
-all_host_services do |host, stack, service|
-  endpoint = service.config.fetch(:"x-gatus", {})    
-  web_conf = web_config_for_service(service)
+all_web_configs do |host, stack, service, web_conf|
+  endpoint = service.config.fetch(:"x-gatus", {}).dup
 
   next unless endpoint.length > 0 || web_conf
 
   endpoint[:name] ||= service.name
-  endpoint[:url] ||= "http://" + web_conf[:fqdn]
+  endpoint[:url] ||= "https://" + web_conf[:fqdn]
   endpoint[:interval] ||= "5m"
   endpoint[:conditions] ||= ["[STATUS] == 200"]
   endpoint[:alerts] ||= [
