@@ -67,6 +67,8 @@ services:
     x-web:
       - port: 8086
         fqdn: vmsave.petekeen.net
+        public_ingress: true
+
 
   vmsave-worker:
     container_name: vmsave-worker

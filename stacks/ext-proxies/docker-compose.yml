@@ -11,3 +11,12 @@ services:
           - www.gulfse.cx
           - golfse.cx
           - www.golfse.cx
+      - fqdn: www.masteringmodernpayments.com
+        redirect: https://www.petekeen.net
+        alternate_hostnames:
+          - mstr.mp
+          - www.masteringmodernpayments.com
+          - masteringmodernpayments.net
+          - www.masteringmodernpayments.net
+          - masteringmodernpayments.org
+          - www.masteringmodernpayments.org

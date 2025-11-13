@@ -16,5 +16,7 @@ services:
           - petekeen.com
           - www.bugsplat.info
           - bugsplat.info
+          - www.bugsplat.org
+          - bugsplat.org
           - www.peterkeen.com
           - peterkeen.com

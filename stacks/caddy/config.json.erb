@@ -63,7 +63,7 @@ all_web_configs do |host, stack, service, web_conf|
     end
 
     stage_one_upstream = "localhost:8888"
-    if web_conf[:anubis] && !this_host.has_stack?(stack.name)
+    if web_conf[:anubis] && this_host.has_stack?("anubis")
       stage_one_upstream = "anubis:8923"
     end
 
@@ -126,6 +126,7 @@ all_web_configs do |host, stack, service, web_conf|
       handle: [ stage_two_handler ]
     }
   end
+
   web_conf[:alternate_hostnames].each do |hostname|
     stage_one[:routes] << {
       match: [

@@ -113,7 +113,7 @@ module WebConfHook
 
     def cert_domain_for_fqdn(fqdn:)
       parts = fqdn.split(/\./)
-      parts.shift if parts[0] == "www" || fqdn =~ /\.keen.land\z/ || fqdn == "vmsave.petekeen.net"
+      parts.shift if parts.length > 2
 
       parts.join('.')
     end
