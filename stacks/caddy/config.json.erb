@@ -10,16 +10,31 @@ stage_one = {
     disable_certificates: true
   },
   logs: {},
+  metrics: {
+    per_host: true
+  },
+  trusted_proxies: {
+    source: "static",
+    ranges: hosts_file.hosts.values.map { |h| "#{h.local_ip}/32" } + ["10.0.0.0/8", "192.168.0.0/16", "172.16.0.0/12", "127.0.0.0/8"]
+  },
   routes: []
 }
 
 stage_two = {
   listen: [
-    "unix//sockets/caddy.sock"
+    ":8888"
   ],
   automatic_https: {
     disable: true
   },
+  logs: {},
+  metrics: {
+    per_host: true
+  },
+  trusted_proxies: {
+    source: "static",
+    ranges: hosts_file.hosts.values.map { |h| "#{h.local_ip}/32" } + ["10.0.0.0/8", "192.168.0.0/16", "172.16.0.0/12", "127.0.0.0/8"]
+  }, 
   routes: []
 }
 
@@ -47,9 +62,9 @@ all_web_configs do |host, stack, service, web_conf|
       next
     end
 
-    stage_one_upstream = "unix//sockets/caddy.sock"
+    stage_one_upstream = "localhost:8888"
     if web_conf[:anubis] && !this_host.has_stack?(stack.name)
-      stage_one_upstream = "unix//sockets/anubis.sock"
+      stage_one_upstream = "anubis:8923"
     end
 
     stage_one[:routes] << {
@@ -64,7 +79,15 @@ all_web_configs do |host, stack, service, web_conf|
           handler: "reverse_proxy",
           upstreams: [
             { dial: stage_one_upstream }
-          ]
+          ],
+          headers: {
+            request: {
+              add: {
+                "X-Real-IP": ["{http.request.remote.host}"],
+                "X-Http-Version": ["1.1"]
+              }
+            }
+          }
         }
       ]
     }
@@ -133,6 +156,9 @@ certificates = all_host_certs.keys.map do |certname|
 end
 
 @config = {
+  admin: {
+    listen: ":2019"
+  },
   apps: {
     http: {
       servers: {

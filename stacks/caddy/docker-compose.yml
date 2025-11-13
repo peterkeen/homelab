@@ -16,6 +16,7 @@ services:
       - 80:80
       - 443:443
       - 443:443/udp
+      - ${TAILNET_IP}:2019:2019
     command: ["caddy", "run", "--config", "/etc/caddy/config.json"]
     x-dns:
       skip_service: true

@@ -3,20 +3,21 @@ services:
     image: ghcr.io/techarohq/anubis:latest
     container_name: anubis
     environment:
-      BIND: "/sockets/anubis.sock"
-      BIND_NETWORK: "unix"
+      BIND: ":8923"
       DIFFICULTY: "4"
       METRICS_BIND: ":9090"
       SERVE_ROBOTS_TXT: "true"
-      TARGET: "unix:///sockets/caddy.sock"
+      TARGET: "http://caddy:8888"
       OG_PASSTHROUGH: "true"
       OG_EXPIRY_TIME: "24h"
+    ports:
+      - ${TAILNET_IP}:9090:9090
     healthcheck:
       test: ["CMD", "anubis", "--healthcheck"]
       interval: 5s
       timeout: 30s
       retries: 5
       start_period: 500ms
-    volumes:
-      - ${CONFIG}/run/sockets:/sockets
+    networks:
+      caddy:
 

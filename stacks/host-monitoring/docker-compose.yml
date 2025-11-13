@@ -1,0 +1,39 @@
+services:
+  cadvisor:
+    container_name: cadvisor
+    image: ghcr.io/google/cadvisor:v0.53.0
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - ${TAILNET_IP}:8080:8080
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /:/rootfs:ro
+      - /dev/disk/:/dev/disk:ro
+      - /sys:/sys:ro
+      - /var/run:/var/run:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    command:
+      - --storage_duration=5m0s
+      - --housekeeping_interval=60s
+      - --docker_only=true
+      - --enable_metrics=cpu,memory,network
+
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:latest
+    restart: unless-stopped
+    ports:
+      - ${TAILNET_IP}:9100:9100
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /etc/node-exporter:/etc/node-exporter:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.rootfs=/rootfs
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
+      - --collector.textfile.directory=/etc/node-exporter
