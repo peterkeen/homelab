@@ -7,10 +7,10 @@ x-common-zwave: &common-zwave
     - CONFIGS_SHA
   x-web:
     routes:
-      - port: 8091
-        path: /
       - port: 3000
         path: /ws
+      - port: 8091
+        path: /
 
 services:
   zwave-house:
