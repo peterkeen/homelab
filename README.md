@@ -37,7 +37,7 @@ The only prerequisites for a host is to be on my tailnet.
 
 I have several compose extensions that I use pretty frequently:
 
-- `x-web` sets up a reverse proxy entry in the `local-proxy` config
+- `x-web` sets up a reverse proxy entry in the `caddy` config
 - `x-op-item` feeds secrets to services
 - `x-backup` backs up parts of the data directory
 - `x-cron` see 'Cron' below
@@ -48,9 +48,10 @@ By convention, my stacks put data in `/data/<stackname>` and I try to have them 
 
 The docker daemon on every host is set up with `10.244.0.0/16` as the default pool and creates `/28` networks. Each stack gets it's own isolated network so nothing is on the default network created by compose.
 
-Each internally facing host that runs web applications runs the stack `local-proxy`. This stack has an automatically generated nginx config that:
+Each internally facing host that runs web applications runs the `caddy` stack. This stack has an automatically generated Caddy config that:
 
 1. Terminates HTTPS with a wildcard keen.land certificate
+2. (optionally) forwards requests through Anubis
 2. Forwards requests to a container running on the host.
 
 The `web_conf` hook handles setting up a network configuration for each web service. Every service gets it's own network shared between just that container and the proxy. The service gets assigned the alias `service_name.stack_name.local-web.internal`.
