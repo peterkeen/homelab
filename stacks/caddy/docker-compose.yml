@@ -2,7 +2,7 @@ services:
   caddy:
     container_name: caddy
     hostname: caddy
-    image: caddy:2
+    image: ghcr.io/keenfamily-us/infra/stacks/caddy:latest
     restart: unless-stopped
     environment:
       - CONFIGS_SHA
