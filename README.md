@@ -110,6 +110,10 @@ x-cron:
 
 Docker compose allows one to define health checks but doesn't do anything with them directly. I have set up a 5 minute cron that restarts any container in an unhealthy state. This lets me do things like, eg, restart the Waterfurnace MQTT gateway container automatically every 12 hours by making a healthcheck fail.
 
+## Image Building
+
+The `rake bake` task will look for `Dockerfile`s inside stacks, build them (targeting `amd64` and `arm64` by default) and upload the result to both GitHub and `git.keen.land`. This can be changed by adding a `x-bake-target` section to the `docker-compose.yml` file. This is the YAML equivalent to a JSON docker bake target and is deep merged with the defaults.
+
 ## Can I use this?
 
 Probably don't. I don't have the bandwidth to help you so you're entirely on your own.
