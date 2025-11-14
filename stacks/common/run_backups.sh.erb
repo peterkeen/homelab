@@ -30,7 +30,7 @@ rsync --rsh "ssh -i /configs/common/backup_key -o StrictHostKeyChecking=no" \
     --verbose \
     --recursive \
     --archive \
-    --files-from=/common/file_list.txt \
+    --files-from=/configs/common/file_list.txt \
     / hbackup@10.73.95.84:$backup_path
 
 ping_gatus
