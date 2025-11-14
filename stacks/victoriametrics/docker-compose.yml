@@ -1,0 +1,42 @@
+services:
+  victoriametrics:
+    container_name: victoriametrics-up
+    image: victoriametrics/victoria-metrics
+    hostname: vm
+    restart: always
+    environment:
+      - CONFIGS_SHA
+    volumes:
+      - /data/victoria/metrics:/victoria-metrics-data
+      - ${CONFIGS_DIR}/victoriametrics/promscrape:/promscrape
+    command: ["-promscrape.config=/promscrape/scrape.yaml", "-promscrape.fileSDCheckInterval=5s"]
+    x-web:
+      port: 8428
+
+  victorialogs:
+    container_name: victorialogs-up
+    image: victoriametrics/victoria-logs
+    hostname: vl
+    restart: always
+    volumes:
+      - /data/victoria/logs:/victoria-logs-data
+    x-web:
+      port: 9428
+      
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    volumes:
+      - /data/grafana:/var/lib/grafana
+      - ${CONFIGS_DIR}/victoriametrics/provisioning:/etc/grafana/provisioning
+    environment:
+      - CONFIGS_SHA
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_INSTALL_PLUGINS=victoriametrics-metrics-datasource,victoriametrics-logs-datasource
+    x-web:
+      port: 3000
+

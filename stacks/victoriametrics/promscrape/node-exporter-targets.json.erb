@@ -1,0 +1,5 @@
+<%-
+nodes = hosts.map { |host| "#{host.hostname}.tailnet-a578.ts.net:9100" }
+out = [{"targets" => nodes}]
+-%>
+<%= out.to_json %>

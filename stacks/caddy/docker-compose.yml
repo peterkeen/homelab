@@ -20,4 +20,6 @@ services:
     command: ["caddy", "run", "--config", "/etc/caddy/config.json"]
     x-dns:
       skip_service: true
+    x-promscrape:
+      port: 2019
     networks: []

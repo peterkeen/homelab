@@ -8,8 +8,11 @@ services:
     ports:
       - 53:53
       - 53:53/udp
+      - ${TAILNET_IP}:9153:9153
     restart: unless-stopped
     command: ["-conf", "/root/Corefile"]
+    x-promscrape:
+      port: 9153
 
   unbound:
     container_name: unbound

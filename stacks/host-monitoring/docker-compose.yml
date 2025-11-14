@@ -19,6 +19,8 @@ services:
       - --housekeeping_interval=60s
       - --docker_only=true
       - --enable_metrics=cpu,memory,network
+    x-promscrape:
+      port: 8080
 
   node-exporter:
     container_name: node-exporter
@@ -37,3 +39,5 @@ services:
       - --path.sysfs=/host/sys
       - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
       - --collector.textfile.directory=/etc/node-exporter
+    x-promscrape:
+      port: 9100

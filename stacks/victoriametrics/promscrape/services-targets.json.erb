@@ -1,0 +1,8 @@
+<%-
+targets = []
+all_host_services do |host, stack, service|
+  next unless service.config.key?(:"x-metrics")
+  targets << "#{host.hostname}.tailnet-a578.ts.net:#{service.config[:"x-metrics"][:port]}"
+end
+-%>
+<%= [{"targets" => targets}].to_json %>

@@ -1,0 +1,20 @@
+<%-
+
+jobs = {}
+
+all_host_services do |host, stack, service|
+  next unless service.config.key?(:"x-promscrape")
+  conf = service.config[:"x-promscrape"]
+
+  jobs[service.name] ||= {
+    job_name: service.name,
+    scrape_interval: "10s"
+  }.deep_merge(conf)
+
+  jobs[service.name].delete(:port)
+
+  jobs[service.name][:static_configs] ||= [{targets: []}]
+  jobs[service.name][:static_configs][0][:targets] << "#{host.hostname}.tailnet-a578.ts.net:#{conf[:port]}"
+end
+-%>
+<%= dump_yaml_without_symbols({scrape_configs: jobs.values}) %>
