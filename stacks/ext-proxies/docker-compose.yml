@@ -4,6 +4,8 @@ services:
     restart: unless-stopped
     x-dns:
       skip_service: true
+    x-gatus:
+      enabled: false
     x-web:
       - fqdn: gulfse.cx
         redirect: https://bsky.app/profile/rogueprintco.bsky.social/post/3li2dzvrnvs22
