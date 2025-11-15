@@ -41,3 +41,14 @@ services:
       - --collector.textfile.directory=/etc/node-exporter
     x-promscrape:
       port: 9100
+
+  vector:
+    container_name: vector
+    image: timberio/vector:0.51.1-debian
+    environment:
+      - CONFIGS_SHA
+      - HOSTNAME
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${CONFIGS_DIR}/host-monitoring/vector.yaml:/etc/vector/vector.yaml:ro
+    

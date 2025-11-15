@@ -1,0 +1,45 @@
+#                                    __   __  __
+#                                    \ \ / / / /
+#                                     \ V / / /
+#                                      \_/  \/
+#
+#                                    V E C T O R
+#                                   Configuration
+#
+# ------------------------------------------------------------------------------
+# Website: https://vector.dev
+# Docs: https://vector.dev/docs
+# Chat: https://chat.vector.dev
+# ------------------------------------------------------------------------------
+
+# Change this to use a non-default directory for Vector data storage:
+# data_dir: "/var/lib/vector"
+
+# Random Syslog-formatted logs
+sources:
+  docker_logs:
+    type: "docker_logs"
+
+transforms:
+  docker_set_hostname:
+    type: remap
+    inputs:
+      - docker_logs
+    source: |
+      .host = "${HOSTNAME}"
+
+sinks:
+  vlogs:
+    inputs:
+      - docker_set_hostname
+    type: elasticsearch
+    endpoints:
+      - https://vl.keen.land/insert/elasticsearch/
+    api_version: v8
+    compression: gzip
+    healthcheck:
+      enabled: false
+    query:
+      _msg_field: message
+      _time_field: timestamp
+      _stream_fields: host,container_name
