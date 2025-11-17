@@ -75,7 +75,7 @@ module AdsbBubble
     end
 
     def connection
-      Faraday.new(url: "http://ultrafeeder") do |conn|
+      Faraday.new(url: "https://ultrafeeder.keen.land") do |conn|
         conn.options.open_timeout = 1
         conn.options.timeout = 1
       end
