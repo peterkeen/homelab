@@ -2,7 +2,7 @@ services:
   jellyfin:
     container_name: jellyfin-up
     hostname: jellyfin
-    image: ghcr.io/jellyfin/jellyfin:10.10.7
+    image: ghcr.io/jellyfin/jellyfin:10.11.3
     user: 1000:1000
     group_add:
       - "27"
