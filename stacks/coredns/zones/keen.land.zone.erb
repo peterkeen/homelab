@@ -29,6 +29,10 @@ all_host_services do |host, stack, service|
   hostnames_by_ip[host.local_ip] << "#{service.name}.svc.docker.keen.land"
   hostnames_by_ip[host.tailnet_ip] << "#{service.name}.ts.docker.keen.land"
 end
+
+hosts.each do |host|
+  hostnames_by_ip[host.local_ip] << "#{host.hostname}.#{host.region}.keen.land"
+end
 -%>
 keen.land. IN SOA <%= nameservers.first.hostname %>.keen.land. admin.keen.land. (
     <%= Time.now.to_i %> ; serial

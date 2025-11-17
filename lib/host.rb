@@ -5,12 +5,14 @@ class Host
   attr_reader :local_ip
   attr_reader :tailnet_ip
   attr_reader :groups
+  attr_reader :region
 
-  def initialize(hostname:, stacks:, environment:, local_ip:, tailnet_ip: nil, groups: [])
+  def initialize(hostname:, stacks:, environment:, local_ip:, region:, tailnet_ip: nil, groups: [])
     @hostname = hostname
     @stack_list = stacks
     @environment = environment
     @local_ip = local_ip
+    @region = region
     @tailnet_ip = tailnet_ip
     @groups = groups
   end
@@ -50,5 +52,10 @@ class Host
     }
 
     Array(@environment) + extra_vars.map { |k,v| "#{k}=#{v}" }
+  end
+
+  def rdns_label
+    rev_ip = local_ip.split(/\./).reverse.join('.')
+    "#{rev_ip}.in-addr.arpa"
   end
 end
