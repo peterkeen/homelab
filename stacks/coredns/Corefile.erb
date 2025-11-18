@@ -14,7 +14,12 @@
     reload 10s
   }
 
-  cache
+  cache {
+    success 99840 86400
+    denial 99840 1800
+    prefetch 5
+    serve_stale
+  }
 
   forward tailnet-a578.ts.net 100.100.100.100
 
