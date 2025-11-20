@@ -95,11 +95,3 @@ services:
         subtitle: Airplane Radar
         category: Home Stuff
         icon: fa-solid fa-plane
-
-  # ultrafeeder-aircraft-shipper:
-  #   container_name: ultrafeeder-aircraft-shipper
-  #   image: timberio/vector:0.44.0-debian
-  #   environment:
-  #     - CONFIGS_SHA
-  #   volumes:
-  #     - ${CONFIGS_DIR}/ultrafeeder/vector.yaml:/etc/vector/vector.yaml:ro

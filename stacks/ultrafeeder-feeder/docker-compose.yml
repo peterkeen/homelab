@@ -74,12 +74,6 @@ services:
       #- URL_978=http://dump978-up/skyaware978
       #
       # --------------------------------------------------
-      # InfluxDB
-      #- INFLUXDBV2=true      
-      #- INFLUXDBV2_URL=https://influxdb.tailnet-a578.ts.net
-      #- INFLUXDBV2_BUCKET=adsb
-      #- INFLUXDBV2_ORG=keenland
-      #- INFLUXDBV2_TOKEN=${ADSB_INFLUXDB_TOKEN}
     volumes:
       - /data/adsb/ultrafeeder/globe_history:/var/globe_history
       - /data/adsb/ultrafeeder/graphs1090:/var/lib/collectd
