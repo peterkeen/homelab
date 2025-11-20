@@ -10,11 +10,11 @@ Dir.glob('*/**/*.rake') do |f|
 end
 
 task :clean do
-  hf = HostsFile.new
-  FileUtils.rm_rf(hf.build_root)
+  build_root = Runner.new.build_root
+  FileUtils.rm_rf(build_root)
 end
 
-task :bake do
+task :bake => :clean do
   Baker.new.run
 end
 
