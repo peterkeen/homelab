@@ -92,7 +92,7 @@ all_web_configs do |host, stack, service, web_conf|
       ]
     }
 
-    upstream = host == this_host ? URI(route[:upstream]) : URI("https://#{host.hostname}.tailnet-a578.ts.net:443")
+    upstream = host == this_host ? URI(route[:upstream]) : URI("https://#{host.local_ip}:443")
 
     stage_two_handler = {
       handler: "reverse_proxy",
