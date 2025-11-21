@@ -9,4 +9,12 @@ class Service
     @stack = stack
   end
 
+  def extensions
+    @config.filter_map do |key, value|
+      if key.to_s.start_with?("x-")
+        [key.to_s.gsub(/^x-/, ''), value]
+      end
+    end.to_h
+  end
+  
 end
