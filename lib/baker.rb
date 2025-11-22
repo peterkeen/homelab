@@ -55,6 +55,8 @@ class Baker
 
     bakefile_path = File.join(context.root_path, "build", "docker-bake.json")
 
+    FileUtils.mkdir_p(File.dirname(bakefile_path))
+
     File.open(bakefile_path, "w+") do |f|
       f.write(JSON.pretty_generate(bake_config))
     end
