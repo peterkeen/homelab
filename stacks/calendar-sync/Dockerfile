@@ -22,6 +22,6 @@ WORKDIR /app
 
 COPY --from=build /app/calendar-sync .
 
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata s6-portable-utils
 
-ENTRYPOINT ["/app/calendar-sync"]
+CMD ["s6-pause"]

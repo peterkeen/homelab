@@ -10,7 +10,7 @@ services:
       - name: "run calendar sync"
         schedule: "@hourly"
         type: local
-        command: docker start calendar-sync
+        command: docker exec calendar-sync /app/calendar-sync
     x-op-items:
       - ref: ch43e2fglfkz5x2if6fg25jwye/config.yaml
         remote_path: /data/calendar-sync/config.yaml
