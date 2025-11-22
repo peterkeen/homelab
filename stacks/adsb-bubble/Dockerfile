@@ -1,4 +1,4 @@
-FROM alpine:3 AS builder
+FROM alpine:20250108 AS builder
 
 RUN apk add --no-cache ruby ruby-bundler ruby-dev ca-certificates build-base
 
@@ -10,7 +10,7 @@ WORKDIR /usr/src/app
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
-FROM alpine:3
+FROM alpine:20250108
 
 RUN apk add --no-cache ruby ruby-bundler ca-certificates libstdc++
 

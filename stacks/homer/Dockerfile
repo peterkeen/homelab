@@ -1,4 +1,4 @@
-FROM alpine:3 AS builder
+FROM alpine:20250108 AS builder
 
 WORKDIR /app
 
