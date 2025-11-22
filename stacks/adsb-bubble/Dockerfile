@@ -12,7 +12,7 @@ RUN bundle install
 
 FROM alpine:3
 
-RUN apk add --no-cache ruby ruby-bundler ca-certificates
+RUN apk add --no-cache ruby ruby-bundler ca-certificates libstdc++
 
 COPY --from=builder /usr/lib/ruby/gems /usr/lib/ruby/gems
 

@@ -1,4 +1,4 @@
-require 'json'
+require 'fast_jsonparser'
 require 'faraday'
 
 module AdsbBubble
@@ -53,14 +53,14 @@ module AdsbBubble
       @mutex.synchronize do
         resp = begin
           connection.get('/data/aircraft.json')
-        rescue
-          warn "connection error! skipping refresh."
+        rescue => e
+          warn "connection error! skipping refresh: #{e}"
           nil
         end
 
         return if resp.nil?
 
-        @aircraft = JSON.parse(resp.body)["aircraft"].map { |a| Aircraft.from_hash(a) }
+        @aircraft = FastJsonparser.parse(resp.body, symbolize_keys: false)["aircraft"].map { |a| Aircraft.from_hash(a) }
 
         unsafe_in_bubble.each do |ac|
           unless recently_in_bubble[ac.hex]

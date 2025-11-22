@@ -5,3 +5,4 @@ gem 'sorbet-runtime'
 gem 'sinatra', require: false
 gem 'puma'
 gem 'rackup'
+gem 'fast_jsonparser'
